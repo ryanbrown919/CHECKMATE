@@ -101,22 +101,66 @@ class NFCWidget(Screen):
             self.log("No NFC detected.")
             self.update_display("1111")
     
+    # def scan_nfc(self):
+    #     if self.pn532:
+    #         self.log("Waiting for an NFC tag...")
+    #         uid = self.pn532.read_passive_target(timeout=0.5)
+    #         if uid:
+    #             self.log("Tag detected, reading data...")
+    #             data = self.pn532.ntag2xx_read_block(0)  # Read data from block 4 (Modify as needed)
+    #             if data:
+    #                 tag_info = data.decode('utf-8').strip()  # Decode and clean up
+    #                 self.log(f"Tag contains: {tag_info}")
+    #                 self.update_display(tag_info)
+    #             else:
+    #                 self.log("Failed to read tag data.")
+    #         else:
+    #             self.log("No tag found.")
+    #             self.update_display("1111")
+
     def scan_nfc(self):
         if self.pn532:
             self.log("Waiting for an NFC tag...")
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
-                self.log("Tag detected, reading data...")
-                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 4 (Modify as needed)
-                if data:
-                    tag_info = data.decode('utf-8').strip()  # Decode and clean up
-                    self.log(f"Tag contains: {tag_info}")
-                    self.update_display(tag_info)
-                else:
-                    self.log("Failed to read tag data.")
+                self.log("Tag detected, attempting to read data...")
+
+                try:
+                    # Read first block (modify block number as needed)
+                    data = self.pn532.ntag2xx_read_block(6)
+
+                    if data:
+                        tag_info = data.decode('utf-8').strip()  # Decode and clean up
+                        self.log(f"Tag contains: {tag_info}")
+
+                        # Lookup table for piece recognition
+                        # PIECE_MAP = {
+                        #     "1101": "pawn",
+                        #     "1102": "knight",
+                        #     "1103": "bishop",
+                        #     "1104": "rook",
+                        #     "1105": "queen",
+                        #     "1106": "king"
+                        # }
+
+                        piece_name = NFC_TAG_MAP.get(tag_info, "unknown")
+                        self.log(f"Recognized as: {piece_name}")
+
+                        if piece_name != "unknown":
+                            self.update_display(piece_name)
+                        else:
+                            self.log("Unknown tag content, defaulting to pawn.")
+                            self.update_display("pawn")
+
+                    else:
+                        self.log("Failed to read tag data.")
+
+                except Exception as e:
+                    self.log(f"Error reading tag: {e}")
+
             else:
                 self.log("No tag found.")
-                self.update_display("1111")
+
 
     def update_display(self, tag_info):
         icon_source = NFC_TAG_MAP.get(tag_info, "pawn.png")  # Default to pawn if unknown
