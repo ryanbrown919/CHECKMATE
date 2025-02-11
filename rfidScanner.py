@@ -116,6 +116,7 @@ class NFCWidget(Screen):
                     self.log("Failed to read tag data.")
             else:
                 self.log("No tag found.")
+                self.update_display("1111")
 
     def update_display(self, tag_info):
         icon_source = NFC_TAG_MAP.get(tag_info, "pawn.png")  # Default to pawn if unknown

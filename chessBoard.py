@@ -198,7 +198,7 @@ class ChessBoard(Widget):
         # Refresh piece widgets (in case of promotions, etc.).
         self.add_piece_widgets()
         if self.move_list_container:
-            label = Label(text=san_move, size_hint_y=None, height=30, font_size='16sp')
+            label = Label(text=san_move, size_hint_y=None, height=30, font_size=24)
             self.move_list_container.add_widget(label)
 
     def on_touch_down(self, touch):
