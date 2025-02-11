@@ -107,7 +107,7 @@ class NFCWidget(Screen):
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
                 self.log("Tag detected, reading data...")
-                data = self.pn532.ntag2xx_read_block(4)  # Read data from block 4 (Modify as needed)
+                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 4 (Modify as needed)
                 if data:
                     tag_info = data.decode('utf-8').strip()  # Decode and clean up
                     self.log(f"Tag contains: {tag_info}")
