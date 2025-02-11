@@ -1,8 +1,6 @@
 import glob
 import serial
 import time
-import threading
-
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -21,7 +19,6 @@ class GantryControlWidget(BoxLayout):
         self.padding = 10
 
         # Internal state variables
-        self.active_movements = {}
         self.jog_step = 1
         self.simulate = False  # When True, widget is in simulation mode.
 
@@ -29,28 +26,28 @@ class GantryControlWidget(BoxLayout):
         # LEFT PANEL: Directional Buttons
         # ---------------------
         left_panel = GridLayout(cols=3, rows=3, spacing=5, size_hint=(0.7, 1))
-        # Define each button with text indicating the movement direction.
+        # Each button is defined with text indicating the x/y direction.
         buttons = [
-            {"text": "X- Y+", "dx": -1, "dy":  1, "id": "upleft"},
-            {"text": "Y+",   "dx":  0, "dy":  1, "id": "up"},
-            {"text": "X+ Y+", "dx":  1, "dy":  1, "id": "upright"},
-            {"text": "X-",   "dx": -1, "dy":  0, "id": "left"},
-            {"text": "",     "dx":  0, "dy":  0, "id": "center"},
-            {"text": "X+",   "dx":  1, "dy":  0, "id": "right"},
-            {"text": "X- Y-", "dx": -1, "dy": -1, "id": "downleft"},
-            {"text": "Y-",   "dx":  0, "dy": -1, "id": "down"},
-            {"text": "X+ Y-", "dx":  1, "dy": -1, "id": "downright"}
+            {"text": "X- Y+", "dx": -1, "dy":  1},
+            {"text": "Y+",   "dx":  0, "dy":  1},
+            {"text": "X+ Y+", "dx":  1, "dy":  1},
+            {"text": "X-",   "dx": -1, "dy":  0},
+            {"text": "",     "dx":  0, "dy":  0},  # Center: left blank.
+            {"text": "X+",   "dx":  1, "dy":  0},
+            {"text": "X- Y-", "dx": -1, "dy": -1},
+            {"text": "Y-",   "dx":  0, "dy": -1},
+            {"text": "X+ Y-", "dx":  1, "dy": -1}
         ]
         for b in buttons:
-            if b["id"] == "center":
+            if b["text"] == "":
                 left_panel.add_widget(Label())
             else:
                 btn = Button(text=b["text"], font_size=24)
+                # Store directional values as custom properties.
                 btn.dx = b["dx"]
                 btn.dy = b["dy"]
-                btn.direction_id = b["id"]
-                btn.bind(on_press=self.on_move_press)
-                btn.bind(on_release=self.on_move_release)
+                # Bind only on_release so that a tap counts as a single press.
+                btn.bind(on_release=self.on_button_release)
                 left_panel.add_widget(btn)
 
         # ---------------------
@@ -58,16 +55,16 @@ class GantryControlWidget(BoxLayout):
         # ---------------------
         right_panel = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.3, 1))
 
-        # Step size controls
+        # Step size controls.
         step_label = Label(text="Step Size (mm):", size_hint_y=0.1)
         self.step_input = TextInput(text=str(self.jog_step), multiline=False,
                                     input_filter='int', size_hint_y=0.1)
         self.step_input.bind(text=self.on_step_change)
 
-        # Placeholder for any extra action
-        extra_button = Button(text="Reconnect to GRBL", size_hint_y=0.2)
+        # Placeholder for any extra action.
+        extra_button = Button(text="Extra Action", size_hint_y=0.2)
         
-        # Debug log area (visible in simulation mode)
+        # Debug log area (for simulation mode).
         debug_label = Label(text="Debug Log:", size_hint_y=0.1)
         self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6)
 
@@ -77,17 +74,16 @@ class GantryControlWidget(BoxLayout):
         right_panel.add_widget(debug_label)
         right_panel.add_widget(self.debug_log)
 
-        # Add both panels to the widget.
         self.add_widget(left_panel)
         self.add_widget(right_panel)
 
-        # Schedule the connection attempt after initialization.
+        # Schedule the GRBL connection attempt.
         Clock.schedule_once(lambda dt: self.connect_to_grbl(), 0)
 
     def connect_to_grbl(self):
         """
-        Attempt to connect to a GRBL device via serial. If no device is found
-        or an error occurs, the widget switches to simulation mode.
+        Attempt to connect to a GRBL device via serial. If no device is found,
+        switch to simulation mode.
         """
         grbl_port = self.find_grbl_port()
         if not grbl_port:
@@ -97,7 +93,7 @@ class GantryControlWidget(BoxLayout):
             return
 
         try:
-            self.ser = serial.Serial(grbl_port, 9600, timeout=1)
+            self.ser = serial.Serial(grbl_port, 115200, timeout=1)
             time.sleep(2)  # Allow GRBL to initialize.
             self.send_gcode("$X")  # Clear alarms.
             print(f"Connected to GRBL on {grbl_port}")
@@ -112,8 +108,7 @@ class GantryControlWidget(BoxLayout):
 
     def send_gcode(self, command):
         """
-        Send a G-code command to GRBL. In simulation mode, append the command
-        to the debug log instead.
+        Send a G-code command to GRBL. In simulation mode, log the command instead.
         """
         print(f"Sending: {command}")
         if self.simulate:
@@ -142,10 +137,17 @@ class GantryControlWidget(BoxLayout):
         self.debug_log.text += message + "\n"
         self.debug_log.cursor = (0, len(self.debug_log.text))
 
+    def on_button_release(self, instance):
+        """
+        Handle a button tap (on_release) by sending a single jog command.
+        """
+        dx = instance.dx
+        dy = instance.dy
+        self.send_jog_command(dx, dy)
+
     def send_jog_command(self, dx, dy):
         """
-        Construct and send the jogging command based on dx, dy, and the current
-        jog step size.
+        Construct and send the jog command based on dx, dy, and the current step size.
         """
         step = self.jog_step
         cmd = "$J=G21G91"
@@ -155,39 +157,6 @@ class GantryControlWidget(BoxLayout):
             cmd += f"Y{dy * step}"
         cmd += f"F{FEEDRATE}"
         self.send_gcode(cmd)
-
-    def movement_thread(self, dx, dy, direction_id):
-        """
-        This thread repeatedly sends jog commands until the movement is stopped.
-        """
-        self.active_movements[direction_id] = True
-        while self.active_movements.get(direction_id, False):
-            self.send_jog_command(dx, dy)
-            time.sleep(0.1)
-        print(f"Stopped movement: {direction_id}")
-
-    def on_extra_press(self, instance):
-        
-        self.connect_to_grbl()
-
-
-    def on_move_press(self, instance):
-        """
-        Start a movement thread when a directional button is pressed.
-        """
-        dx = instance.dx
-        dy = instance.dy
-        direction_id = instance.direction_id
-        t = threading.Thread(target=self.movement_thread, args=(dx, dy, direction_id))
-        t.daemon = True
-        t.start()
-
-    def on_move_release(self, instance):
-        """
-        Stop the movement when the directional button is released.
-        """
-        direction_id = instance.direction_id
-        self.active_movements[direction_id] = False
 
     def on_step_change(self, instance, value):
         """
@@ -208,7 +177,6 @@ if __name__ == '__main__':
     class TestApp(App):
         def build(self):
             root = BoxLayout(orientation='vertical')
-            # Instantiate the GantryControlWidget and add it to the app.
             gantry_widget = GantryControlWidget()
             root.add_widget(gantry_widget)
             return root
