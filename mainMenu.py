@@ -11,6 +11,7 @@ from chessBoard import ChessGameWidget
 from chessClock import ChessClockWidget 
 from gantryControl import GantryControlWidget
 from rfidScanner import NFCWidget
+from hallEffects import ChessBoardHallEffect
 
 # Global font size for the whole application.
 FONT_SIZE = 32
@@ -24,21 +25,26 @@ class MainMenuScreen(Screen):
         # Left side: vertical BoxLayout for buttons.
         button_layout = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.6, 1))
         
-        btn_chess = Button(text="Chess Playing Mode", size_hint=(1, 0.2), font_size=FONT_SIZE)
+        btn_chess = Button(text="Chess Playing Mode", size_hint=(1, 0.15), font_size=FONT_SIZE)
         btn_chess.bind(on_release=lambda instance: self.change_screen("chess"))
         button_layout.add_widget(btn_chess)
 
-        btn_gantry = Button(text="Manual Gantry Control", size_hint=(1, 0.2), font_size=FONT_SIZE)
+        btn_gantry = Button(text="Manual Gantry Control", size_hint=(1, 0.15), font_size=FONT_SIZE)
         btn_gantry.bind(on_release=lambda instance: self.change_screen("gantry"))
         button_layout.add_widget(btn_gantry)
 
-        btn_clock = Button(text="Chess Clock Tester", size_hint=(1, 0.2), font_size=FONT_SIZE)
+        btn_clock = Button(text="Chess Clock Tester", size_hint=(1, 0.15), font_size=FONT_SIZE)
         btn_clock.bind(on_release=lambda instance: self.change_screen("clock"))
         button_layout.add_widget(btn_clock)
         
         # Fourth button for a new widget/screen.
-        btn_new = Button(text="RFID Test", size_hint=(1, 0.2), font_size=FONT_SIZE)
+        btn_new = Button(text="RFID Test", size_hint=(1, 0.15), font_size=FONT_SIZE)
         btn_new.bind(on_release=lambda instance: self.change_screen("rfid"))
+        button_layout.add_widget(btn_new)
+
+        # Fourth button for a new widget/screen.
+        btn_new = Button(text="Hall Effect Test", size_hint=(1, 0.15), font_size=FONT_SIZE)
+        btn_new.bind(on_release=lambda instance: self.change_screen("halleffect"))
         button_layout.add_widget(btn_new)
 
         root_layout.add_widget(button_layout)
@@ -108,6 +114,16 @@ class RFIDScreen(BaseScreen):
         self.add_back_button(root)
         self.add_widget(root)
 
+class HallEffectScreen(BaseScreen):
+    def __init__(self, **kwargs):
+        super(HallEffectScreen, self).__init__(**kwargs)
+        #root = FloatLayout()
+        root = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        root.add_widget(ChessBoardHallEffect())
+        #root.add_widget(content)
+        self.add_back_button(root)
+        self.add_widget(root)
+
 class FullApp(App):
     def build(self):
         sm = ScreenManager(transition=SlideTransition())
@@ -116,6 +132,7 @@ class FullApp(App):
         sm.add_widget(GantryControlScreen(name="gantry"))
         sm.add_widget(ChessClockTesterScreen(name="clock"))
         sm.add_widget(RFIDScreen(name="rfid"))
+        sm.add_widget(HallEffectScreen(name="halleffect"))
         return sm
 
 if __name__ == '__main__':
