@@ -29,7 +29,7 @@ NFC_TAG_MAP = {
     "000111222": "king.png",
 }
 
-class NFCReaderScreen(Screen):
+class NFCWidget(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
@@ -116,7 +116,7 @@ class NFCReaderScreen(Screen):
 class NFCApp(App):
     def build(self):
         sm = ScreenManager()
-        sm.add_widget(NFCReaderScreen(name='nfc_reader'))
+        sm.add_widget(NFCWidget(name='nfc_reader'))
         return sm
 
 if __name__ == "__main__":

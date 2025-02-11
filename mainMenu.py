@@ -7,6 +7,11 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 
+from chessBoard import ChessBoard
+from chessClock import ChessClockWidget 
+from gantryControl import GantryControlWidget
+from rfidScanner import NFCWidget
+
 # Global font size for the whole application.
 FONT_SIZE = 32
 
@@ -68,7 +73,7 @@ class ChessGameScreen(BaseScreen):
         super(ChessGameScreen, self).__init__(**kwargs)
         root = FloatLayout()
         content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(Label(text="Chess Playing Mode\n(Chessboard UI goes here)", font_size=FONT_SIZE))
+        content.add_widget(ChessBoard())
         root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
@@ -78,7 +83,7 @@ class GantryControlScreen(BaseScreen):
         super(GantryControlScreen, self).__init__(**kwargs)
         root = FloatLayout()
         content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(Label(text="Manual Gantry Control", font_size=FONT_SIZE))
+        content.add_widget(GantryControlWidget)
         root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
@@ -88,7 +93,7 @@ class ChessClockTesterScreen(BaseScreen):
         super(ChessClockTesterScreen, self).__init__(**kwargs)
         root = FloatLayout()
         content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(Label(text="Chess Clock Tester", font_size=FONT_SIZE))
+        content.add_widget(ChessClockWidget())
         root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
@@ -98,7 +103,7 @@ class RFIDScreen(BaseScreen):
         super(RFIDScreen, self).__init__(**kwargs)
         root = FloatLayout()
         content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(Label(text="New Widget Screen\n(Place your new widget here)", font_size=FONT_SIZE))
+        content.add_widget(NFCWidget)
         root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
