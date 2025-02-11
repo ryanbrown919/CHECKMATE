@@ -21,12 +21,18 @@ if running_on_pi:
 
 # Mock NFC Code-to-Icon Mapping
 NFC_TAG_MAP = {
-    "123456789": "figures/white_pawn.png",
-    "987654321": "knight.png",
-    "111222333": "bishop.png",
-    "444555666": "rook.png",
-    "777888999": "queen.png",
-    "000111222": "king.png",
+    "0000": "figures/black_pawn.png",
+    "0001": "figures/black_knight.png",
+    "0010": "figures/black_bishop.png",
+    "0011": "figures/black_rook.png",
+    "0100": "figures/black_queen.png",
+    "0101": "figures/black_king.png",
+    "0110": "figures/white_pawn.png",
+    "0111": "figures/white_knight.png",
+    "1000": "figures/white_bishop.png",
+    "1001": "figures/white_rook.png",
+    "1010": "figures/white_queen.png",
+    "1011": "figures/white_king.png",
 }
 
 class NFCWidget(Screen):
@@ -48,7 +54,7 @@ class NFCWidget(Screen):
         right_layout = BoxLayout(orientation='vertical', size_hint=(0.6, 1))
         
         # Icon display in the top-right
-        self.icon_display = Image(source="pawn.png", size_hint=(1, 0.5))  # Default to pawn
+        self.icon_display = Image(source="figures/white_pawn.png", size_hint=(1, 0.5))  # Default to pawn
         right_layout.add_widget(self.icon_display)
         
         # Buttons in the bottom-left

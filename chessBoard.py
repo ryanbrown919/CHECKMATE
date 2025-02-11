@@ -253,9 +253,11 @@ class ChessGameWidget(FloatLayout):
         super().__init__(**kwargs)
 
         # --- Define panel sizes ---
-        panel_width = 200  # width (in pixels) for left (captured pieces) and right (move list) panels
-        screen_width = Window.width
-        screen_height = Window.height
+        panel_width = 400  # width (in pixels) for left (captured pieces) and right (move list) panels
+        #screen_width = Window.width
+        #screen_height = Window.height
+        screen_width = 1920
+        screen_height = 1080
 
         # The board size will be the maximum square that fits in the central area.
         board_size = min(screen_height, screen_width - 2 * panel_width)

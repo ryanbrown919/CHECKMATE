@@ -10,6 +10,8 @@ from kivy.uix.label import Label
 
 # Constant feedrate as in your original code
 FEEDRATE = 10000  # mm/min
+FONT_SIZE = 32
+
 
 class GantryControlWidget(BoxLayout):
     def __init__(self, **kwargs):
@@ -42,7 +44,7 @@ class GantryControlWidget(BoxLayout):
             if b["text"] == "":
                 left_panel.add_widget(Label())
             else:
-                btn = Button(text=b["text"], font_size=24)
+                btn = Button(text=b["text"], font_size=FONT_SIZE)
                 # Store directional values as custom properties.
                 btn.dx = b["dx"]
                 btn.dy = b["dy"]
