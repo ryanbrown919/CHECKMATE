@@ -10,6 +10,7 @@ import threading
 import time
 import sys
 from kivy.app import App
+from kivy.graphics import Color, Rectangle  # For drawing backgrounds
 
 # Check platform for compatibility
 running_on_pi = sys.platform.startswith("linux")
@@ -59,8 +60,17 @@ class NFCWidget(Screen):
         self.icon_display = Image(source="figures/white_pawn.png", size_hint=(1, 0.5))  # Default to pawn
         right_layout.add_widget(self.icon_display)
         
-        # Buttons in the bottom-left
-        button_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
+        # --- New Action Area with Unified Background ---
+        # This container will hold both the read/reconnect buttons and the write section.
+        action_area = BoxLayout(orientation='vertical', size_hint=(1, 0.5))
+        # Apply a light blue background to the action area.
+        with action_area.canvas.before:
+            Color(0.8, 0.9, 1, 1)  # light blue color (adjust as needed)
+            self.action_rect = Rectangle(pos=action_area.pos, size=action_area.size)
+        action_area.bind(pos=self.update_action_rect, size=self.update_action_rect)
+        
+        # Read and Reconnect Buttons layout
+        button_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.4))
         self.read_button = Button(text="Read NFC", size_hint=(0.5, 1), font_size=FONT_SIZE)
         self.read_button.bind(on_press=self.read_nfc)
         button_layout.add_widget(self.read_button)
@@ -69,7 +79,35 @@ class NFCWidget(Screen):
         self.reconnect_button.bind(on_press=self.connect_reader)
         button_layout.add_widget(self.reconnect_button)
         
-        right_layout.add_widget(button_layout)
+        action_area.add_widget(button_layout)
+        
+        # Write NFC Section layout
+        write_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.6))
+        # Layout for piece selection with arrows
+        piece_select_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.6))
+        self.left_arrow = Button(text="<", font_size=FONT_SIZE, size_hint=(0.2, 1))
+        self.left_arrow.bind(on_press=self.decrement_piece)
+        piece_select_layout.add_widget(self.left_arrow)
+        
+        # Current piece display for writing (initial default "0000")
+        self.current_code_value = 0  # integer from 0 to 15
+        self.write_piece_display = Image(source=NFC_TAG_MAP["0000"], size_hint=(0.6, 1))
+        piece_select_layout.add_widget(self.write_piece_display)
+        
+        self.right_arrow = Button(text=">", font_size=FONT_SIZE, size_hint=(0.2, 1))
+        self.right_arrow.bind(on_press=self.increment_piece)
+        piece_select_layout.add_widget(self.right_arrow)
+        write_layout.add_widget(piece_select_layout)
+        
+        # Button to write to the NFC tag
+        self.write_button = Button(text="Write NFC", size_hint=(1, 0.4), font_size=FONT_SIZE)
+        self.write_button.bind(on_press=self.write_nfc)
+        write_layout.add_widget(self.write_button)
+        
+        action_area.add_widget(write_layout)
+        # --- End of Action Area ---
+        
+        right_layout.add_widget(action_area)
         self.layout.add_widget(right_layout)
         
         self.add_widget(self.layout)
@@ -81,6 +119,10 @@ class NFCWidget(Screen):
         else:
             self.pn532 = None
             self.log("Running on non-Pi system. NFC scanning is simulated.")
+    
+    def update_action_rect(self, instance, value):
+        self.action_rect.pos = instance.pos
+        self.action_rect.size = instance.size
 
     def connect_reader(self, instance=None):
         if running_on_pi:
@@ -101,66 +143,22 @@ class NFCWidget(Screen):
             self.log("No NFC detected.")
             self.update_display("1111")
     
-    # def scan_nfc(self):
-    #     if self.pn532:
-    #         self.log("Waiting for an NFC tag...")
-    #         uid = self.pn532.read_passive_target(timeout=0.5)
-    #         if uid:
-    #             self.log("Tag detected, reading data...")
-    #             data = self.pn532.ntag2xx_read_block(0)  # Read data from block 4 (Modify as needed)
-    #             if data:
-    #                 tag_info = data.decode('utf-8').strip()  # Decode and clean up
-    #                 self.log(f"Tag contains: {tag_info}")
-    #                 self.update_display(tag_info)
-    #             else:
-    #                 self.log("Failed to read tag data.")
-    #         else:
-    #             self.log("No tag found.")
-    #             self.update_display("1111")
-
     def scan_nfc(self):
         if self.pn532:
             self.log("Waiting for an NFC tag...")
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
-                self.log("Tag detected, attempting to read data...")
-
-                try:
-                    # Read first block (modify block number as needed)
-                    data = self.pn532.ntag2xx_read_block(6)
-
-                    if data:
-                        tag_info = data.decode('utf-8').strip()  # Decode and clean up
-                        self.log(f"Tag contains: {tag_info}")
-
-                        # Lookup table for piece recognition
-                        # PIECE_MAP = {
-                        #     "1101": "pawn",
-                        #     "1102": "knight",
-                        #     "1103": "bishop",
-                        #     "1104": "rook",
-                        #     "1105": "queen",
-                        #     "1106": "king"
-                        # }
-
-                        piece_name = NFC_TAG_MAP.get(tag_info, "unknown")
-                        self.log(f"Recognized as: {piece_name}")
-
-                        if piece_name != "unknown":
-                            self.update_display(piece_name)
-                        else:
-                            self.log("Unknown tag content, defaulting to pawn.")
-                            self.update_display("pawn")
-
-                    else:
-                        self.log("Failed to read tag data.")
-
-                except Exception as e:
-                    self.log(f"Error reading tag: {e}")
-
+                self.log("Tag detected, reading data...")
+                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 0 (Modify as needed)
+                if data:
+                    tag_info = data.decode('utf-8').strip()  # Decode and clean up
+                    self.log(f"Tag contains: {tag_info}")
+                    self.update_display(tag_info)
+                else:
+                    self.log("Failed to read tag data.")
             else:
                 self.log("No tag found.")
-
+                self.update_display("1111")
 
     def update_display(self, tag_info):
         icon_source = NFC_TAG_MAP.get(tag_info, "pawn.png")  # Default to pawn if unknown
@@ -170,7 +168,35 @@ class NFCWidget(Screen):
 
     def log(self, message):
         self.log_label.text += f"\n{message}"
-
+    
+    # Methods for the Write NFC Section
+    def increment_piece(self, instance):
+        self.current_code_value = (self.current_code_value + 1) % 16
+        self.update_write_display()
+    
+    def decrement_piece(self, instance):
+        self.current_code_value = (self.current_code_value - 1) % 16
+        self.update_write_display()
+    
+    def update_write_display(self):
+        code_str = format(self.current_code_value, '04b')
+        icon_source = NFC_TAG_MAP.get(code_str, "figures/logo.png")
+        self.write_piece_display.source = icon_source
+        self.write_piece_display.reload()
+        self.log(f"Selected piece updated to {icon_source} for code {code_str}")
+    
+    def write_nfc(self, instance):
+        code_str = format(self.current_code_value, '04b')
+        if self.pn532:
+            try:
+                data_to_write = code_str.encode('utf-8')
+                # Write the 4-byte data to NFC tag at block 0 (modify block as needed)
+                self.pn532.ntag2xx_write_block(0, data_to_write)
+                self.log(f"Successfully wrote tag with: {code_str}")
+            except Exception as e:
+                self.log(f"Error writing tag: {e}")
+        else:
+            self.log("No NFC reader available to write tag.")
 
 class NFCApp(App):
     def build(self):
