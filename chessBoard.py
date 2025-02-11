@@ -68,7 +68,7 @@ class ChessPiece(Image):
 # ChessBoard: the widget that draws the board, pieces, and handles touches.
 # ------------------------------------------------------------
 class ChessBoard(Widget):
-    def __init__(self, board_origin, board_size, **kwargs):
+    def __init__(self, board_origin=(1920/2, 1080/2), board_size = 500, **kwargs):
         """
         board_origin: (x, y) bottom‑left corner of the board
         board_size: size in pixels (assumed square)
