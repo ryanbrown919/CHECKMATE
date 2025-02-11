@@ -13,6 +13,7 @@ from kivy.app import App
 
 # Check platform for compatibility
 running_on_pi = sys.platform.startswith("linux")
+FONT_SIZE = 32
 
 if running_on_pi:
     import board
@@ -33,6 +34,7 @@ NFC_TAG_MAP = {
     "1001": "figures/white_rook.png",
     "1010": "figures/white_queen.png",
     "1011": "figures/white_king.png",
+    "1111": "figures/logo.png",
 }
 
 class NFCWidget(Screen):
@@ -43,7 +45,7 @@ class NFCWidget(Screen):
         
         # Left side layout for the log
         log_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
-        self.log_label = Label(text="Scan Log:\n", size_hint=(1, 1), halign="left", valign="top")
+        self.log_label = Label(text="Scan Log:\n", size_hint=(1, 1), halign="left", valign="top", font_size=FONT_SIZE)
         self.log_label.bind(size=self.log_label.setter('text_size'))
         scroll_view = ScrollView()
         scroll_view.add_widget(self.log_label)
@@ -59,11 +61,11 @@ class NFCWidget(Screen):
         
         # Buttons in the bottom-left
         button_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
-        self.read_button = Button(text="Read NFC", size_hint=(0.5, 1))
+        self.read_button = Button(text="Read NFC", size_hint=(0.5, 1), font_size=FONT_SIZE)
         self.read_button.bind(on_press=self.read_nfc)
         button_layout.add_widget(self.read_button)
         
-        self.reconnect_button = Button(text="Reconnect", size_hint=(0.5, 1))
+        self.reconnect_button = Button(text="Reconnect", size_hint=(0.5, 1), font_size=FONT_SIZE)
         self.reconnect_button.bind(on_press=self.connect_reader)
         button_layout.add_widget(self.reconnect_button)
         
@@ -96,28 +98,34 @@ class NFCWidget(Screen):
         if self.pn532:
             threading.Thread(target=self.scan_nfc, daemon=True).start()
         else:
-            self.log("No NFC reader detected. Simulating a pawn scan.")
-            self.update_display("123456789")
+            self.log("No NFC detected.")
+            self.update_display("1111")
     
     def scan_nfc(self):
         if self.pn532:
             self.log("Waiting for an NFC tag...")
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
-                tag_id = ''.join(map(str, uid))
-                self.log(f"Tag scanned: {tag_id}")
-                self.update_display(tag_id)
+                self.log("Tag detected, reading data...")
+                data = self.pn532.ntag2xx_read_block(4)  # Read data from block 4 (Modify as needed)
+                if data:
+                    tag_info = data.decode('utf-8').strip()  # Decode and clean up
+                    self.log(f"Tag contains: {tag_info}")
+                    self.update_display(tag_info)
+                else:
+                    self.log("Failed to read tag data.")
             else:
                 self.log("No tag found.")
 
-    def update_display(self, tag_id):
-        icon_source = NFC_TAG_MAP.get(tag_id, "pawn.png")  # Default to pawn if unknown
+    def update_display(self, tag_info):
+        icon_source = NFC_TAG_MAP.get(tag_info, "pawn.png")  # Default to pawn if unknown
         self.icon_display.source = icon_source
         self.icon_display.reload()
         self.log(f"Updated display to {icon_source}")
 
     def log(self, message):
         self.log_label.text += f"\n{message}"
+
 
 class NFCApp(App):
     def build(self):

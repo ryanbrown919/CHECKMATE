@@ -58,17 +58,17 @@ class GantryControlWidget(BoxLayout):
         right_panel = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.3, 1))
 
         # Step size controls.
-        step_label = Label(text="Step Size (mm):", size_hint_y=0.1)
+        step_label = Label(text="Step Size (mm):", size_hint_y=0.1, font_size=FONT_SIZE)
         self.step_input = TextInput(text=str(self.jog_step), multiline=False,
-                                    input_filter='int', size_hint_y=0.1)
+                                    input_filter='int', size_hint_y=0.1, font_size=FONT_SIZE)
         self.step_input.bind(text=self.on_step_change)
 
         # Placeholder for any extra action.
-        extra_button = Button(text="Extra Action", size_hint_y=0.2)
+        extra_button = Button(text="Reconnect to GRBL Device", size_hint_y=0.2, font_size=FONT_SIZE)
         
         # Debug log area (for simulation mode).
-        debug_label = Label(text="Debug Log:", size_hint_y=0.1)
-        self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6)
+        debug_label = Label(text="Debug Log:", size_hint_y=0.1, font_size=FONT_SIZE)
+        self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6, font_size=FONT_SIZE)
 
         right_panel.add_widget(step_label)
         right_panel.add_widget(self.step_input)

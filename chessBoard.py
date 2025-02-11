@@ -14,6 +14,8 @@ from kivy.core.window import Window
 # --- Settings ---
 Window.fullscreen = True
 
+FONT_SIZE=32
+
 # --- Image File Mapping ---
 # Map chess piece symbols (as returned by chess.Piece.symbol()) to image file paths.
 piece_images = {
@@ -274,7 +276,7 @@ class ChessGameWidget(FloatLayout):
             width=panel_width,
             pos=(0, 0)
         )
-        self.captured_panel.add_widget(Label(text="Captured", size_hint_y=None, height=40, font_size='18sp'))
+        self.captured_panel.add_widget(Label(text="Captured", size_hint_y=None, height=40, font_size=FONT_SIZE))
         self.add_widget(self.captured_panel)
 
         # --- Create the move list panel (right side) ---
