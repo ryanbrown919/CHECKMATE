@@ -7,7 +7,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 
-from chessBoard import ChessBoard
+from chessBoard import ChessGameWidget
 from chessClock import ChessClockWidget 
 from gantryControl import GantryControlWidget
 from rfidScanner import NFCWidget
@@ -71,40 +71,40 @@ class BaseScreen(Screen):
 class ChessGameScreen(BaseScreen):
     def __init__(self, **kwargs):
         super(ChessGameScreen, self).__init__(**kwargs)
-        root = FloatLayout()
-        content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(ChessBoard())
-        root.add_widget(content)
+        #root = FloatLayout()
+        root = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        root.add_widget(ChessGameWidget())
+        #root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
 
 class GantryControlScreen(BaseScreen):
     def __init__(self, **kwargs):
         super(GantryControlScreen, self).__init__(**kwargs)
-        root = FloatLayout()
-        content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(GantryControlWidget)
-        root.add_widget(content)
+        #root = FloatLayout()
+        root = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        root.add_widget(GantryControlWidget())
+        
         self.add_back_button(root)
         self.add_widget(root)
 
 class ChessClockTesterScreen(BaseScreen):
     def __init__(self, **kwargs):
         super(ChessClockTesterScreen, self).__init__(**kwargs)
-        root = FloatLayout()
-        content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(ChessClockWidget())
-        root.add_widget(content)
+        #root = FloatLayout()
+        root = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        root.add_widget(ChessClockWidget())
+        #root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
 
 class RFIDScreen(BaseScreen):
     def __init__(self, **kwargs):
         super(RFIDScreen, self).__init__(**kwargs)
-        root = FloatLayout()
-        content = BoxLayout(orientation='vertical', size_hint=(1, 1), padding=[0, 60, 0, 0])
-        content.add_widget(NFCWidget)
-        root.add_widget(content)
+        #root = FloatLayout()
+        root = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        root.add_widget(NFCWidget())
+        #root.add_widget(content)
         self.add_back_button(root)
         self.add_widget(root)
 
@@ -115,7 +115,7 @@ class FullApp(App):
         sm.add_widget(ChessGameScreen(name="chess"))
         sm.add_widget(GantryControlScreen(name="gantry"))
         sm.add_widget(ChessClockTesterScreen(name="clock"))
-        sm.add_widget(RFIDScreen(name="newwidget"))
+        sm.add_widget(RFIDScreen(name="rfid"))
         return sm
 
 if __name__ == '__main__':
