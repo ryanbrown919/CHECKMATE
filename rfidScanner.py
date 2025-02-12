@@ -7,10 +7,9 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.image import Image
 from kivy.clock import Clock
 import threading
-import time
 import sys
 from kivy.app import App
-from kivy.graphics import Color, Rectangle  # For drawing backgrounds
+from kivy.graphics import Color, Rectangle
 
 # Check platform for compatibility
 running_on_pi = sys.platform.startswith("linux")
@@ -21,21 +20,24 @@ if running_on_pi:
     import busio
     from adafruit_pn532.i2c import PN532_I2C
 
-# Mock NFC Code-to-Icon Mapping
-NFC_TAG_MAP = {
-    "0000": "figures/black_pawn.png",
-    "0001": "figures/black_knight.png",
-    "0010": "figures/black_bishop.png",
-    "0011": "figures/black_rook.png",
-    "0100": "figures/black_queen.png",
-    "0101": "figures/black_king.png",
-    "0110": "figures/white_pawn.png",
-    "0111": "figures/white_knight.png",
-    "1000": "figures/white_bishop.png",
-    "1001": "figures/white_rook.png",
-    "1010": "figures/white_queen.png",
-    "1011": "figures/white_king.png",
-    "1111": "figures/logo.png",
+# Define a mapping for chess pieces using integer codes.
+# 0-5: Black Pawn, Knight, Bishop, Rook, Queen, King
+# 6-11: White Pawn, Knight, Bishop, Rook, Queen, King
+# Code 15 is used as a default (logo) if needed.
+PIECE_MAP = {
+    0: "figures/black_pawn.png",
+    1: "figures/black_knight.png",
+    2: "figures/black_bishop.png",
+    3: "figures/black_rook.png",
+    4: "figures/black_queen.png",
+    5: "figures/black_king.png",
+    6: "figures/white_pawn.png",
+    7: "figures/white_knight.png",
+    8: "figures/white_bishop.png",
+    9: "figures/white_rook.png",
+    10: "figures/white_queen.png",
+    11: "figures/white_king.png",
+    15: "figures/logo.png",
 }
 
 class NFCWidget(Screen):
@@ -46,7 +48,8 @@ class NFCWidget(Screen):
         
         # Left side layout for the log
         log_layout = BoxLayout(orientation='vertical', size_hint=(0.4, 1))
-        self.log_label = Label(text="Scan Log:\n", size_hint=(1, 1), halign="left", valign="top", font_size=FONT_SIZE)
+        self.log_label = Label(text="Scan Log:\n", size_hint=(1, 1),
+                               halign="left", valign="top", font_size=FONT_SIZE)
         self.log_label.bind(size=self.log_label.setter('text_size'))
         scroll_view = ScrollView()
         scroll_view.add_widget(self.log_label)
@@ -56,14 +59,14 @@ class NFCWidget(Screen):
         # Right side layout
         right_layout = BoxLayout(orientation='vertical', size_hint=(0.6, 1))
         
-        # Icon display in the top-right
-        self.icon_display = Image(source="figures/white_pawn.png", size_hint=(1, 0.5))  # Default to pawn
+        # Icon display in the top-right (for displaying the piece read from the tag)
+        self.icon_display = Image(source=PIECE_MAP[15], size_hint=(1, 0.5))
         right_layout.add_widget(self.icon_display)
         
-        # --- New Action Area with Unified Background ---
+        # Unified Action Area with a light blue background
         action_area = BoxLayout(orientation='vertical', size_hint=(1, 0.5))
         with action_area.canvas.before:
-            Color(0.8, 0.9, 1, 1)  # light blue color (adjust as needed)
+            Color(0.8, 0.9, 1, 1)  # Light blue color
             self.action_rect = Rectangle(pos=action_area.pos, size=action_area.size)
         action_area.bind(pos=self.update_action_rect, size=self.update_action_rect)
         
@@ -85,8 +88,10 @@ class NFCWidget(Screen):
         self.left_arrow.bind(on_press=self.decrement_piece)
         piece_select_layout.add_widget(self.left_arrow)
         
-        self.current_code_value = 0  # integer from 0 to 15
-        self.write_piece_display = Image(source=NFC_TAG_MAP["0000"], size_hint=(0.6, 1))
+        # Current piece to write (using integer codes 0 to 11)
+        self.current_piece_code = 0  
+        self.write_piece_display = Image(source=PIECE_MAP[self.current_piece_code],
+                                         size_hint=(0.6, 1))
         piece_select_layout.add_widget(self.write_piece_display)
         
         self.right_arrow = Button(text=">", font_size=FONT_SIZE, size_hint=(0.2, 1))
@@ -99,8 +104,6 @@ class NFCWidget(Screen):
         write_layout.add_widget(self.write_button)
         
         action_area.add_widget(write_layout)
-        # --- End of Action Area ---
-        
         right_layout.add_widget(action_area)
         self.layout.add_widget(right_layout)
         
@@ -113,7 +116,7 @@ class NFCWidget(Screen):
         else:
             self.pn532 = None
             self.log("Running on non-Pi system. NFC scanning is simulated.")
-    
+
     def update_action_rect(self, instance, value):
         self.action_rect.pos = instance.pos
         self.action_rect.size = instance.size
@@ -135,66 +138,59 @@ class NFCWidget(Screen):
             threading.Thread(target=self.scan_nfc, daemon=True).start()
         else:
             self.log("No NFC detected.")
-            self.update_display("1111")
-    
+            self.update_display(15)  # Default to logo
+
     def scan_nfc(self):
         if self.pn532:
             self.log("Waiting for an NFC tag...")
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
                 self.log("Tag detected, reading data...")
-                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 0 (modify as needed)
-                if data:
-                    # Limit to the first 4 bytes
-                    data = data[:4]
-                    # Check that every byte is either ASCII '0' (48) or '1' (49)
-                    if all(b in (48, 49) for b in data):
-                        tag_info = data.decode('utf-8').strip()
-                    else:
-                        # If unexpected bytes are found, silently default to "1111"
-                        tag_info = "1111"
-                    self.log(f"Tag contains: {tag_info}")
-                    self.update_display(tag_info)
+                data = self.pn532.ntag2xx_read_block(0)  # Read block 0 (4 bytes)
+                if data and len(data) >= 1:
+                    # Use the first byte as the piece code
+                    piece_code = data[0]
+                    self.log(f"Tag contains piece code: {piece_code}")
+                    self.update_display(piece_code)
                 else:
                     self.log("Failed to read tag data.")
             else:
                 self.log("No tag found.")
-                self.update_display("1111")
-
-    def update_display(self, tag_info):
-        # Use default icon if tag_info isn't a valid key in the mapping.
-        icon_source = NFC_TAG_MAP.get(tag_info, NFC_TAG_MAP["1111"])
+                self.update_display(15)
+    
+    def update_display(self, piece_code):
+        # Update the main display icon based on the piece code.
+        icon_source = PIECE_MAP.get(piece_code, PIECE_MAP[15])
         self.icon_display.source = icon_source
         self.icon_display.reload()
-        self.log(f"Updated display to {icon_source}")
+        self.log(f"Updated display to {icon_source} for piece code {piece_code}")
 
     def log(self, message):
         self.log_label.text += f"\n{message}"
     
-    # Methods for the Write NFC Section
+    # Methods for the Write NFC Section.
     def increment_piece(self, instance):
-        self.current_code_value = (self.current_code_value + 1) % 16
+        # Cycle through chess piece types (0 to 11).
+        self.current_piece_code = (self.current_piece_code + 1) % 12
         self.update_write_display()
     
     def decrement_piece(self, instance):
-        self.current_code_value = (self.current_code_value - 1) % 16
+        self.current_piece_code = (self.current_piece_code - 1) % 12
         self.update_write_display()
     
     def update_write_display(self):
-        code_str = format(self.current_code_value, '04b')
-        icon_source = NFC_TAG_MAP.get(code_str, NFC_TAG_MAP["1111"])
+        icon_source = PIECE_MAP.get(self.current_piece_code, PIECE_MAP[15])
         self.write_piece_display.source = icon_source
         self.write_piece_display.reload()
-        self.log(f"Selected piece updated to {icon_source} for code {code_str}")
+        self.log(f"Selected piece updated to {icon_source} for piece code {self.current_piece_code}")
     
     def write_nfc(self, instance):
-        code_str = format(self.current_code_value, '04b')
         if self.pn532:
             try:
-                data_to_write = code_str.encode('utf-8')
-                # Write the 4-byte data to NFC tag at block 0 (modify block as needed)
+                # Pack the current piece code as one byte and pad with three zero bytes.
+                data_to_write = bytes([self.current_piece_code, 0, 0, 0])
                 self.pn532.ntag2xx_write_block(0, data_to_write)
-                self.log(f"Successfully wrote tag with: {code_str}")
+                self.log(f"Successfully wrote piece code: {self.current_piece_code}")
             except Exception as e:
                 self.log(f"Error writing tag: {e}")
         else:
