@@ -43,7 +43,7 @@ class GantryControlWidget(BoxLayout):
         ]
         for b in buttons:
             if b["text"] == "":
-                left_panel.add_widget(Label())
+                left_panel.add_widget(Label(font_size=24))
             else:
                 btn = Button(text=b["text"], font_size=24)
                 btn.dx = b["dx"]
@@ -58,7 +58,7 @@ class GantryControlWidget(BoxLayout):
         right_panel = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.3, 1))
 
         # Step size controls.
-        step_label = Label(text="Step Size (mm):", size_hint_y=0.1)
+        step_label = Label(text="Step Size (mm):", size_hint_y=0.1, font_size=24)
         self.step_input = TextInput(text=str(self.jog_step), multiline=False,
                                     input_filter='int', size_hint_y=0.1)
         self.step_input.bind(text=self.on_step_change)
@@ -68,8 +68,8 @@ class GantryControlWidget(BoxLayout):
         reconnect_button.bind(on_release=self.on_reconnect)
 
         # Debug log area (visible in simulation mode or upon errors).
-        debug_label = Label(text="Debug Log:", size_hint_y=0.1)
-        self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6)
+        debug_label = Label(text="Debug Log:", size_hint_y=0.1, font_size=32)
+        self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6, font_size=24)
 
         right_panel.add_widget(step_label)
         right_panel.add_widget(self.step_input)
