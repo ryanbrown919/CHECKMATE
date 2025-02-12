@@ -24,7 +24,7 @@ class GantryControlWidget(BoxLayout):
         self.jog_step = 1
         self.simulate = False  # When True, widget is in simulation mode.
         self.serial_lock = threading.Lock()
-        self.handling_limit_switch = False  # Flag to prevent recursive handling
+        self.handling_limit_switch = False  # Prevent re-entrant handling
 
         # ---------------------
         # LEFT PANEL: Directional Buttons
@@ -115,8 +115,7 @@ class GantryControlWidget(BoxLayout):
         Send a G-code command to GRBL.
         In simulation mode, the command is logged to the debug log.
         Errors during write/read are caught and handled.
-        Additionally, if an ALARM response is detected (indicating a limit switch),
-        automatically trigger safe recovery.
+        If an ALARM response (limit switch) is detected, safe recovery is scheduled.
         """
         print(f"Sending: {command}")
         if self.simulate:
@@ -133,42 +132,48 @@ class GantryControlWidget(BoxLayout):
                 self.handle_serial_error(e)
                 return
 
-            try:
-                while True:
-                    response = self.ser.readline().decode('utf-8', errors='replace').strip()
-                    if response:
-                        print(f"GRBL Response: {response}")
-                        # If an alarm is received and we're not already handling one,
-                        # assume a limit switch has been triggered.
-                        if not self.handling_limit_switch and response.startswith("ALARM:"):
-                            self.log_debug(f"Limit switch triggered: {response}")
-                            self.handle_limit_switch(response)
-                            break
+            # Wait for a response with a timeout so we don't block forever.
+            start_time = time.time()
+            timeout = 5  # seconds
+            while True:
+                if time.time() - start_time > timeout:
+                    self.log_debug("Timeout waiting for GRBL response.")
+                    break
+                response = self.ser.readline().decode('utf-8', errors='replace').strip()
+                if response:
+                    print(f"GRBL Response: {response}")
+                    if response.startswith("ALARM:"):
+                        self.log_debug(f"Limit switch triggered: {response}")
+                        # Schedule safe recovery asynchronously.
+                        Clock.schedule_once(lambda dt: self.handle_limit_switch(response), 0)
+                        break
                     if response == "ok":
                         break
-            except Exception as e:
-                error_msg = f"Error reading response: {e}"
-                print(error_msg)
-                self.log_debug(error_msg)
-                self.handle_serial_error(e)
-                return
 
     def handle_limit_switch(self, alarm_msg):
         """
         Automatically handle a triggered limit switch by resetting the alarm
         and sending a safe jog command to move the carriage away from the end stop.
+        This function is scheduled asynchronously so it runs outside the serial lock.
         """
+        if self.handling_limit_switch:
+            return  # Already handling one.
         self.handling_limit_switch = True
         self.log_debug(f"Handling limit switch alarm: {alarm_msg}")
 
-        # Reset alarms (GRBL requires a $X to clear an alarm state)
-        self.send_gcode("$X")
-        # Define a safe move (adjust safe_distance and axis as needed)
-        safe_distance = 5  # mm
-        safe_command = f"$J=G21G91X{safe_distance}Y{safe_distance}F{FEEDRATE}"
-        self.log_debug(f"Sending safe jog command: {safe_command}")
-        self.send_gcode(safe_command)
-        self.handling_limit_switch = False
+        # Define a helper function to perform safe recovery.
+        def safe_recovery(dt):
+            # First, clear the alarm state.
+            self.send_gcode("$X")
+            # Define a safe move away from the limit switch.
+            safe_distance = 5  # mm (adjust as needed)
+            safe_command = f"$J=G21G91X{safe_distance}Y{safe_distance}F{FEEDRATE}"
+            self.log_debug(f"Sending safe jog command: {safe_command}")
+            self.send_gcode(safe_command)
+            self.handling_limit_switch = False
+
+        # Schedule safe recovery immediately (or after a brief pause if desired).
+        Clock.schedule_once(safe_recovery, 0)
 
     def handle_serial_error(self, error):
         """
@@ -227,8 +232,6 @@ class GantryControlWidget(BoxLayout):
     def on_reconnect(self, instance):
         """
         Manually trigger a reconnect to the GRBL device.
-        This can be useful if a flag is raised (e.g., a limit switch is triggered)
-        and you need to reinitialize the connection.
         """
         self.log_debug("Manual reconnect triggered.")
         self.connect_to_grbl()
@@ -248,6 +251,7 @@ if __name__ == '__main__':
             return root
 
     TestApp().run()
+
 
 
 
