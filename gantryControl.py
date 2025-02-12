@@ -95,7 +95,7 @@ class GantryControlWidget(BoxLayout):
             return
 
         try:
-            self.ser = serial.Serial(grbl_port, 115200, timeout=1)
+            self.ser = serial.Serial(grbl_port, 9600, timeout=1)
             time.sleep(2)  # Allow GRBL to initialize.
             self.send_gcode("$X")  # Clear alarms.
             print(f"Connected to GRBL on {grbl_port}")
