@@ -62,7 +62,6 @@ class NFCWidget(Screen):
         
         # --- New Action Area with Unified Background ---
         action_area = BoxLayout(orientation='vertical', size_hint=(1, 0.5))
-        # Apply a light blue background to the action area.
         with action_area.canvas.before:
             Color(0.8, 0.9, 1, 1)  # light blue color (adjust as needed)
             self.action_rect = Rectangle(pos=action_area.pos, size=action_area.size)
@@ -77,18 +76,15 @@ class NFCWidget(Screen):
         self.reconnect_button = Button(text="Reconnect", size_hint=(0.5, 1), font_size=FONT_SIZE)
         self.reconnect_button.bind(on_press=self.connect_reader)
         button_layout.add_widget(self.reconnect_button)
-        
         action_area.add_widget(button_layout)
         
         # Write NFC Section layout
         write_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.6))
-        # Layout for piece selection with arrows
         piece_select_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.6))
         self.left_arrow = Button(text="<", font_size=FONT_SIZE, size_hint=(0.2, 1))
         self.left_arrow.bind(on_press=self.decrement_piece)
         piece_select_layout.add_widget(self.left_arrow)
         
-        # Current piece display for writing (initial default "0000")
         self.current_code_value = 0  # integer from 0 to 15
         self.write_piece_display = Image(source=NFC_TAG_MAP["0000"], size_hint=(0.6, 1))
         piece_select_layout.add_widget(self.write_piece_display)
@@ -98,7 +94,6 @@ class NFCWidget(Screen):
         piece_select_layout.add_widget(self.right_arrow)
         write_layout.add_widget(piece_select_layout)
         
-        # Button to write to the NFC tag
         self.write_button = Button(text="Write NFC", size_hint=(1, 0.4), font_size=FONT_SIZE)
         self.write_button.bind(on_press=self.write_nfc)
         write_layout.add_widget(self.write_button)
@@ -150,13 +145,13 @@ class NFCWidget(Screen):
                 self.log("Tag detected, reading data...")
                 data = self.pn532.ntag2xx_read_block(0)  # Read data from block 0 (modify as needed)
                 if data:
-                    # Limit to the expected 4 bytes
+                    # Limit to the first 4 bytes
                     data = data[:4]
-                    try:
+                    # Check that every byte is either ASCII '0' (48) or '1' (49)
+                    if all(b in (48, 49) for b in data):
                         tag_info = data.decode('utf-8').strip()
-                    except UnicodeDecodeError:
-                        # Log the error and default to a known value
-                        self.log("Error decoding tag data with UTF-8; defaulting to unknown tag.")
+                    else:
+                        # If unexpected bytes are found, silently default to "1111"
                         tag_info = "1111"
                     self.log(f"Tag contains: {tag_info}")
                     self.update_display(tag_info)
