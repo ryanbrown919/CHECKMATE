@@ -31,15 +31,15 @@ class GantryControlWidget(BoxLayout):
         left_panel = GridLayout(cols=3, rows=3, spacing=5, size_hint=(0.7, 1))
         # Define directional buttons with text indicating x/y movements.
         buttons = [
-            {"text": "X- Y-", "dx": -1, "dy": 1},
-            {"text": "Y-",   "dx":  0, "dy": 1},
-            {"text": "X+ Y-", "dx":  1, "dy": 1},
+            {"text": "X- Y-", "dx": -1, "dy": -1},
+            {"text": "Y-",   "dx":  0, "dy": -1},
+            {"text": "X+ Y-", "dx":  1, "dy": -1},
             {"text": "X-",   "dx": -1, "dy":  0},
             {"text": "",     "dx":  0, "dy":  0},  # Center is left blank.
             {"text": "X+",   "dx":  1, "dy":  0},
-            {"text": "X- Y+", "dx": -1, "dy":  -1},
-            {"text": "Y+",   "dx":  0, "dy":  -1},
-            {"text": "X+ Y+", "dx":  1, "dy":  -1}
+            {"text": "X- Y+", "dx": -1, "dy":  1},
+            {"text": "Y+",   "dx":  0, "dy":  1},
+            {"text": "X+ Y+", "dx":  1, "dy":  1}
             
         ]
         for b in buttons:
