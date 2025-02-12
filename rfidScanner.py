@@ -61,7 +61,6 @@ class NFCWidget(Screen):
         right_layout.add_widget(self.icon_display)
         
         # --- New Action Area with Unified Background ---
-        # This container will hold both the read/reconnect buttons and the write section.
         action_area = BoxLayout(orientation='vertical', size_hint=(1, 0.5))
         # Apply a light blue background to the action area.
         with action_area.canvas.before:
@@ -149,9 +148,16 @@ class NFCWidget(Screen):
             uid = self.pn532.read_passive_target(timeout=0.5)
             if uid:
                 self.log("Tag detected, reading data...")
-                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 0 (Modify as needed)
+                data = self.pn532.ntag2xx_read_block(0)  # Read data from block 0 (modify as needed)
                 if data:
-                    tag_info = data.decode('utf-8').strip()  # Decode and clean up
+                    # Limit to the expected 4 bytes
+                    data = data[:4]
+                    try:
+                        tag_info = data.decode('utf-8').strip()
+                    except UnicodeDecodeError:
+                        # Log the error and default to a known value
+                        self.log("Error decoding tag data with UTF-8; defaulting to unknown tag.")
+                        tag_info = "1111"
                     self.log(f"Tag contains: {tag_info}")
                     self.update_display(tag_info)
                 else:
@@ -161,7 +167,8 @@ class NFCWidget(Screen):
                 self.update_display("1111")
 
     def update_display(self, tag_info):
-        icon_source = NFC_TAG_MAP.get(tag_info, "pawn.png")  # Default to pawn if unknown
+        # Use default icon if tag_info isn't a valid key in the mapping.
+        icon_source = NFC_TAG_MAP.get(tag_info, NFC_TAG_MAP["1111"])
         self.icon_display.source = icon_source
         self.icon_display.reload()
         self.log(f"Updated display to {icon_source}")
@@ -180,7 +187,7 @@ class NFCWidget(Screen):
     
     def update_write_display(self):
         code_str = format(self.current_code_value, '04b')
-        icon_source = NFC_TAG_MAP.get(code_str, "figures/logo.png")
+        icon_source = NFC_TAG_MAP.get(code_str, NFC_TAG_MAP["1111"])
         self.write_piece_display.source = icon_source
         self.write_piece_display.reload()
         self.log(f"Selected piece updated to {icon_source} for code {code_str}")
