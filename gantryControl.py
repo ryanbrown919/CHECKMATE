@@ -138,6 +138,11 @@ class GantryControlWidget(BoxLayout):
                         print(f"GRBL Response: {response}")
                     if response == "ok":
                         break
+                    elif response == "ALARM:1":
+                        self.log_debug("ALARM:1 - Resetting GRBL")
+                        self.send_gcode("$X")
+                        break   
+                    
             except Exception as e:
                 error_msg = f"Error reading response: {e}"
                 print(error_msg)
