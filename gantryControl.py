@@ -188,6 +188,7 @@ class GantryControlWidget(BoxLayout):
         if dy:
             cmd += f"Y{dy * step}"
         cmd += f"F{FEEDRATE}"
+        self.send_gcode("$X") 
         self.send_gcode(cmd)
 
     def on_step_change(self, instance, value):
