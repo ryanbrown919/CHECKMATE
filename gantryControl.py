@@ -43,7 +43,7 @@ class GantryControlWidget(BoxLayout):
         ]
         for b in buttons:
             if b["text"] == "":
-                left_panel.add_widget(Label(font_size=24))
+                left_panel.add_widget(Label(font_size=32))
             else:
                 btn = Button(text=b["text"], font_size=24)
                 btn.dx = b["dx"]
@@ -64,7 +64,7 @@ class GantryControlWidget(BoxLayout):
         self.step_input.bind(text=self.on_step_change)
 
         # Reconnect button (extra action) to manually reconnect to the device.
-        reconnect_button = Button(text="Reconnect", size_hint_y=0.2)
+        reconnect_button = Button(text="Reconnect", size_hint_y=0.2, font_size=32)
         reconnect_button.bind(on_release=self.on_reconnect)
 
         # Debug log area (visible in simulation mode or upon errors).
