@@ -21,7 +21,7 @@ class GantryControlWidget(BoxLayout):
         self.padding = 10
 
         # Internal state variables
-        self.jog_step = 3
+        self.jog_step = 4
         self.simulate = False  # When True, widget is in simulation mode.
         self.serial_lock = threading.Lock()
 
