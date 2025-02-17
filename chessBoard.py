@@ -8,6 +8,7 @@ from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.textinput import TextInput
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 
@@ -70,12 +71,13 @@ class ChessPiece(Image):
 # ChessBoard: the widget that draws the board, pieces, and handles touches.
 # ------------------------------------------------------------
 class ChessBoard(Widget):
-    def __init__(self, board_origin=(1920/2, 1080/2), board_size = 1000, **kwargs):
+    def __init__(self, board_origin=(1920/2, 1080/2), board_size=1000, **kwargs):
         """
         board_origin: (x, y) bottom‑left corner of the board
         board_size: size in pixels (assumed square)
         """
         super().__init__(**kwargs)
+
         self.board_origin = board_origin
         self.board_size = board_size
         self.square_size = board_size / 8.0
@@ -109,6 +111,33 @@ class ChessBoard(Widget):
 
         # Place piece widgets on top.
         self.add_piece_widgets()
+
+        # Add row and column labels
+        self.add_labels()
+
+    def add_labels(self):
+        """Add labels for rows and columns around the board."""
+        # Column labels (a-h)
+        for col in range(8):
+            label = Label(
+                text=chr(ord('a') + col),
+                size_hint=(None, None),
+                size=(self.square_size, self.square_size),
+                pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
+                     self.board_origin[1] - self.square_size)
+            )
+            self.add_widget(label)
+
+        # Row labels (1-8)
+        for row in range(8):
+            label = Label(
+                text=str(row + 1),
+                size_hint=(None, None),
+                size=(self.square_size, self.square_size),
+                pos=(self.board_origin[0] - self.square_size,
+                     self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
+            )
+            self.add_widget(label)
 
     def add_piece_widgets(self):
         """Remove any existing ChessPiece widgets and add one for every piece on the board."""
@@ -214,6 +243,7 @@ class ChessBoard(Widget):
         if self.selected_piece and dest_sq is not None:
             for move in self.legal_moves:
                 if move.to_square == dest_sq:
+                    print(f"Executing move: {move}")
                     self.execute_move(move)
                     return True
 
@@ -255,18 +285,17 @@ class ChessGameWidget(FloatLayout):
         super().__init__(**kwargs)
 
         # --- Define panel sizes ---
-        panel_width = 400  # width (in pixels) for left (captured pieces) and right (move list) panels
-        #screen_width = Window.width
-        #screen_height = Window.height
+        panel_width = 200  # width (in pixels) for left (captured pieces) and right (move list) panels
         screen_width = 1920
         screen_height = 1080
 
         # The board size will be the maximum square that fits in the central area.
         board_size = min(screen_height, screen_width - 2 * panel_width)
+        self.square_size = board_size / 8
 
-        # Center the board in the area between the panels.
-        board_origin_x = panel_width + ((screen_width - 2 * panel_width - board_size) / 2)
-        board_origin_y = (screen_height - board_size) / 2
+        # Center the board in the area between the panels, leaving space for labels.
+        board_origin_x = panel_width + ((screen_width - 2 * panel_width - board_size) / 2) + self.square_size
+        board_origin_y = ((screen_height - board_size) / 2) + self.square_size
         board_origin = (board_origin_x, board_origin_y)
 
         # --- Create the captured pieces panel (left side) ---
@@ -298,6 +327,35 @@ class ChessGameWidget(FloatLayout):
         self.chess_board.captured_panel = self.captured_panel
         self.chess_board.move_list_container = self.move_list_container
         self.add_widget(self.chess_board)
+
+        # --- Create the move input box ---
+        self.move_input = TextInput(
+            size_hint=(None, None),
+            size=(panel_width, 40),
+            pos=(screen_width - panel_width, 0),
+            multiline=False
+        )
+        self.move_input.bind(on_text_validate=self.on_move_entered)
+        self.add_widget(self.move_input)
+
+    def on_move_entered(self, instance):
+        move_str = instance.text
+        try:
+            move = chess.Move.from_uci(move_str)
+            if move in self.chess_board.game_board.legal_moves:
+                self.chess_board.execute_move(move)
+                instance.text = ""
+            else:
+                self.add_debug_message(f"Illegal move: {move_str}")
+                instance.text = ""
+        except ValueError:
+            self.add_debug_message(f"Invalid move format: {move_str}")
+            instance.text = ""
+
+    def add_debug_message(self, message):
+        """Add a debug message to the move list container."""
+        label = Label(text=message, size_hint_y=None, height=40)
+        self.move_list_container.add_widget(label)
 
 
 # ------------------------------------------------------------
