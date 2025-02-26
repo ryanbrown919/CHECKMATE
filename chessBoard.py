@@ -341,10 +341,27 @@ class ChessGameWidget(FloatLayout):
     def on_move_entered(self, instance):
         move_str = instance.text
         try:
+            # Try to interpret the move as a UCI move
             move = chess.Move.from_uci(move_str)
+            if move not in self.chess_board.game_board.legal_moves:
+                # If the move is not legal in UCI format, try interpreting it as a SAN move
+                move = self.chess_board.game_board.parse_san(move_str)
+            
             if move in self.chess_board.game_board.legal_moves:
-                self.chess_board.execute_move(move)
-                instance.text = ""
+                # Select the piece at the starting square
+                from_square = move.from_square
+                self.chess_board.selected_piece = None
+                for child in self.chess_board.children:
+                    if isinstance(child, ChessPiece) and child.chess_square == from_square:
+                        self.chess_board.selected_piece = child
+                        break
+
+                if self.chess_board.selected_piece:
+                    self.chess_board.execute_move(move)
+                    instance.text = ""
+                else:
+                    self.add_debug_message(f"No piece at starting square: {move_str}")
+                    instance.text = ""
             else:
                 self.add_debug_message(f"Illegal move: {move_str}")
                 instance.text = ""
