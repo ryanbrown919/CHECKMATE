@@ -9,16 +9,16 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 
 # --- Settings ---
 Window.fullscreen = True
 
-FONT_SIZE=32
+FONT_SIZE = 32
 
 # --- Image File Mapping ---
-# Map chess piece symbols (as returned by chess.Piece.symbol()) to image file paths.
 piece_images = {
     'P': 'figures/white_pawn.png',
     'R': 'figures/white_rook.png',
@@ -57,9 +57,6 @@ class ChessPiece(Image):
         self.update_position()
 
     def update_position(self):
-        """Set this widget’s pos based on its chess_square.
-           (Files 0-7 from left to right; ranks 0-7 from bottom to top.)
-        """
         file = chess.square_file(self.chess_square)
         rank = chess.square_rank(self.chess_square)
         x = self.board_origin[0] + file * self.square_size
@@ -82,23 +79,18 @@ class ChessBoard(Widget):
         self.board_size = board_size
         self.square_size = board_size / 8.0
 
-        # These will be set later by the parent container:
         self.captured_panel = None      # widget where captured pieces are displayed (left side)
         self.move_list_container = None # BoxLayout inside the ScrollView for moves
 
-        # For highlighting legal moves
         self.highlight_rects = []
         self.legal_moves = []
         self.selected_piece = None
 
-        # Create the python‑chess board with the standard starting position.
         self.game_board = chess.Board()
 
-        # Draw the board background (use canvas.before so it appears behind pieces)
         with self.canvas.before:
             for row in range(8):
                 for col in range(8):
-                    # Standard chessboard coloring: dark and light squares.
                     if (col + row) % 2 == 0:
                         Color(0.2, 0.2, 0.2, 1)
                     else:
@@ -109,15 +101,10 @@ class ChessBoard(Widget):
                         size=(self.square_size, self.square_size)
                     )
 
-        # Place piece widgets on top.
         self.add_piece_widgets()
-
-        # Add row and column labels
         self.add_labels()
 
     def add_labels(self):
-        """Add labels for rows and columns around the board."""
-        # Column labels (a-h)
         for col in range(8):
             label = Label(
                 text=chr(ord('a') + col),
@@ -128,7 +115,6 @@ class ChessBoard(Widget):
             )
             self.add_widget(label)
 
-        # Row labels (1-8)
         for row in range(8):
             label = Label(
                 text=str(row + 1),
@@ -140,7 +126,6 @@ class ChessBoard(Widget):
             self.add_widget(label)
 
     def add_piece_widgets(self):
-        """Remove any existing ChessPiece widgets and add one for every piece on the board."""
         for child in list(self.children):
             if isinstance(child, ChessPiece):
                 self.remove_widget(child)
@@ -148,7 +133,7 @@ class ChessBoard(Widget):
         for sq in chess.SQUARES:
             piece = self.game_board.piece_at(sq)
             if piece is not None:
-                symbol = piece.symbol()  # e.g., 'P' or 'k'
+                symbol = piece.symbol()
                 if symbol in piece_images:
                     source = piece_images[symbol]
                     piece_widget = ChessPiece(
@@ -161,7 +146,6 @@ class ChessBoard(Widget):
                     self.add_widget(piece_widget)
 
     def ui_to_chess_square(self, x, y):
-        """Convert a UI (x, y) coordinate to a chess square (0‑63) if inside the board."""
         bx, by = self.board_origin
         if not (bx <= x <= bx + self.board_size and by <= y <= by + self.board_size):
             return None
@@ -170,7 +154,6 @@ class ChessBoard(Widget):
         return chess.square(col, row)
 
     def chess_square_to_ui_pos(self, sq):
-        """Convert a chess square to a UI (x, y) position."""
         file = chess.square_file(sq)
         rank = chess.square_rank(sq)
         x = self.board_origin[0] + file * self.square_size
@@ -178,9 +161,6 @@ class ChessBoard(Widget):
         return (x, y)
 
     def highlight_legal_moves(self, piece_widget):
-        """Highlight all legal moves for the given piece using python‑chess.
-           Capture moves are highlighted in red; non-captures in green.
-        """
         self.clear_highlights()
         from_sq = piece_widget.chess_square
         self.legal_moves = [move for move in self.game_board.legal_moves if move.from_square == from_sq]
@@ -188,33 +168,28 @@ class ChessBoard(Widget):
             for move in self.legal_moves:
                 pos = self.chess_square_to_ui_pos(move.to_square)
                 if self.game_board.is_capture(move):
-                    Color(1, 0, 0, 0.5)  # red for captures
+                    Color(1, 0, 0, 0.5)
                 else:
-                    Color(0, 1, 0, 0.5)  # green for non-captures
+                    Color(0, 1, 0, 0.5)
                 rect = Rectangle(pos=pos, size=(self.square_size, self.square_size))
                 self.highlight_rects.append(rect)
 
     def clear_highlights(self):
-        """Remove any highlighted rectangles from the board."""
         for rect in self.highlight_rects:
             self.canvas.remove(rect)
         self.highlight_rects = []
 
     def execute_move(self, legal_move):
-        """Push the move, update piece positions, handle captures, and update the move list."""
         san_move = self.game_board.san(legal_move)
         self.game_board.push(legal_move)
-        # Update the moving piece’s square and position.
         self.selected_piece.chess_square = legal_move.to_square
         self.selected_piece.update_position()
 
-        # If a capture occurred, remove the captured piece widget.
         for child in list(self.children):
             if (isinstance(child, ChessPiece) and child is not self.selected_piece and
                 child.chess_square == legal_move.to_square):
                 self.remove_widget(child)
                 if self.captured_panel:
-                    # Optionally, scale the captured piece down.
                     child.size_hint = (None, None)
                     scale = 0.8
                     child.size = (self.square_size * scale, self.square_size * scale)
@@ -224,7 +199,6 @@ class ChessBoard(Widget):
         self.selected_piece.selected = False
         self.selected_piece = None
         self.legal_moves = []
-        # Refresh piece widgets (in case of promotions, etc.).
         self.add_piece_widgets()
         if self.move_list_container:
             label = Label(text=san_move, size_hint_y=None, height=30, font_size=24)
@@ -232,14 +206,11 @@ class ChessBoard(Widget):
 
     def on_touch_down(self, touch):
         bx, by = self.board_origin
-        # Only consider touches inside the board area.
         if not (bx <= touch.x <= bx + self.board_size and by <= touch.y <= by + self.board_size):
             return False
 
-        # First, get the destination square regardless of widgets.
         dest_sq = self.ui_to_chess_square(touch.x, touch.y)
 
-        # If a piece is already selected and the touched square is one of its legal move destinations, execute the move.
         if self.selected_piece and dest_sq is not None:
             for move in self.legal_moves:
                 if move.to_square == dest_sq:
@@ -247,7 +218,6 @@ class ChessBoard(Widget):
                     self.execute_move(move)
                     return True
 
-        # Otherwise, check if a piece was touched.
         touched_piece = None
         for child in self.children:
             if isinstance(child, ChessPiece) and child.collide_point(touch.x, touch.y):
@@ -255,7 +225,6 @@ class ChessBoard(Widget):
                 break
 
         if touched_piece:
-            # If the same piece is touched twice, deselect it.
             if self.selected_piece == touched_piece:
                 self.selected_piece.selected = False
                 self.selected_piece = None
@@ -267,7 +236,6 @@ class ChessBoard(Widget):
                 self.highlight_legal_moves(touched_piece)
             return True
 
-        # If no piece is touched and a piece is selected, deselect it.
         if self.selected_piece:
             self.selected_piece.selected = False
             self.selected_piece = None
@@ -275,40 +243,40 @@ class ChessBoard(Widget):
             return True
 
         return False
-    
+
     def reset(self):
         self.game_board.reset()
         self.add_piece_widgets()
-    
-    def fen_to_board(self, fen):
-        self.game_board.reset()
-        self.game_board = chess.Board(fen)
-        self.add_piece_widgets()
 
+    def fen_to_board(self, fen):
+        try:
+            # Create a new board with the given FEN string.
+            self.game_board = chess.Board(fen)
+            self.add_piece_widgets()
+        except Exception as e:
+            raise ValueError("Invalid FEN string") from e
 
 
 # ------------------------------------------------------------
-# ChessGameWidget: the root widget that arranges the board, move list, and captured pieces.
+# ChessGameWidget: the root widget that arranges the board, move list, captured pieces, and FEN controls.
 # ------------------------------------------------------------
 class ChessGameWidget(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         # --- Define panel sizes ---
-        panel_width = 200  # width (in pixels) for left (captured pieces) and right (move list) panels
+        panel_width = 200  # for captured pieces (left) and move list (right)
         screen_width = 1920
         screen_height = 1080
 
-        # The board size will be the maximum square that fits in the central area.
         board_size = min(screen_height, screen_width - 2 * panel_width)
         self.square_size = board_size / 8
 
-        # Center the board in the area between the panels, leaving space for labels.
         board_origin_x = panel_width + ((screen_width - 2 * panel_width - board_size) / 2) + self.square_size
         board_origin_y = ((screen_height - board_size) / 2) + self.square_size
         board_origin = (board_origin_x, board_origin_y)
 
-        # --- Create the captured pieces panel (left side) ---
+        # --- Captured pieces panel (left side) ---
         self.captured_panel = BoxLayout(
             orientation='vertical',
             size_hint=(None, 1),
@@ -318,7 +286,7 @@ class ChessGameWidget(FloatLayout):
         self.captured_panel.add_widget(Label(text="Captured", size_hint_y=None, height=40, font_size=FONT_SIZE))
         self.add_widget(self.captured_panel)
 
-        # --- Create the move list panel (right side) ---
+        # --- Move list panel (right side) ---
         move_list_scroll = ScrollView(
             size_hint=(None, 1),
             width=panel_width,
@@ -332,13 +300,13 @@ class ChessGameWidget(FloatLayout):
         move_list_scroll.add_widget(self.move_list_container)
         self.add_widget(move_list_scroll)
 
-        # --- Create the chessboard ---
+        # --- Chess board ---
         self.chess_board = ChessBoard(board_origin=board_origin, board_size=board_size)
         self.chess_board.captured_panel = self.captured_panel
         self.chess_board.move_list_container = self.move_list_container
         self.add_widget(self.chess_board)
 
-        # --- Create the move input box ---
+        # --- Move input box ---
         self.move_input = TextInput(
             size_hint=(None, None),
             size=(panel_width, 40),
@@ -348,17 +316,58 @@ class ChessGameWidget(FloatLayout):
         self.move_input.bind(on_text_validate=self.on_move_entered)
         self.add_widget(self.move_input)
 
+        # --- FEN control panel ---
+        self.fen_control_panel = BoxLayout(
+            orientation='horizontal',
+            size_hint=(None, None),
+            size=(screen_width - 2 * panel_width, 60),
+            pos=(panel_width, screen_height - 60)
+        )
+        self.fen_input = TextInput(
+            hint_text="Enter FEN string",
+            font_size=FONT_SIZE,
+            size_hint_x=0.4
+        )
+        self.load_fen_button = Button(
+            text="Load FEN",
+            font_size=FONT_SIZE,
+            size_hint_x=0.15
+        )
+        self.export_fen_button = Button(
+            text="Export FEN",
+            font_size=FONT_SIZE,
+            size_hint_x=0.15
+        )
+        self.reset_board_button = Button(
+            text="Reset Board",
+            font_size=FONT_SIZE,
+            size_hint_x=0.15
+        )
+        self.fen_output_label = Label(
+            text="",
+            font_size=FONT_SIZE,
+            size_hint_x=0.15,
+            pos_hint={'right': 1}
+        )
+        self.load_fen_button.bind(on_release=self.load_fen)
+        self.export_fen_button.bind(on_release=self.export_fen)
+        self.reset_board_button.bind(on_release=self.reset_board)
+
+        self.fen_control_panel.add_widget(self.fen_input)
+        self.fen_control_panel.add_widget(self.load_fen_button)
+        self.fen_control_panel.add_widget(self.export_fen_button)
+        self.fen_control_panel.add_widget(self.reset_board_button)
+        self.fen_control_panel.add_widget(self.fen_output_label)
+        self.add_widget(self.fen_control_panel)
+
     def on_move_entered(self, instance):
         move_str = instance.text
         try:
-            # Try to interpret the move as a UCI move
             move = chess.Move.from_uci(move_str)
             if move not in self.chess_board.game_board.legal_moves:
-                # If the move is not legal in UCI format, try interpreting it as a SAN move
                 move = self.chess_board.game_board.parse_san(move_str)
             
             if move in self.chess_board.game_board.legal_moves:
-                # Select the piece at the starting square
                 from_square = move.from_square
                 self.chess_board.selected_piece = None
                 for child in self.chess_board.children:
@@ -380,9 +389,22 @@ class ChessGameWidget(FloatLayout):
             instance.text = ""
 
     def add_debug_message(self, message):
-        """Add a debug message to the move list container."""
         label = Label(text=message, size_hint_y=None, height=40)
         self.move_list_container.add_widget(label)
+
+    def load_fen(self, instance):
+        fen = self.fen_input.text.strip()
+        try:
+            self.chess_board.fen_to_board(fen)
+        except ValueError:
+            self.add_debug_message("Invalid FEN string")
+        
+    def export_fen(self, instance):
+        fen = self.chess_board.game_board.fen()
+        self.fen_output_label.text = fen
+
+    def reset_board(self, instance):
+        self.chess_board.reset()
 
 
 # ------------------------------------------------------------
