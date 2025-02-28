@@ -1,5 +1,7 @@
 import berserk
 import chess
+import threading
+import time
 
 class BerserkChessGame:
     def __init__(self, token, game_id=None, is_bot=True):
@@ -13,6 +15,9 @@ class BerserkChessGame:
         # Create an authenticated session with Lichess
         self.session = berserk.TokenSession(token)
         self.client = berserk.Client(session=self.session)
+        self.client.account.upgrade_to_bot()
+
+
         self.game_id = game_id
         self.is_bot = is_bot
         self.board = chess.Board()
@@ -172,15 +177,40 @@ if __name__ == "__main__":
         print("Initial board FEN:", game.board_fen())
     except Exception as e:
         print("Error starting game:", e)
-    
-    # Example: Making a move (input can be UCI or SAN)
-    try:
-        print(game)
-        game.client.board.make_move(game_id,"e2e4")
-        print("Move played. Current board FEN:")
-        print(game.board_fen())
-    except ValueError as e:
-        print(e)
 
-    # To stream game updates from Lichess (this call will block)
-    # game.stream_game()
+    # Create a lock for synchronizing board state updates.
+    state_lock = threading.Lock()
+
+    # Start streaming game updates in a background thread.
+    def stream_updates():
+        # If game.stream_game() modifies the board, you can add locking inside that method,
+        # or here if possible.
+        game.stream_game()   # This call will block, hence running it in its own thread.
+
+    stream_thread = threading.Thread(target=stream_updates, daemon=True)
+    stream_thread.start()
+
+    # Interactive game loop.
+    while True:
+        human_move = input("Enter your move in UCI or SAN format (or type 'quit' to exit): ")
+        if human_move.lower() == "quit":
+            print("Exiting game.")
+            break
+
+        try:
+            # Lock the board state while making a move.
+            with state_lock:
+                game.client.bots.make_move(game_id, human_move)
+                print("Move played. Current board FEN:")
+                print(game.board_fen())
+        except ValueError as e:
+            print("Invalid move:", e)
+            continue
+
+        # Wait a bit for the bot's move to be processed.
+        print("Waiting for bot move...")
+        time.sleep(2)  # Adjust the delay as needed based on bot response time.
+
+        with state_lock:
+            print("Updated board FEN (after bot move):")
+            print(game.board_fen())

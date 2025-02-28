@@ -6,13 +6,6 @@ with open('venv/key.txt', 'r') as f:
 session = berserk.TokenSession(api_key)
 client = berserk.Client(session=session)
 
-client.challenges.create_ai(
-    level=3,
-    clock_limit=300,
-    clock_increment=0,
-    color="white",
-    variant="standard"
-)
+client.account.upgrade_to_bot()
 
-
-client.games.get_game_state(client.games.)
+print(client.account.get())
