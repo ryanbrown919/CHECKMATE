@@ -23,10 +23,15 @@ class MainMenuScreen(Screen):
     def __init__(self, **kwargs):
         super(MainMenuScreen, self).__init__(**kwargs)
         # Root layout: horizontal to allow buttons on the left and icon on the right.
+        header_layout= BoxLayout(orientation='vertical', padding=20, spacing=10)
+
+        header_layout.add_widget(Label(text="Welcome to the Chess Robot!", font_size=FONT_SIZE))
+
         root_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20)
         
         # Left side: vertical BoxLayout for buttons.
         button_layout = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.6, 1))
+
         
         btn_chess = Button(text="Chess Playing Mode", size_hint=(1, 0.15), font_size=FONT_SIZE)
         btn_chess.bind(on_release=lambda instance: self.change_screen("chess"))
@@ -57,7 +62,12 @@ class MainMenuScreen(Screen):
         icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.4, 1))
         root_layout.add_widget(icon)
 
-        self.add_widget(root_layout)
+        column = BoxLayout(orientation='vertical', spacing=10, padding = 20, size_hint=(0.1, 1))
+        column.add_widget(Label(text="Welcome to the Chess Robot!", font_size=FONT_SIZE))
+        root_layout.add_widget(column)
+
+        header_layout.add_widget(root_layout)
+        self.add_widget(header_layout)
 
     def change_screen(self, screen_name):
         self.manager.transition.direction = 'left'
