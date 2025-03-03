@@ -10,12 +10,19 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
+from kivy.uix.behaviors import ButtonBehavior
+
 
 from chessBoard import ChessGameWidget
 from chessClock import ChessClockWidget 
 from gantryControl import GantryControlWidget
 from rfidScanner import NFCWidget
 from hallEffects import ChessBoardHallEffect
+
+
+class IconButton(ButtonBehavior, Image):
+    pass
+
 
 # Global font size for the whole application.
 FONT_SIZE = 32
@@ -81,7 +88,7 @@ class MainMenuScreen(Screen):
         customplay_layout.add_widget(Button(text="Set Modes", size_hint=(0.6, 1), font_size=FONT_SIZE))
 
 
-        option_layout.add_widget(Button(text="Settings", size_hint=(1, 0.1), font_size=FONT_SIZE))
+        option_layout.add_widget(IconButton(icon = IconButton(source="figures/icon.png")))
         option_layout.add_widget(Button(text="Help", size_hint=(1, 0.1), font_size=FONT_SIZE))
         option_layout.add_widget(Button(text="About", size_hint=(1, 0.1), font_size=FONT_SIZE))
 
