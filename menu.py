@@ -11,6 +11,8 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.graphics import Color, RoundedRectangle
+
 
 
 from chessBoard import ChessGameWidget
@@ -19,9 +21,47 @@ from gantryControl import GantryControlWidget
 from rfidScanner import NFCWidget
 from hallEffects import ChessBoardHallEffect
 
+from kivy.lang import Builder
+
+kv="""
+<RoundedButton@Button>:
+    background_color: 0,0,0,0  # the last zero is the critical on, make invisible
+    canvas.before:
+        Color:
+            rgba: (.4,.4,.4,1) if self.state=='normal' else (0,.7,.7,1)  # visual feedback of press
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [25,]
+"""
+class RoundedButton(Button):
+    pass
+
+Builder.load_string(kv)
+
 
 class IconButton(ButtonBehavior, Image):
     pass
+
+class RoundedButton2(Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Disable the default background images
+        self.background_normal = ''
+        self.background_down = ''
+        self.background_color = (0.2, 0.2, 0.2, 1)
+        with self.canvas.before:
+            self.bg_color = Color(rgba=self.background_color)
+            self.bg_rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[(40, 40), (40, 40), (20, 20), (20, 20)])
+        self.bind(pos=self.update_rect, size=self.update_rect, background_color=self.update_color)
+        
+
+    def update_rect(self, *args):
+        self.bg_rect.pos = self.pos
+        self.bg_rect.size = self.size
+
+    def update_color(self, *args):
+        self.bg_color.rgba = self.background_color
 
 
 # Global font size for the whole application.
@@ -35,6 +75,24 @@ class HorizontalLine(Widget):
         # Disable automatic sizing on the y-axis and set a fixed height (e.g., 2 pixels)
         self.size_hint_y = None
         self.height = 2
+        with self.canvas:
+            # Set the line color (black in this example)
+            Color(255, 255, 255, 1)
+            # Draw a rectangle that will act as the horizontal line
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        # Bind updates so the rectangle resizes/repositions with the widget
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
+class VerticalLine(Widget):
+    def __init__(self, **kwargs):
+        super(VerticalLine, self).__init__(**kwargs)
+        # Disable automatic sizing on the y-axis and set a fixed height (e.g., 2 pixels)
+        self.size_hint_x = None
+        self.width = 2
         with self.canvas:
             # Set the line color (black in this example)
             Color(255, 255, 255, 1)
@@ -67,9 +125,11 @@ class MainMenuScreen(Screen):
         root_layout.add_widget(HorizontalLine())
         root_layout.add_widget(body_layout)
         body_layout.add_widget(play_layout)
+        body_layout.add_widget(VerticalLine())
         body_layout.add_widget(option_layout)
-        play_layout.add_widget(Label(text="Quickplay", font_size=FONT_SIZE, size_hint=(1, 0.1), pos_hint={'left': 0}))
+        play_layout.add_widget(Label(text="Quickplay", font_size=50, size_hint=(0.2, 0.1), pos_hint={'left': 0}))
         play_layout.add_widget(quickplay_layout)
+        play_layout.add_widget(HorizontalLine())
         play_layout.add_widget(customplay_layout)
 
         header_layout.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
@@ -79,18 +139,34 @@ class MainMenuScreen(Screen):
 
         
 
-        quickplay_layout.add_widget(Button(text="Quickplay", font_size=FONT_SIZE, size_hint=(1, 1)))
-        quickplay_layout.add_widget(Button(text="Quick Play", size_hint=(1, 1), font_size=FONT_SIZE))
-        quickplay_layout.add_widget(Button(text="Set Game", size_hint=(1, 1), font_size=FONT_SIZE))
-        quickplay_layout.add_widget(Button(text="Load Game", size_hint=(1, 1), font_size=FONT_SIZE))
+        quickplay_layout.add_widget(RoundedButton(text="Quickplay", font_size=FONT_SIZE, size_hint=(1, 1)))
+        quickplay_layout.add_widget(RoundedButton(text="Quick Play", size_hint=(1, 1), font_size=FONT_SIZE))
+        quickplay_layout.add_widget(RoundedButton(text="Set Game", size_hint=(1, 1), font_size=FONT_SIZE))
+        quickplay_layout.add_widget(RoundedButton(text="Load Game", size_hint=(1, 1), font_size=FONT_SIZE))
 
-        customplay_layout.add_widget(Button(text="Start Game", font_size=FONT_SIZE, size_hint=(0.4, 1)))
-        customplay_layout.add_widget(Button(text="Set Modes", size_hint=(0.6, 1), font_size=FONT_SIZE))
+        customplay_layout.add_widget(IconButton(source="figures/Play.png", size_hint=(None, None), size=(200, 200)))
+        customplay_layout.add_widget(RoundedButton(text="Set Modes", size_hint=(0.7, 1), font_size=FONT_SIZE))
 
 
-        option_layout.add_widget(IconButton(icon = IconButton(source="figures/icon.png")))
-        option_layout.add_widget(Button(text="Help", size_hint=(1, 0.1), font_size=FONT_SIZE))
-        option_layout.add_widget(Button(text="About", size_hint=(1, 0.1), font_size=FONT_SIZE))
+        option_layout.add_widget(IconButton(source="figures/user.png", 
+                                            size_hint=(1, 0.3),  # Disable relative sizing
+                                                       # Set explicit dimensions
+                                            allow_stretch=True,      # Allow the image to stretch to fill the widget
+                                            keep_ratio=True          # Maintain the image's aspect ratio
+                                            ))
+        option_layout.add_widget(IconButton(source="figures/settings.png", 
+                                            size_hint=(1, 0.3),  # Disable relative sizing
+                                                       # Set explicit dimensions
+                                            allow_stretch=True,      # Allow the image to stretch to fill the widget
+                                            keep_ratio=True          # Maintain the image's aspect ratio
+                                            ))
+        
+        option_layout.add_widget(IconButton(source="figures/reset.png", 
+                                            size_hint=(1, 0.3),  # Disable relative sizing
+                                                       # Set explicit dimensions
+                                            allow_stretch=True,      # Allow the image to stretch to fill the widget
+                                            keep_ratio=True          # Maintain the image's aspect ratio
+                                            ))
 
 
 

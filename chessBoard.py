@@ -71,7 +71,7 @@ class ChessPiece(Image):
 # ChessBoard: the widget that draws the board, pieces, and handles touches.
 # ------------------------------------------------------------
 class ChessBoard(Widget):
-    def __init__(self, board_origin=(1920/2, 1080/2), board_size=1000, **kwargs):
+    def __init__(self, board_origin=(1920/2, 1080/2), board_size=1000, bottom_colour_white=True, **kwargs,):
         """
         board_origin: (x, y) bottom‑left corner of the board
         board_size: size in pixels (assumed square)
@@ -90,6 +90,7 @@ class ChessBoard(Widget):
         self.highlight_rects = []
         self.legal_moves = []
         self.selected_piece = None
+        self.bottom_colour_white = bottom_colour_white
 
         # Create the python‑chess board with the standard starting position.
         self.game_board = chess.Board()
@@ -99,10 +100,16 @@ class ChessBoard(Widget):
             for row in range(8):
                 for col in range(8):
                     # Standard chessboard coloring: dark and light squares.
-                    if (col + row) % 2 == 0:
-                        Color(0.2, 0.2, 0.2, 1)
+                    if bottom_colour_white:
+                        if (col + row) % 2 == 0:
+                            Color(0.2, 0.2, 0.2, 1)
+                        else:
+                            Color(1, 1, 1, 1)
                     else:
-                        Color(1, 1, 1, 1)
+                        if (col + row) % 2 == 0:
+                            Color(1, 1, 1, 1)
+                        else:
+                            Color(0.2, 0.2, 0.2, 1)
                     Rectangle(
                         pos=(self.board_origin[0] + col * self.square_size,
                              self.board_origin[1] + row * self.square_size),
@@ -119,24 +126,42 @@ class ChessBoard(Widget):
         """Add labels for rows and columns around the board."""
         # Column labels (a-h)
         for col in range(8):
-            label = Label(
-                text=chr(ord('a') + col),
-                size_hint=(None, None),
-                size=(self.square_size, self.square_size),
-                pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
-                     self.board_origin[1] - self.square_size)
-            )
+            if self.bottom_colour_white:
+                label = Label(
+                    text=chr(ord('a') + col),
+                    size_hint=(None, None),
+                    size=(self.square_size, self.square_size),
+                    pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
+                        self.board_origin[1] - self.square_size)
+                )
+            else:
+                label = Label(
+                    text=chr(ord('h') - col),
+                    size_hint=(None, None),
+                    size=(self.square_size, self.square_size),
+                    pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
+                        self.board_origin[1] - self.square_size))
+
             self.add_widget(label)
 
         # Row labels (1-8)
         for row in range(8):
-            label = Label(
-                text=str(row + 1),
-                size_hint=(None, None),
-                size=(self.square_size, self.square_size),
-                pos=(self.board_origin[0] - self.square_size,
-                     self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
-            )
+            if self.bottom_colour_white:
+                label = Label(
+                    text=str(row + 1),
+                    size_hint=(None, None),
+                    size=(self.square_size, self.square_size),
+                    pos=(self.board_origin[0] - self.square_size,
+                        self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
+                )
+            else:
+                label = Label(
+                    text=str(8 - row),
+                    size_hint=(None, None),
+                    size=(self.square_size, self.square_size),
+                    pos=(self.board_origin[0] - self.square_size,
+                        self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
+                )
             self.add_widget(label)
 
     def add_piece_widgets(self):
@@ -149,6 +174,12 @@ class ChessBoard(Widget):
             piece = self.game_board.piece_at(sq)
             if piece is not None:
                 symbol = piece.symbol()  # e.g., 'P' or 'k'
+                if not self.bottom_colour_white and symbol.islower():
+                    # White on the bottom
+                    symbol = symbol.upper()
+                    # If the piece is black, convert to lowercase
+                elif not self.bottom_colour_white and symbol.isupper():
+                    symbol = symbol.lower()
                 if symbol in piece_images:
                     source = piece_images[symbol]
                     piece_widget = ChessPiece(
