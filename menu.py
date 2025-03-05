@@ -182,69 +182,6 @@ class MainMenuScreen(Screen):
 
         self.add_widget(root_layout)
 
-
-        # Left side: vertical BoxLayout for buttons.
-        
-
-
-
-
-
-
-
-
-
-
-
-        # header_layout = BoxLayout(orientation='vertical', padding=20, spacing=10, size_hint=(1,1))
-
-        # header_layout.add_widget(Label(text="Welcome to the Chess Robot!", font_size=FONT_SIZE))
-
-        # option_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20, size_hint=(0.1,0.7))
-
-        # root_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20)
-        
-        # # Left side: vertical BoxLayout for buttons.
-        # button_layout = BoxLayout(orientation='horizontal', spacing=10, size_hint=(0.6, 1))
-
-        
-        # btn_chess = Button(text="Chess Playing Mode", size_hint=(1, 0.15), font_size=FONT_SIZE)
-        # btn_chess.bind(on_release=lambda instance: self.change_screen("chess"))
-        # button_layout.add_widget(btn_chess)
-
-        # btn_gantry = Button(text="Manual Gantry Control", size_hint=(1, 0.15), font_size=FONT_SIZE)
-        # btn_gantry.bind(on_release=lambda instance: self.change_screen("gantry"))
-        # button_layout.add_widget(btn_gantry)
-
-        # btn_clock = Button(text="Chess Clock Tester", size_hint=(1, 0.15), font_size=FONT_SIZE)
-        # btn_clock.bind(on_release=lambda instance: self.change_screen("clock"))
-        # button_layout.add_widget(btn_clock)
-        
-        # # Fourth button for a new widget/screen.
-        # btn_new = Button(text="RFID Test", size_hint=(1, 0.15), font_size=FONT_SIZE)
-        # btn_new.bind(on_release=lambda instance: self.change_screen("rfid"))
-        # button_layout.add_widget(btn_new)
-
-        # # Fourth button for a new widget/screen.
-        # btn_new = Button(text="Hall Effect Test", size_hint=(1, 0.15), font_size=FONT_SIZE)
-        # btn_new.bind(on_release=lambda instance: self.change_screen("halleffect"))
-        # button_layout.add_widget(btn_new)
-
-        # root_layout.add_widget(button_layout)
-
-        # # Right side: a large icon.
-        # # Replace 'icon.png' with your icon file.
-        # icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.4, 1))
-        # root_layout.add_widget(icon)
-
-        # column = BoxLayout(orientation='vertical', spacing=10, padding = 20, size_hint=(0.1, 1))
-        # column.add_widget(Label(text="Welcome to the Chess Robot!", font_size=FONT_SIZE))
-        # root_layout.add_widget(column)
-
-        # header_layout.add_widget(root_layout)
-        # header_layout.add_widget(option_layout)
-        # self.add_widget(header_layout)
-
     def change_screen(self, screen_name):
         self.manager.transition.direction = 'left'
         self.manager.current = screen_name
