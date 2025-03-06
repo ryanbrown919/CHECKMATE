@@ -24,6 +24,7 @@ void hall_get_squares(uint8_t* halls) {
     for (int i = 0; i < 16; i++) {
         uint32_t current_gray = i ^ (i >> 1);
         mux_set_pins(current_gray);
+        usleep(10000);
 
         // Get the digital outputs from the multiplexer.
         uint8_t outputs = mux_get_output();

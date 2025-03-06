@@ -2,8 +2,9 @@
 #define HALL_H
 
 #include <stdint.h>
+#include <unistd.h>
 
-void hall_set_squares(uint8_t* halls);
+void hall_get_squares(uint8_t* halls);
 uint32_t hall_get_square(uint8_t* halls, uint32_t x, uint32_t y);
 
 #endif
