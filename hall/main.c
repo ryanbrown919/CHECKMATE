@@ -1,23 +1,18 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "hall.h"
+#include <pigpio.h>
+#include <unistd.h>
+
+#include "mux.h"
 
 int main() {
-    // Each bit in board[row] represents the status of the column.
-    uint8_t board[8] = {0};
+    gpioInitialise();
     
-    hall_set_squares(board);
-
-    // Print the board matrix.
-    printf("Board matrix:\n");
-    for (uint32_t row = 0; row < 8; row++) {
-        for (uint32_t col = 0; col < 8; col++) {
-            printf("%d ", (board[row] >> col) & 0x01);
-        }
-        printf("\n");
+    for (int i = 0; i < 16; i++) {
+        uint32_t current_gray = i ^ (i >> 1);
+        mux_set_pins(current_gray);
+        usleep(10000);
     }
-    printf("\n");
-    
     
     return 0;
 }
