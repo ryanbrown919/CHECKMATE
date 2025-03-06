@@ -19,22 +19,27 @@ from kivy.uix.scrollview import ScrollView
 import chess
 
 from chessBoard import ChessBoard
-from chessClock import ChessClockWidget
+from chessClock import ChessClock
 from game_logic import gameLogic
-from menu import HorizontalLine
+from menu import HorizontalLine, VerticalLine
 
 class GameplayScreen(Screen):
     def __init__(self, **kwargs):
         super(GameplayScreen, self).__init__(**kwargs)
 
+        self.clock = ChessClock()
+        self.white_time = self.clock.player1_time
+        self.black_time = self.clock.player2_time
 
+        
+
+        # General Structure of Gameplay Screen
         root_layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
         header_layout = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.1))
-        playarea_layout = BoxLayout(orientation='horizontal', spacing=20)
-        black_layout = BoxLayout(orientation='vertical', spacing=20)
-        middle_layout = BoxLayout(orientation='vertical', spacing=20)
-        white_layout = BoxLayout(orientation='vertical', spacing=20)
-
+        playarea_layout = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.9))
+        black_layout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.4, 1))
+        middle_layout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.2, 1))
+        white_layout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.4, 1))
 
         root_layout.add_widget(header_layout)
         header_layout.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
@@ -45,21 +50,26 @@ class GameplayScreen(Screen):
 
         root_layout.add_widget(playarea_layout)
         playarea_layout.add_widget(black_layout)
+        playarea_layout.add_widget(VerticalLine())
         playarea_layout.add_widget(middle_layout)
+        playarea_layout.add_widget(VerticalLine())
         playarea_layout.add_widget(white_layout)
 
         gameLogic_instance = gameLogic()
 
-        move_list = ScrollView()
-        piece_jail = BoxLayout(orientation='horizontal', spacing=20)
+        move_list = ScrollView(size_hint=(1, 0.5))
+        piece_jail = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.5))    
 
-        black_board = ChessBoard(board_size=600, board_origin=(100, 100), bottom_colour_white=False, game_logic=gameLogic_instance)
-        white_board = ChessBoard(board_size=600, board_origin=(1200, 100), bottom_colour_white=True, game_logic=gameLogic_instance)
+        black_board = ChessBoard(bottom_colour_white=False, game_logic=gameLogic_instance, size_hint=(1, 1))
+        white_board = ChessBoard(bottom_colour_white=True, game_logic=gameLogic_instance, size_hint=(1, 1))
         
-
+        black_layout.add_widget(Label(text=self.clock.format_time(self.black_time), font_size=80, size_hint=(1, 0.2)))
+        black_layout.add_widget(HorizontalLine())
         black_layout.add_widget(black_board)
         middle_layout.add_widget(move_list)
         middle_layout.add_widget(piece_jail)
+        white_layout.add_widget(Label(text=self.clock.format_time(self.white_time), font_size=80, size_hint=(1, 0.2)))
+        white_layout.add_widget(HorizontalLine())
         white_layout.add_widget(white_board)    
 
 

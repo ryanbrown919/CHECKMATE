@@ -74,15 +74,21 @@ class ChessPiece(Image):
 # ChessBoard: the widget that draws the board, pieces, and handles touches.
 # ------------------------------------------------------------
 class ChessBoard(Widget):
-    def __init__(self, board_origin=(1920/2, 1080/2), board_size=1000, bottom_colour_white=True, game_logic=None, touch_enabled=True, **kwargs,):
+    def __init__(self, bottom_colour_white=True, game_logic=None, touch_enabled=True, **kwargs,):
         """
         board_origin: (x, y) bottom‑left corner of the board
         board_size: size in pixels (assumed square)
         """
         super().__init__(**kwargs)
 
-        self.board_origin = board_origin
+        board_size = min(self.width, self.height)
+
+        print(self.size)
+
+        # Center the board within this widget:
+        board_origin = self.pos
         self.board_size = board_size
+        self.board_origin = board_origin
         self.square_size = board_size / 8.0
 
         # These will be set later by the parent container:
@@ -119,6 +125,8 @@ class ChessBoard(Widget):
 
         # Add row and column labels
         self.add_labels()
+
+
 
     def draw_board_background(self):
         """
