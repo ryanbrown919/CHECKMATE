@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <pigpio.h>
 
-#define MUX_S0 31
-#define MUX_S1 33
-#define MUX_S2 35
-#define MUX_S3 37
+#define MUX_S0 6
+#define MUX_S1 13
+#define MUX_S2 19
+#define MUX_S3 26
 
 // Map the multiplexer output pins to digital GPIO numbers.
 #define MUX_Y_1 26   // Digital input on GPIO26
