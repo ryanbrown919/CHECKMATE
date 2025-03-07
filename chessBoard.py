@@ -1,3 +1,4 @@
+
 import chess
 import chess.pgn
 
@@ -13,9 +14,11 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
+from kivy.clock import Clock
+
 
 # --- Settings ---
-Window.fullscreen = True
+
 
 FONT_SIZE=32
 
@@ -74,75 +77,68 @@ class ChessPiece(Image):
 # ChessBoard: the widget that draws the board, pieces, and handles touches.
 # ------------------------------------------------------------
 class ChessBoard(Widget):
-    def __init__(self, bottom_colour_white=True, game_logic=None, touch_enabled=True, **kwargs,):
-        """
-        board_origin: (x, y) bottom‑left corner of the board
-        board_size: size in pixels (assumed square)
-        """
-        super().__init__(**kwargs)
-
-        board_size = min(self.width, self.height)
-
-        print(self.size)
-
-        # Center the board within this widget:
-        board_origin = self.pos
-        self.board_size = board_size
-        self.board_origin = board_origin
-        self.square_size = board_size / 8.0
-
-        # These will be set later by the parent container:
-        self.captured_panel = None      # widget where captured pieces are displayed (left side)
-        self.move_list_container = None # BoxLayout inside the ScrollView for moves
-
-        # For highlighting legal moves
-        self.highlight_rects = []
-        self.legal_moves = []
-        self.selected_piece = None
+    def __init__(self, bottom_colour_white=True, game_logic=None, **kwargs):
+        super(ChessBoard, self).__init__(**kwargs)
+        # Let the parent control size/position via size_hint, but our widget will compute its own internal layout.
+        self.size_hint = (1, 1)
         self.bottom_colour_white = bottom_colour_white
-
-
-        # Create the python‑chess board with the standard starting
-
-        self.game_logic = game_logic
-
-        if self.game_logic is None:
-            print("No game logic provided. Creating a new game logic instance.")
-            self.game_logic = gameLogic()
-        else:
-            print('Game Logic detected')
-            pass
-
+        self.game_logic = game_logic if game_logic is not None else gameLogic()
         self.game_board = self.game_logic.game_board
-
         self.game_logic.register_observer(self.update_board)
 
+        # Chess pieces and highlights.
+        self.selected_piece = None
+        self.legal_moves = []
+        self.highlight_rects = []
 
+        # These will be computed in on_size.
+        self.board_origin = (0, 0)  # Bottom-left of the chessboard (after label area)
+        self.board_size = 0         # Size of the 8x8 area (in pixels)
+        self.square_size = 0        # Size of one chess square (in pixels)
+
+        # Bind our on_size so that all internal sizing logic is triggered whenever the widget is resized or repositioned.
+        self.bind(size=self.on_size, pos=self.on_size)
+
+    def on_size(self, *args):
+        """
+        Recalculate all internal geometry when the widget size changes.
+        We reserve one extra row and column for labels by dividing the smallest dimension by 9.
+        """
+        cell_size = min(self.width, self.height) / 9.0
+        # The chessboard (8x8 area) starts one cell to the right and one cell up.
+        self.board_origin = (self.x + cell_size, self.y + cell_size)
+        self.square_size = cell_size
+        self.board_size = 8 * cell_size
+
+        # Redraw the board background.
+        self.canvas.before.clear()
         self.draw_board_background()
 
-        # Place piece widgets on top.
-        self.add_piece_widgets()
-
-        # Add row and column labels
+        # Remove any existing labels and then re-add them.
+        labels_to_remove = [child for child in self.children if isinstance(child, Label)]
+        for label in labels_to_remove:
+            self.remove_widget(label)
         self.add_labels()
 
-
+        # Update all chess piece widgets with the new geometry.
+        for child in self.children:
+            if isinstance(child, ChessPiece):
+                child.square_size = self.square_size
+                child.board_origin = self.board_origin
+                child.size = (self.square_size, self.square_size)
+                child.update_position()
 
     def draw_board_background(self):
         """
-        Draw an 8x8 grid of alternating colored squares using canvas.before.
-        The coloring pattern is determined using canonical coordinates;
-        if bottom_colour_white is False, the colors flip accordingly.
+        Draw the 8x8 chess squares within the computed chessboard area.
         """
         with self.canvas.before:
             for file in range(8):
                 for rank in range(8):
-                    # Get the canonical square index.
+                    # Get canonical square index and its UI position.
                     sq = self.game_logic.square(file, rank)
                     pos = self.chess_square_to_ui_pos(sq)
-
-                    # Decide on color based on canonical (file, rank).
-                    # For a white-bottom board: dark if (file+rank) is even; for black-bottom, reverse the colors.
+                    # Alternate colors based on file and rank.
                     if (file + rank) % 2 == 0:
                         color = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
                     else:
@@ -152,111 +148,65 @@ class ChessBoard(Widget):
 
     def add_labels(self):
         """
-        Add row (1–8) and column (a–h) labels around the board.
-        The labels are placed using the same coordinate transformation so that
-        they appear in the correct order for the given perspective.
+        Add labels for columns (a–h) in the bottom row and rows (1–8) in the left column.
+        These labels occupy the extra cell row/column of the 9x9 grid.
         """
-        # COLUMN LABELS
-        # For white's perspective, bottom row is canonical rank 0; for black's, bottom is canonical rank 7.
-        bottom_rank = 0 if self.bottom_colour_white else 7
-
-        # Determine the file order for label placement:
-        # For white's perspective, files 0-7 map to a-h.
-        # For black's perspective, the board is flipped so the leftmost displayed square corresponds to canonical file 7.
+        cell_size = self.square_size  # Each grid cell is of uniform size.
+        
+        # Column labels (a–h) along the bottom.
         file_order = list(range(8)) if self.bottom_colour_white else list(reversed(range(8)))
         for file in file_order:
-            # The label text remains 'a' to 'h'. When the board is flipped, reversing the file order will naturally swap them.
             label_text = chr(ord('a') + file)
-            # Compute the position for the square in the bottom row.
-            sq = self.game_logic.square(file, bottom_rank)
-            pos = self.chess_square_to_ui_pos(sq)
-            # Offset the label so it sits centered below the square.
-            label_x = pos[0] + self.square_size / 2 - self.square_size / 4
-            label_y = pos[1] - self.square_size
-            label = Label(text=label_text, size_hint=(None, None),
-                          size=(self.square_size, self.square_size),
-                          pos=(label_x, label_y))
+            # Center the label within the bottom cell.
+            label_x = self.board_origin[0] + file * cell_size + (cell_size - cell_size * 0.8) / 2
+            label_y = self.y + (cell_size - cell_size * 0.8) / 2
+            label = Label(text=label_text,
+                          size_hint=(None, None),
+                          size=(cell_size * 0.8, cell_size * 0.8),
+                          pos=(label_x, label_y),
+                          font_size=cell_size * 0.5)
             self.add_widget(label)
-
-        # ROW LABELS
-        # For white's perspective, the leftmost column is canonical file 0; for black's, it's canonical file 7.
-        left_file = 0 if self.bottom_colour_white else 7
-        # For row labels, iterate over canonical ranks in order or reversed order.
+        
+        # Row labels (1–8) along the left.
         rank_order = list(range(8)) if self.bottom_colour_white else list(reversed(range(8)))
         for rank in rank_order:
-            # The label should be 1-8 based on the canonical rank.
             label_text = str(rank + 1)
-            sq = self.game_logic.square(left_file, rank)
-            pos = self.chess_square_to_ui_pos(sq)
-            # Offset the label so it appears to the left of the board.
-            label_x = pos[0] - self.square_size
-            label_y = pos[1] + self.square_size / 2 - self.square_size / 4
-            label = Label(text=label_text, size_hint=(None, None),
-                          size=(self.square_size, self.square_size),
-                          pos=(label_x, label_y))
+            # Center the label within the left cell.
+            label_x = self.x + (cell_size - cell_size * 0.8) / 2
+            label_y = self.board_origin[1] + rank * cell_size + (cell_size - cell_size * 0.8) / 2
+            label = Label(text=label_text,
+                          size_hint=(None, None),
+                          size=(cell_size * 0.8, cell_size * 0.8),
+                          pos=(label_x, label_y),
+                          font_size=cell_size * 0.5)
             self.add_widget(label)
 
-    # def add_labels(self):
-    #     """Add labels for rows and columns around the board."""
-    #     # Column labels (a-h)
-    #     for col in range(8):
-    #         if self.bottom_colour_white:
-    #             label = Label(
-    #                 text=chr(ord('a') + col),
-    #                 size_hint=(None, None),
-    #                 size=(self.square_size, self.square_size),
-    #                 pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
-    #                     self.board_origin[1] - self.square_size)
-    #             )
-    #         else:
-    #             label = Label(
-    #                 text=chr(ord('h') - col),
-    #                 size_hint=(None, None),
-    #                 size=(self.square_size, self.square_size),
-    #                 pos=(self.board_origin[0] + col * self.square_size + self.square_size / 2 - self.square_size / 4,
-    #                     self.board_origin[1] - self.square_size))
-
-    #         self.add_widget(label)
-
-    #     # Row labels (1-8)
-    #     for row in range(8):
-    #         if self.bottom_colour_white:
-    #             label = Label(
-    #                 text=str(row + 1),
-    #                 size_hint=(None, None),
-    #                 size=(self.square_size, self.square_size),
-    #                 pos=(self.board_origin[0] - self.square_size,
-    #                     self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
-    #             )
-    #         else:
-    #             label = Label(
-    #                 text=str(8 - row),
-    #                 size_hint=(None, None),
-    #                 size=(self.square_size, self.square_size),
-    #                 pos=(self.board_origin[0] - self.square_size,
-    #                     self.board_origin[1] + row * self.square_size + self.square_size / 2 - self.square_size / 4)
-    #             )
-    #         self.add_widget(label)
+    def chess_square_to_ui_pos(self, sq):
+        """
+        Convert a chess square index (0–63) into UI coordinates within the chessboard area.
+        """
+        file = self.game_logic.square_file(sq)
+        rank = self.game_logic.square_rank(sq)
+        if not self.bottom_colour_white:
+            file = 7 - file
+            rank = 7 - rank
+        x = self.board_origin[0] + file * self.square_size
+        y = self.board_origin[1] + rank * self.square_size
+        return (x, y)
 
     def add_piece_widgets(self):
-        """Remove any existing ChessPiece widgets and add one for every piece on the board."""
+        """
+        Remove any existing ChessPiece widgets and add one for every piece on the board.
+        """
         for child in list(self.children):
             if isinstance(child, ChessPiece):
                 self.remove_widget(child)
-
         for sq in self.game_logic.SQUARES:
             piece = self.game_board.piece_at(sq)
             if piece is not None:
-                symbol = piece.symbol()  # e.g., 'P' or 'k'
-                # if not self.bottom_colour_white and symbol.islower():
-                #     # White on the bottom
-                #     symbol = symbol.upper()
-                #     # If the piece is black, convert to lowercase
-                # elif not self.bottom_colour_white and symbol.isupper():
-                #     symbol = symbol.lower()
+                symbol = piece.symbol()
                 if symbol in piece_images:
                     source = piece_images[symbol]
-                    pos = self.chess_square_to_ui_pos(sq)
                     piece_widget = ChessPiece(
                         game_logic=self.game_logic,
                         chess_square=sq,
@@ -265,76 +215,8 @@ class ChessBoard(Widget):
                         board_origin=self.board_origin,
                         source=source
                     )
-                    piece_widget.pos = pos
+                    piece_widget.pos = self.chess_square_to_ui_pos(sq)
                     self.add_widget(piece_widget)
-
-    def ui_to_chess_square(self, x, y):
-        """Convert a UI (x, y) coordinate to a canonical chess square index (0-63)."""
-        bx, by = self.board_origin
-        if not (bx <= x <= bx + self.board_size and by <= y <= by + self.board_size):
-            return None
-
-        # Compute file and rank based on the UI coordinate.
-        if self.bottom_colour_white:
-            file = int((x - bx) / self.square_size)
-            rank = int((y - by) / self.square_size)
-        else:
-            # If the board is flipped, invert the calculation.
-            file = 7 - int((x - bx) / self.square_size)
-            rank = 7 - int((y - by) / self.square_size)
-            
-        return self.game_logic.square(file, rank)
-
-    def chess_square_to_ui_pos(self, sq):
-        """Convert a chess square index to a UI (x, y) position.
-        Applies a transformation if the board is rendered with black at the bottom.
-        """
-        # Get canonical file and rank (0-7)
-        file = self.game_logic.square_file(sq)
-        rank = self.game_logic.square_rank(sq)
-        
-        # If black is at the bottom, flip the coordinates.
-        if not self.bottom_colour_white:
-            file = 7 - file
-            rank = 7 - rank
-
-        x = self.board_origin[0] + file * self.square_size
-        y = self.board_origin[1] + rank * self.square_size
-        return (x, y)
-
-
-    def highlight_legal_moves(self, square_list):
-
-        self.clear_highlights()
-        with self.canvas:
-            for move in square_list:
-                pos = self.chess_square_to_ui_pos(move.to_square)
-                if self.game_board.is_capture(move):
-                    Color(1, 0, 0, 0.5)  # red for captures
-                else:
-                    Color(0, 1, 0, 0.5)  # green for non-captures
-                rect = Rectangle(pos=pos, size=(self.square_size, self.square_size))
-                self.highlight_rects.append(rect)
-
-
-
-    # Need to abstract this out to game_logic but keep all canvas manipulations here
-    # def highlight_legal_moves(self, piece_widget):
-    #     """Highlight all legal moves for the given piece using python‑chess.
-    #        Capture moves are highlighted in red; non-captures in green.
-    #     """
-    #     self.clear_highlights()
-    #     from_sq = piece_widget.chess_square
-    #     self.legal_moves = [move for move in self.game_board.legal_moves if move.from_square == from_sq]
-    #     with self.canvas:
-    #         for move in self.legal_moves:
-    #             pos = self.chess_square_to_ui_pos(move.to_square)
-    #             if self.game_board.is_capture(move):
-    #                 Color(1, 0, 0, 0.5)  # red for captures
-    #             else:
-    #                 Color(0, 1, 0, 0.5)  # green for non-captures
-    #             rect = Rectangle(pos=pos, size=(self.square_size, self.square_size))
-    #             self.highlight_rects.append(rect)
 
     def clear_highlights(self):
         """Remove any highlighted rectangles from the board."""
@@ -342,158 +224,14 @@ class ChessBoard(Widget):
             self.canvas.remove(rect)
         self.highlight_rects = []
 
-    def execute_move(self, legal_move):
-        """Push the move, update piece positions, handle captures, and update the move list."""
-        san_move = self.game_board.san(legal_move)
-        self.game_board.push(legal_move)
-        # Update the moving piece’s square and position.
-        self.selected_piece.chess_square = legal_move.to_square
-        self.selected_piece.update_position()
-
-        # If a capture occurred, remove the captured piece widget.
-        for child in list(self.children):
-            if (isinstance(child, ChessPiece) and child is not self.selected_piece and
-                child.chess_square == legal_move.to_square):
-                self.remove_widget(child)
-                if self.captured_panel:
-                    # Optionally, scale the captured piece down.
-                    child.size_hint = (None, None)
-                    scale = 0.8
-                    child.size = (self.square_size * scale, self.square_size * scale)
-                    self.captured_panel.add_widget(child)
-
-        self.clear_highlights()
-        self.selected_piece.selected = False
-        self.selected_piece = None
-        self.legal_moves = []
-        # Refresh piece widgets (in case of promotions, etc.).
-
-        self.add_piece_widgets()
-
-        if self.move_list_container:
-            label = Label(text=san_move, size_hint_y=None, height=30, font_size=24)
-            self.move_list_container.add_widget(label)
-
-    def on_touch_down(self, touch):
-        bx, by = self.board_origin
-        # Check that the touch is within the board.
-        if not (bx <= touch.x <= bx + self.board_size and by <= touch.y <= by + self.board_size):
-            return False
-
-        dest_sq = self.ui_to_chess_square(touch.x, touch.y)
-        # If a piece is already selected and the destination is a legal move:
-        if self.selected_piece and dest_sq is not None:
-            for move in self.legal_moves:
-                if move.to_square == dest_sq:
-                    # Delegate the move execution to the game logic.
-                    self.game_logic.make_move(move)
-                    self.selected_piece.selected = False
-                    self.selected_piece = None
-                    self.legal_moves = []
-                    self.clear_highlights()
-                    return True
-
-        # Check if a ChessPiece widget was touched.
-        touched_piece = None
-        for child in self.children:
-            if isinstance(child, ChessPiece) and child.collide_point(touch.x, touch.y):
-                touched_piece = child
-                break
-
-        if touched_piece:
-            # If the same piece is touched twice, deselect it.
-            if self.selected_piece == touched_piece:
-                self.selected_piece.selected = False
-                self.selected_piece = None
-                self.clear_highlights()
-            else:
-                # Select this piece and fetch its legal moves from the game logic.
-                if self.selected_piece:
-                    self.selected_piece.selected = False
-                self.selected_piece = touched_piece
-                touched_piece.selected = True
-                self.legal_moves = self.game_logic.select_piece(touched_piece.chess_square)
-                self.clear_highlights()
-                self.highlight_legal_moves(self.legal_moves)
-            return True
-
-        # If no piece was touched but one was selected, then clear the selection.
-        if self.selected_piece:
-            self.selected_piece.selected = False
-            self.selected_piece = None
-            self.clear_highlights()
-            return True
-
-        return False
-
-    # def on_touch_down(self, touch):
-    #     bx, by = self.board_origin
-    #     # Only consider touches inside the board area.
-    #     if not (bx <= touch.x <= bx + self.board_size and by <= touch.y <= by + self.board_size):
-    #         return False
-
-    #     # First, get the destination square regardless of widgets.
-    #     dest_sq = self.ui_to_chess_square(touch.x, touch.y)
-
-    #     # If a piece is already selected and the touched square is one of its legal move destinations, execute the move.
-    #     if self.selected_piece and dest_sq is not None:
-    #         for move in self.legal_moves:
-    #             if move.to_square == dest_sq:
-    #                 print(f"Executing move: {move}")
-    #                 self.execute_move(move)
-    #                 return True
-
-    #     # Otherwise, check if a piece was touched.
-    #     touched_piece = None
-    #     for child in self.children:
-    #         if isinstance(child, ChessPiece) and child.collide_point(touch.x, touch.y):
-    #             touched_piece = child
-    #             break
-
-    #     if touched_piece:
-    #         # If the same piece is touched twice, deselect it.
-    #         if self.selected_piece == touched_piece:
-    #             self.selected_piece.selected = False
-    #             self.selected_piece = None
-    #             self.clear_highlights()
-    #         else:
-    #             move_list = self.select_piece(touched_piece.chess_square)
-    #             #self.selected_piece = touched_piece
-    #             touched_piece.selected = True
-    #             self.clear_highlights()
-
-    #             self.highlight_legal_moves(move_list)
-    #         return True
-
-    #     # If no piece is touched and a piece is selected, deselect it.
-    #     if self.selected_piece:
-    #         self.selected_piece.selected = False
-    #         self.selected_piece = None
-    #         self.clear_highlights()
-    #         return True
-
-    #     return False
-    
-    def select_piece(self, square):
-        legal_moves = self.game_logic.select_piece(square)
-        self.highlight_legal_moves(legal_moves)
-    
-    def reset(self):
-        self.game_board.reset()
-        self.add_piece_widgets()
-    
-    def fen_to_board(self, fen):
-        self.game_board.reset()
-        self.game_board = self.game_logic.create_fen(fen)
-        self.add_piece_widgets()
-    
     def update_board(self):
-        """Called by the game logic when the state changes."""
+        """
+        Called by the game logic when the board state changes.
+        Refreshes the piece widgets and clears any highlights.
+        """
         self.clear_highlights()
-        # Clear existing piece widgets, then re-add them based on game_logic.board state.
-        #self.remove_piece_widgets()  # Assume you implement this method
         self.add_piece_widgets()
-
+    
 
 
 # ------------------------------------------------------------
@@ -502,47 +240,29 @@ class ChessBoard(Widget):
 class ChessGameWidget(FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        # --- Define panel sizes ---
-        panel_width = 200  # width (in pixels) for left (captured pieces) and right (move list) panels
-        screen_width = 1920
-        screen_height = 1080
-
-        # The board size will be the maximum square that fits in the central area.
-        board_size = min(screen_height, screen_width - 2 * panel_width)
-        self.square_size = board_size / 8
-
-        # Center the board in the area between the panels, leaving space for labels.
-        board_origin_x = panel_width + ((screen_width - 2 * panel_width - board_size) / 2) + self.square_size
-        board_origin_y = ((screen_height - board_size) / 2) + self.square_size
-        board_origin = (board_origin_x, board_origin_y)
+        self.panel_width = 200  # Fixed width for the side panels
 
         # --- Create the captured pieces panel (left side) ---
         self.captured_panel = BoxLayout(
             orientation='vertical',
             size_hint=(None, 1),
-            width=panel_width,
-            pos=(0, 0)
+            width=self.panel_width
         )
         self.captured_panel.add_widget(Label(text="Captured", size_hint_y=None, height=40, font_size=FONT_SIZE))
         self.add_widget(self.captured_panel)
 
         # --- Create the move list panel (right side) ---
-        move_list_scroll = ScrollView(
-            size_hint=(None, 1),
-            width=panel_width,
-            pos=(screen_width - panel_width, 0)
-        )
-        self.move_list_container = BoxLayout(
-            orientation='vertical',
-            size_hint_y=None
-        )
+        self.move_list_container = BoxLayout(orientation='vertical', size_hint_y=None)
         self.move_list_container.bind(minimum_height=self.move_list_container.setter('height'))
-        move_list_scroll.add_widget(self.move_list_container)
-        self.add_widget(move_list_scroll)
+        self.move_list_scroll = ScrollView(
+            size_hint=(None, 1),
+            width=self.panel_width
+        )
+        self.move_list_scroll.add_widget(self.move_list_container)
+        self.add_widget(self.move_list_scroll)
 
-        # --- Create the chessboard ---
-        self.chess_board = ChessBoard(board_origin=board_origin, board_size=board_size)
+        # --- Create the chessboard (center) ---
+        self.chess_board = ChessBoard()
         self.chess_board.captured_panel = self.captured_panel
         self.chess_board.move_list_container = self.move_list_container
         self.add_widget(self.chess_board)
@@ -550,24 +270,54 @@ class ChessGameWidget(FloatLayout):
         # --- Create the move input box ---
         self.move_input = TextInput(
             size_hint=(None, None),
-            size=(panel_width, 40),
-            pos=(screen_width - panel_width, 0),
+            size=(self.panel_width, 40),
             multiline=False
         )
         self.move_input.bind(on_text_validate=self.on_move_entered)
         self.add_widget(self.move_input)
 
+        # Bind to size changes so that layout updates dynamically.
+        self.bind(size=self.update_layout)
+
+    def update_layout(self, *args):
+        screen_width = self.width
+        screen_height = self.height
+        # Compute the board size as the maximum square that fits in the central area.
+        board_size = min(screen_height, screen_width - 2 * self.panel_width)
+        square_size = board_size / 8.0
+
+        # Center the board horizontally between the side panels and vertically centered.
+        board_origin_x = self.panel_width + ((screen_width - 2 * self.panel_width - board_size) / 2)
+        board_origin_y = (screen_height - board_size) / 2
+
+        # Update the chess_board's position and size.
+        self.chess_board.pos = (board_origin_x, board_origin_y)
+        self.chess_board.size = (board_size, board_size)
+        # Trigger the ChessBoard on_size update.
+        self.chess_board.on_size()
+
+        # Update the captured panel (left side).
+        self.captured_panel.pos = (0, 0)
+        self.captured_panel.size = (self.panel_width, screen_height)
+
+        # Update the move list scroll view (right side).
+        self.move_list_scroll.pos = (screen_width - self.panel_width, 0)
+        self.move_list_scroll.size = (self.panel_width, screen_height)
+
+        # Position the move input box (for example, at the bottom of the move list).
+        self.move_input.pos = (screen_width - self.panel_width, 0)
+
     def on_move_entered(self, instance):
         move_str = instance.text
         try:
-            # Try to interpret the move as a UCI move
+            # Try to interpret the move as a UCI move.
             move = chess.Move.from_uci(move_str)
             if move not in self.chess_board.game_board.legal_moves:
-                # If the move is not legal in UCI format, try interpreting it as a SAN move
+                # If not legal in UCI format, try SAN.
                 move = self.chess_board.game_board.parse_san(move_str)
-            
+
             if move in self.chess_board.game_board.legal_moves:
-                # Select the piece at the starting square
+                # Find and select the piece at the move's starting square.
                 from_square = move.from_square
                 self.chess_board.selected_piece = None
                 for child in self.chess_board.children:
@@ -576,7 +326,7 @@ class ChessGameWidget(FloatLayout):
                         break
 
                 if self.chess_board.selected_piece:
-                    self.chess_board.execute_move(move)
+                    self.chess_board.make_move(move)
                     instance.text = ""
                 else:
                     self.add_debug_message(f"No piece at starting square: {move_str}")
@@ -589,7 +339,6 @@ class ChessGameWidget(FloatLayout):
             instance.text = ""
 
     def add_debug_message(self, message):
-        """Add a debug message to the move list container."""
         label = Label(text=message, size_hint_y=None, height=40)
         self.move_list_container.add_widget(label)
 

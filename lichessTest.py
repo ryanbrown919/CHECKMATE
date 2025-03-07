@@ -10,7 +10,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 from kivy.core.window import Window
 
-from chessBoard import ChessBoard
+from chessBoard_mar6 import ChessBoard
 
 import threading
 import time

@@ -7,9 +7,9 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 
-from chessBoard import ChessGameWidget
+from chessBoard_mar6 import ChessGameWidget
 from chessClock import ChessClockWidget 
-from gantryControl import GantryControlWidget
+from gantryControl_old import GantryControlWidget
 from rfidScanner import NFCWidget
 from hallEffects import ChessBoardHallEffect
 

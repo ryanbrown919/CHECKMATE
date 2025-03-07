@@ -16,12 +16,18 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.graphics import Color, RoundedRectangle
 from kivy.uix.scrollview import ScrollView
 
+from kivy.core.window import Window
+
+# --- Settings ---
+Window.fullscreen = True
+
+
 import chess
 
-from chessBoard import ChessBoard
+from chessBoard_test import ChessBoard
 from chessClock import ChessClock
 from game_logic import gameLogic
-from menu import HorizontalLine, VerticalLine
+from menu import HorizontalLine, VerticalLine, IconButton
 
 class GameplayScreen(Screen):
     def __init__(self, **kwargs):
@@ -42,10 +48,20 @@ class GameplayScreen(Screen):
         white_layout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.4, 1))
 
         root_layout.add_widget(header_layout)
-        header_layout.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
-        header_layout.add_widget(Widget(size_hint_x=0.5))
         icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
+        header_layout.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
+        #header_layout.add_widget(icon)
+
+        header_layout.add_widget(Widget(size_hint_x=0.4))
+        header_layout.add_widget(IconButton(source="figures/hamburgMenu.png", 
+                                            size_hint=(0.1, 1),  # Disable relative sizing
+                                                       # Set explicit dimensions
+                                            allow_stretch=True,      # Allow the image to stretch to fill the widget
+                                            keep_ratio=True          # Maintain the image's aspect ratio
+                                            ))
         header_layout.add_widget(icon)
+
+        
         root_layout.add_widget(HorizontalLine())
 
         root_layout.add_widget(playarea_layout)
@@ -63,14 +79,17 @@ class GameplayScreen(Screen):
         black_board = ChessBoard(bottom_colour_white=False, game_logic=gameLogic_instance, size_hint=(1, 1))
         white_board = ChessBoard(bottom_colour_white=True, game_logic=gameLogic_instance, size_hint=(1, 1))
         
-        black_layout.add_widget(Label(text=self.clock.format_time(self.black_time), font_size=80, size_hint=(1, 0.2)))
-        black_layout.add_widget(HorizontalLine())
         black_layout.add_widget(black_board)
+        black_layout.add_widget(HorizontalLine())
+        black_layout.add_widget(Label(text=self.clock.format_time(self.black_time), font_size=80, size_hint=(1, 0.2)))
+        
         middle_layout.add_widget(move_list)
         middle_layout.add_widget(piece_jail)
-        white_layout.add_widget(Label(text=self.clock.format_time(self.white_time), font_size=80, size_hint=(1, 0.2)))
+        white_layout.add_widget(white_board)  
         white_layout.add_widget(HorizontalLine())
-        white_layout.add_widget(white_board)    
+        white_layout.add_widget(Label(text=self.clock.format_time(self.white_time), font_size=80, size_hint=(1, 0.2)))
+        
+          
 
 
         self.add_widget(root_layout)

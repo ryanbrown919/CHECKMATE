@@ -15,9 +15,9 @@ from kivy.graphics import Color, RoundedRectangle
 
 
 
-from chessBoard import ChessGameWidget
+from chessBoard_test import ChessGameWidget
 from chessClock import ChessClockWidget 
-from gantryControl import GantryControlWidget
+from gantryControl import GantryControlScreen
 from rfidScanner import NFCWidget
 from hallEffects import ChessBoardHallEffect
 

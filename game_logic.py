@@ -46,7 +46,7 @@ class gameLogic:
         self.update_board()
         return legal_moves
 
-    def make_move(self, move):
+    def push(self, move):
         """Push a move onto the board and notify all observers."""
         self.game_board.push(move)
         self.notify_observers()
