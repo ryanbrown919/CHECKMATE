@@ -307,7 +307,6 @@ class MainLayout(BoxLayout):
 # ------------------------------------------------------------
 class ChessApp(App):
     def build(self):
-        Window.fullscreen = True
         return MainLayout()
 
 if __name__ == '__main__':

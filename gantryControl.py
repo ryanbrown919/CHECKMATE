@@ -10,15 +10,14 @@ import time
 import threading
 
 from kivy.clock import Clock
+from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 
-from menu import HorizontalLine, VerticalLine, IconButton
-from chessBoard import 
-
+from customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout, ChessBoardWidget
 
 # Constant feedrate as in your original code
 FEEDRATE = 10000  # mm/min
@@ -157,19 +156,30 @@ class gantryControl:
 
 
 
-class GantryControlScreen(BoxLayout):
+class GantryControlScreen(Screen):
     def __init__(self, **kwargs):
         super(GantryControlScreen, self).__init__(**kwargs)
-        self.orientation = 'horizontal'
-        self.spacing = 10
-        self.padding = 10
+
+       # General Structure of Gameplay Screen
+        root_layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        header_layout = headerLayout()
+        playarea_layout = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.9))
+
+        controls_layout=GridLayout(cols=3, rows=4, spacing=5, size_hint=(0.7, 1))
+        boardLayout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.3, 1))
+        boardLayout.add_widget(ChessBoardWidget())
+
+
+        root_layout.add_widget(header_layout)
+        root_layout.add_widget(HorizontalLine())
+        root_layout.add_widget(playarea_layout)
+        playarea_layout.add_widget(controls_layout)
+        playarea_layout.add_widget(boardLayout)
+        self.add_widget(root_layout)
+
 
         self.gantry_control= gantryControl()
 
-        # Internal state variables
-        self.jog_step = 4
-        self.simulate = False  # When True, widget is in simulation mode.
-        self.serial_lock = threading.Lock()
 
         # ---------------------
         # LEFT PANEL: Directional Buttons
@@ -201,6 +211,9 @@ class GantryControlScreen(BoxLayout):
 
         left_panel.add_widget(Button(text="Activate Magnet", font_size=24))
 
+        controls_layout.add_widget(left_panel)
+
+
         # ---------------------
         # RIGHT PANEL: Controls & Debug Log
         # ---------------------
@@ -208,7 +221,7 @@ class GantryControlScreen(BoxLayout):
 
         # Step size controls.
         step_label = Label(text="Step Size (mm):", size_hint_y=0.1, font_size=24)
-        self.step_input = TextInput(text=str(self.jog_step), multiline=False,
+        self.step_input = TextInput(text=str(self.gantry_control.jog_step), multiline=False,
                                     input_filter='int', size_hint_y=0.1)
         self.step_input.bind(text=self.gantry_control.on_step_change)
 
@@ -226,8 +239,7 @@ class GantryControlScreen(BoxLayout):
         right_panel.add_widget(debug_label)
         right_panel.add_widget(self.debug_log)
 
-        self.add_widget(left_panel)
-        self.add_widget(right_panel)
+      
 
         # Schedule the GRBL connection attempt after initialization.
         Clock.schedule_once(lambda dt: self.gantry_control.connect_to_grbl(), 0)

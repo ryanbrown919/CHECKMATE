@@ -1,216 +1,243 @@
-import berserk
-import chess
 import threading
 import time
+import chess
+import berserk  # For online play; pip install berserk
+import chess.engine  # For offline UCI engine support
+import sys
 
-class BerserkChessGame:
-    def __init__(self, token, game_id=None, is_bot=True):
+running_on_pi = sys.platform.startswith("linux")
+running_on_mac = sys.platform.startswith("darwin")
+
+class ChessBackend(threading.Thread):
+    def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
+                 engine_time_limit=0.1, difficulty_level=5):
         """
-        Initialize the game backend.
-
-        :param token: Your Lichess API token.
-        :param game_id: The game ID on Lichess (if already started).
-        :param is_bot: Set True if using a bot account (uses client.bots endpoints).
+        :param lichess_token: Your Lichess API token (used in online mode).
+        :param ui_move_callback: A callback function to update the UI with opponent moves.
+        :param mode: "online" or "offline" to select the mode of play.
+        :param engine_path: Path to the UCI engine binary (e.g., Stockfish) for offline mode.
+        :param engine_time_limit: Time limit (in seconds) for the engine to compute a move.
+        :param difficulty_level: Difficulty level on a scale of 1 (easiest) to 10 (hardest) for offline mode.
         """
-        # Create an authenticated session with Lichess
-        self.session = berserk.TokenSession(token)
-        self.client = berserk.Client(session=self.session)
-        self.client.account.upgrade_to_bot()
-
-
-        self.game_id = game_id
-        self.is_bot = is_bot
+        super().__init__()
+        self.mode = mode
+        self.ui_move_callback = ui_move_callback
+        self.lichess_token = lichess_token
         self.board = chess.Board()
-
-    def start_game_against_bot(self, level=1, rated=False, 
-                               clock_limit=300, clock_increment=0, variant="standard", 
-                               color=None, fen=None):
-        """
-        Start a game against a bot by challenging it.
-
-        :param bot_username: The username of the bot to challenge.
-        :param level: The bot level (typically 1 to 8).
-        :param rated: Whether the game is rated.
-        :param clock_limit: Total time (in seconds) for the game.
-        :param clock_increment: Increment per move (in seconds).
-        :param variant: Chess variant, default "standard".
-        :param color: Preferred color ("white" or "black"), if any.
-        :param fen: Optional starting position in FEN notation.
-        :return: The game ID of the newly started game.
-        :raises NotImplementedError: If not using a bot account.
-        """
-        if not self.is_bot:
-            raise NotImplementedError("Starting a game against a bot is only supported for bot accounts.")
+        self.board_lock = threading.Lock()
+        self._stop_event = threading.Event()
         
-        # Set up challenge parameters per Lichess API documentation.
-        challenge_params = {
-            "clock_limit": clock_limit, 
-            "clock_increment": clock_increment,
-            "variant": variant,
-            "level": 2
-        }
-        if color:
-            challenge_params["color"] = color
-        if fen:
-            challenge_params["fen"] = fen
+        # Online mode variables
+        self.game_id = None
+        if self.mode == "online":
+            self.session = berserk.TokenSession(lichess_token)
+            self.client = berserk.Client(session=self.session)
+        
+        # Offline mode variables
 
-        print("Challenge params:", challenge_params)
+        if running_on_pi:
+            engine_path = "engines/stockfish-android-armv8"
+        elif running_on_mac:
+            engine_path = "engines/stockfish-macos-m1-apple-silicon"
 
-        # Send a challenge request to the bot.
-        response = self.client.challenges.create_ai(level=2, color="white", variant="standard")
-        # Expecting a response structure with a challenge id.
-        print(response)
-        self.game_id = response["id"]
 
-        # Initialize board state from response (if moves already exist).
-        moves = response.get("state", {}).get("moves", "")
-        self.board.reset()
-        if moves:
-            for move in moves.split():
-                self.board.push_uci(move)
-        return self.game_id
+        self.engine_path = engine_path
+        self.engine_time_limit = engine_time_limit
+        self.difficulty_level = difficulty_level  # Scale 1 (easiest) to 10 (hardest)
+        self.engine = None  # Will be initialized in offline mode
 
-    def stream_game(self):
+
+
+        self.game_history = []
+        self.SQUARES = chess.SQUARES
+        self.observers = []
+        self.game_state = "UNFINISHED"
+
+
+
+    def run(self):
+        if self.mode == "online":
+            if not self.game_id:
+                print("No game started. Call start_game() first.")
+                return
+            self._stream_game()
+        elif self.mode == "offline":
+            if self.engine_path:
+                try:
+                    self.engine = chess.engine.SimpleEngine.popen_uci(self.engine_path)
+                    # Configure the engine for a variable difficulty.
+                    # Map difficulty_level (1 to 10) to an Elo value between 1350 and 2850.
+                    elo = int(1350 + (self.difficulty_level - 1) * (1500 / 9))
+                    self.engine.configure({"UCI_LimitStrength": True, "UCI_Elo": elo})
+                    print(f"Offline engine configured at difficulty level {self.difficulty_level} (Elo {elo}).")
+                except Exception as e:
+                    print("Error initializing offline engine:", e)
+                    return
+            else:
+                print("Offline mode requires an engine_path to a UCI engine like Stockfish.")
+                return
+
+            # Main offline loop: wait for the opponent's turn and compute a move when needed.
+            while not self._stop_event.is_set():
+                with self.board_lock:
+                    # In this example, the offline bot plays as Black.
+                    if self.board.turn == chess.BLACK:
+                        try:
+                            result = self.engine.play(self.board, chess.engine.Limit(time=self.engine_time_limit))
+                            move = result.move
+                            self.board.push(move)
+                            if self.ui_move_callback:
+                                self.ui_move_callback(move.uci())
+                        except Exception as e:
+                            print("Error computing engine move:", e)
+                time.sleep(0.1)
+            self.engine.quit()
+
+    def _stream_game(self):
         """
-        Streams game events from Lichess to keep the local board updated.
-        Blocks while streaming.
-        """
-        if not self.game_id:
-            raise ValueError("Game ID must be provided to stream game events.")
-        # Use different endpoints based on whether this is a bot game or a normal game.
-        stream = (self.client.bots.stream_game_state(self.game_id) if self.is_bot 
-                  else self.client.games.stream(self.game_id))
-        for event in stream:
-            self.handle_event(event)
-
-    def handle_event(self, event):
-        """
-        Processes game events from Lichess. In a "gameFull" event the complete
-        game state is provided; subsequent "gameState" events update the moves.
-        """
-        event_type = event.get("type")
-        if event_type == "gameFull":
-            # Initialize board from the full game state.
-            moves = event.get("state", {}).get("moves", "")
-            self.board.reset()
-            if moves:
-                for move in moves.split():
-                    self.board.push_uci(move)
-        elif event_type == "gameState":
-            # Update board based on new moves.
-            moves = event.get("moves", "")
-            self.board.reset()
-            if moves:
-                for move in moves.split():
-                    self.board.push_uci(move)
-        # Other event types (e.g., chat messages) can be handled as needed.
-
-    def make_move(self, move_str):
-        """
-        Makes a move on the local board and sends it to Lichess.
-        The move can be provided in UCI (e.g. "e2e4") or SAN (e.g. "e4") notation.
-
-        :param move_str: The move string.
-        :raises ValueError: If the move is illegal.
+        Streams online game events from Lichess and updates the board accordingly.
         """
         try:
-            # First try interpreting the move as UCI.
-            move = chess.Move.from_uci(move_str)
-            if move not in self.board.legal_moves:
-                # If not legal, attempt to parse it as SAN.
-                move = self.board.parse_san(move_str)
-        except Exception:
-            # Fallback: try to parse as SAN notation.
-            move = self.board.parse_san(move_str)
+            stream = self.client.bots.stream_game_state(self.game_id)
+        except Exception as e:
+            print("Error starting game stream:", e)
+            return
 
-        if move not in self.board.legal_moves:
-            raise ValueError("Illegal move: " + move_str)
+        for event in stream:
+            if self._stop_event.is_set():
+                break
 
-        # Update the local board state.
-        self.board.push(move)
+            event_type = event.get("type")
+            if event_type == "gameFull":
+                moves_str = event.get("state", {}).get("moves", "")
+                self._process_moves(moves_str)
+            elif event_type == "gameState":
+                moves_str = event.get("moves", "")
+                self._process_moves(moves_str)
 
-        # Send the move to Lichess.
-        if self.is_bot:
-            self.client.bots.make_move(self.game_id, move.uci())
+    def _process_moves(self, moves_str):
+        """
+        Processes a space-separated string of moves from Lichess, pushing any new moves to the local board.
+        """
+        if not moves_str:
+            return
+        
+        moves_list = moves_str.split()
+        with self.board_lock:
+            applied_moves = list(self.board.move_stack)
+            if len(moves_list) > len(applied_moves):
+                new_moves = moves_list[len(applied_moves):]
+                for move_uci in new_moves:
+                    try:
+                        move = chess.Move.from_uci(move_uci)
+                        self.board.push(move)
+                        if self.ui_move_callback:
+                            self.ui_move_callback(move.uci())
+                    except Exception as e:
+                        print("Error processing move:", move_uci, e)
+
+    def start_game(self):
+        """
+        Starts a new game in online mode.
+        In offline mode, the board is already initialized.
+        """
+        if self.mode == "online":
+            try:
+                # Request a game as white.
+                game = self.client.bots.create_game(challenge={'color': 'white'})
+                self.game_id = game["id"]
+                print("Online game started with game_id:", self.game_id)
+            except Exception as e:
+                print("Error starting online game:", e)
         else:
-            self.client.games.make_move(self.game_id, move.uci())
+            print("Offline mode: game state already initialized.")
 
-    def legal_moves(self):
+    def push_move(self, move_text):
         """
-        Returns the current legal moves in Standard Algebraic Notation (SAN).
+        Processes a move input (as a UCI string, e.g., "e2e4") from the UI.
+        Validates and applies the move to the board, then sends it online if in online mode.
+        """
+        with self.board_lock:
+            try:
+                move = chess.Move.from_uci(move_text)
+            except ValueError as e:
+                print("Invalid UCI move notation:", move_text)
+                return
 
-        :return: A list of legal moves.
-        """
-        return [self.board.san(move) for move in self.board.legal_moves]
+            if move not in self.board.legal_moves:
+                print("Illegal move attempted:", move_text)
+                return
 
-    def board_fen(self):
-        """
-        Returns the current board state in FEN notation.
-        """
-        return self.board.fen()
+            self.board.push(move)
 
-    def get_board(self):
-        """
-        Returns the internal python-chess Board object.
-        """
+        if self.mode == "online":
+            try:
+                self.client.bots.make_move(self.game_id, move_text)
+            except Exception as e:
+                print("Error sending move to Lichess:", e)
+
+    def stop(self):
+        self._stop_event.set()
+
+    def select_piece(self, square):
+        # Find legal moves for the selected piece, update any boards with hgihlighted squares
+
+        legal_moves = [move for move in self.board.legal_moves if move.from_square == square]
+        self.update_board()
+        return legal_moves
+    
+    def register_observer(self, observer_callback):
+        """Register a callback (from your chessboard widget) to update the UI."""
+        self.observers.append(observer_callback)
+
+    def notify_observers(self):
+        for callback in self.observers:
+            callback(self.board, self.game_state)
+
+    def update_board(self):
         return self.board
+    
+    def square(self, col, row):
+        return chess.square(col, row)
+    
+    def square_file(self, sq):
+        return chess.square_file(sq)
+    
+    def square_rank(self, sq):
+        return chess.square_rank(sq)
 
 # Example usage:
 if __name__ == "__main__":
-    # Replace with your Lichess API token.
-
-    with open('venv/key.txt', 'r') as f:
-            api_key = f.read().strip()  # .strip() removes any extra whitespace or newline characters
-
-    TOKEN = api_key
+    # Dummy UI callback for demonstration purposes.
+    def ui_callback(move_uci):
+        print("UI update with move:", move_uci)
     
-    # Initialize the game backend as a bot account.
-    game = BerserkChessGame(TOKEN, is_bot=True)
-    
-    # Start a game against a specific bot.
-    BOT_USERNAME = "lichess-bot"  # Replace with the bot's username you want to challenge.
-    try:
-        print("Trying to start game")
-        game_id = game.start_game_against_bot(level=3, rated=False, 
-                                               clock_limit=300, clock_increment=5)
-        print(f"Game started against bot. Game ID: {game_id}")
-        print("Initial board FEN:", game.board_fen())
-    except Exception as e:
-        print("Error starting game:", e)
+    # Replace with your actual Lichess token and the path to the Stockfish binary.
+    TOKEN = "your-lichess-api-token"
 
-    # Create a lock for synchronizing board state updates.
-    state_lock = threading.Lock()
+    if running_on_pi:
+        STOCKFISH_PATH = "engines/stockfish-android-armv8"
+    elif running_on_mac:
+        STOCKFISH_PATH = "engines/stockfish-macos-m1-apple-silicon"
+    #STOCKFISH_PATH = "/usr/local/bin/stockfish"  # Adjust as necessary for your OS.
 
-    # Start streaming game updates in a background thread.
-    def stream_updates():
-        # If game.stream_game() modifies the board, you can add locking inside that method,
-        # or here if possible.
-        game.stream_game()   # This call will block, hence running it in its own thread.
+    # Create the backend in offline mode with a chosen difficulty level.
+    backend = ChessBackend(lichess_token=TOKEN, ui_move_callback=ui_callback,
+                           mode="offline", engine_path=STOCKFISH_PATH,
+                           engine_time_limit=0.1, difficulty_level=5)
+    backend.start()
 
-    stream_thread = threading.Thread(target=stream_updates, daemon=True)
-    stream_thread.start()
 
-    # Interactive game loop.
+    print("Game started. Enter moves in UCI or SAN notation. Type 'q' to quit.")
     while True:
-        human_move = input("Enter your move in UCI or SAN format (or type 'quit' to exit): ")
-        if human_move.lower() == "quit":
-            print("Exiting game.")
+        move_str = input("Your move: ").strip()
+        if move_str.lower() == 'q':
+            print("Exiting game loop.")
             break
+        backend.push_move(move_str)
 
-        try:
-            # Lock the board state while making a move.
-            with state_lock:
-                game.client.bots.make_move(game_id, human_move)
-                print("Move played. Current board FEN:")
-                print(game.board_fen())
-        except ValueError as e:
-            print("Invalid move:", e)
-            continue
 
-        # Wait a bit for the bot's move to be processed.
-        print("Waiting for bot move...")
-        time.sleep(2)  # Adjust the delay as needed based on bot response time.
-
-        with state_lock:
-            print("Updated board FEN (after bot move):")
-            print(game.board_fen())
+    # Later, when shutting down:
+    time.sleep(5)
+    backend.stop()
+    backend.join()
