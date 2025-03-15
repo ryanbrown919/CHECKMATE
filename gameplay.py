@@ -82,7 +82,7 @@ class GameplayScreen(Screen):
 
 
         gameLogic_instance = ChessBackend(lichess_token=api_key, ui_move_callback=ui_callback, mode="offline",
-                           engine_time_limit=1, difficulty_level=5)
+                           engine_time_limit=0.1, difficulty_level=5)
 
             # Start a new game via the backend
         gameLogic_instance.start_game()

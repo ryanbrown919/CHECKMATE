@@ -205,6 +205,35 @@ class ChessBackend(threading.Thread):
     
     def square_rank(self, sq):
         return chess.square_rank(sq)
+    import chess
+
+def calculate_material(self, board):
+    # Standard piece values: pawn=1, knight=3, bishop=3, rook=5, queen=9, king=0
+    values = {
+        chess.PAWN: 1,
+        chess.KNIGHT: 3,
+        chess.BISHOP: 3,
+        chess.ROOK: 5,
+        chess.QUEEN: 9,
+        chess.KING: 0
+    }
+    white_score = 0
+    black_score = 0
+
+    if board is None:
+        board = self.board
+
+    for square, piece in board.piece_map().items():
+        if piece.color == chess.WHITE:
+            white_score += values[piece.piece_type]
+        else:
+            black_score += values[piece.piece_type]
+    
+    # A positive result indicates a material advantage for White,
+    # while a negative result indicates an advantage for Black.
+    return white_score, black_score
+
+
 
 # Example usage:
 if __name__ == "__main__":

@@ -28,8 +28,17 @@ class gantryControl:
 
             # Internal state variables
             self.jog_step = 4
+            self.step = 1
             self.simulate = False
             self.serial_lock = threading.Lock()
+            self.board_coordinates =   {"a1": (0, 14), "a2": (2,14), "a3": (4,14), "a4": (6,14), "a5": (8,14), "a6": (10,14), "a7": (12,14), "a8": (14, 14),
+                                        "b1": (0, 12), "b2": (2,12), "b3": (4,12), "b4": (6,12), "b5": (8,12), "b6": (10,12), "b7": (12,12), "b8": (14, 12),
+                                        "c1": (0, 10), "c2": (2,10), "c3": (4,10), "c4": (6,10), "c5": (8,10), "c6": (10,10), "c7": (12,10), "c8": (14 ,10),
+                                        "d1": (0, 8),  "d2": (2, 8), "d3": (4, 8), "d4": (6, 8), "d5": (8, 8), "d6": (10, 8), "d7": (12, 8), "d8": (14, 8),
+                                        "e1": (0, 6),  "e2": (2, 6), "e3": (4, 6), "e4": (6, 6), "e5": (8, 6), "e6": (10, 6), "e7": (12, 6), "e8": (14, 6),
+                                        "f1": (0, 4),  "f2": (2, 4), "f3": (4, 4), "f4": (6, 4), "f5": (8, 4), "f6": (10, 4), "f7": (12, 4), "f8": (14, 4),
+                                        "g1": (0, 2),  "g2": (2, 2), "g3": (4, 2), "g4": (6, 2), "g5": (8, 2), "g6": (10, 2), "g7": (12, 2), "g8": (14, 2),
+                                        "h1": (0, 0),  "h2": (2, 0), "h3": (4, 0), "h4": (6, 0), "h5": (8, 0), "h6": (10, 0), "h7": (12, 0), "h8": (14, 0)}
             
 
 
@@ -124,6 +133,22 @@ class gantryControl:
             cmd += f"F{FEEDRATE}"
             self.send_gcode("$X") 
             self.send_gcode(cmd)
+
+        def send_coordinates_command(self, x, y):
+            """
+            Construct and send the jog command based on dx, dy, and the current jog step size.
+            Figure out the gcode move command
+            """
+            step = self.step
+            cmd = "$J=G21G90G1"
+            if x:
+                cmd += f"X{x * step}"
+            if y:
+                cmd += f"Y{y * step}"
+            cmd += f"F{FEEDRATE}"
+            self.send_gcode("$X") 
+            self.send_gcode(cmd)
+
 
         def on_step_change(self, instance, value):
             """
