@@ -12,6 +12,8 @@ import threading
 from kivy.uix.screenmanager import Screen
 
 from kivy.uix.label import Label
+from kivy.core.text import Label as CoreLabel
+
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.uix.boxlayout import BoxLayout
@@ -224,8 +226,9 @@ class gantryControl:
 
 
 
-
 class GantryTargetWidget(Widget):
+
+    
     """
     Draws an 8x10 grid:
       - The inner 8x8 area (rows 2 to 9, columns 0 to 7) is the chessboard.
@@ -286,10 +289,24 @@ class GantryTargetWidget(Widget):
                     x = grid_origin[0] + col * self.square_size
                     y = grid_origin[1] + row * self.square_size
                     if (col + row) % 2 == 0:
-                        Color(189/255.0, 100/255.0, 6/255.0, 1)
-                    else:
+                        #Color(189/255.0, 100/255.0, 6/255.0, 1)
                         Color(247/255.0, 182/255.0, 114/255.0, 1)
+                    else:
+                        #Color(247/255.0, 182/255.0, 114/255.0, 1)
+                        Color(189/255.0, 100/255.0, 6/255.0, 1)
                     Rectangle(pos=(x, y), size=(self.square_size, self.square_size))
+
+                    #square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
+                    square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
+                    # Create a CoreLabel to render the text.
+                    core_lbl = CoreLabel(text=square_label, font_size=self.square_size * 0.2, color=(0, 0, 0, 0.8))
+                    core_lbl.refresh()
+                    texture = core_lbl.texture
+                    # Position the label in the bottom right of the square.
+                    label_x = x + self.square_size * 0.7
+                    label_y = y + self.square_size * 0.05
+                    # Draw the label texture.
+                    Rectangle(texture=texture, pos=(label_x, label_y), size=texture.size)
             # --- Draw grid lines ---
             Color(0, 0, 0, 1)
             for col in range(self.cols + 1):
@@ -316,21 +333,24 @@ class GantryTargetWidget(Widget):
         # Create 8 labels for each border if not already created.
         if len(self.top_labels) < 8:
             for i in range(8):
-                lbl = Label(text="", halign="center", valign="middle")
+                lbl = Label(text="", halign="center", valign="middle", color=(0,0,0,1))
                 self.top_labels.append(lbl)
                 self.add_widget(lbl)
             for i in range(8):
-                lbl = Label(text="", halign="center", valign="middle")
+                lbl = Label(text="", halign="center", valign="middle", color=(0,0,0,1))
                 self.bottom_labels.append(lbl)
                 self.add_widget(lbl)
             for j in range(8):
-                lbl = Label(text="", halign="center", valign="middle")
+                lbl = Label(text="", halign="center", valign="middle", color=(0,0,0,1))
                 self.left_labels.append(lbl)
                 self.add_widget(lbl)
             for j in range(8):
-                lbl = Label(text="", halign="center", valign="middle")
+                lbl = Label(text="", halign="center", valign="middle", color=(0,0,0,1))
                 self.right_labels.append(lbl)
                 self.add_widget(lbl)
+
+            Clock.schedule_once(lambda dt: self.update_labels(), 0)
+
     
     def update_labels(self):
         # Ensure labels are present.
@@ -459,12 +479,46 @@ class GantryControlWidget(BoxLayout):
         # The target board occupies most of the space.
 
         self.header_layout = headerLayout(menu=False)
-        self.body_layout = BoxLayout(orientation='horizontal', spacing=10, padding = 20)
-        self.board_display = BoxLayout(orientation='vertical', spacing=10, padding = 20)
-        self.gantry_controls = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        self.body_layout = BoxLayout(orientation='horizontal')
+        self.board_display = BoxLayout(orientation='vertical', padding=10)
+        self.gantry_controls = BoxLayout(orientation='vertical')
 
         self.target_board = GantryTargetWidget()
         self.board_display.add_widget(self.target_board)
+
+        # # Top row: file labels for the top border (rotated: top row shows h8, g8, ... a8)
+        # self.top_row = BoxLayout(orientation="horizontal", size_hint=(1, 0.2))
+        # self.bottom_row = BoxLayout(orientation="horizontal", size_hint=(1, 0.8))
+        # self.top_label = BoxLayout(orientation="horizontal", size_hint=(0.8, 0.1))
+        # self.side_label = BoxLayout(orientation="vertical", size_hint= (0.1, 0.9))
+
+
+        # for rank in range(8, 0, -1):
+        #     self.top_label.add_widget(Label(text=str(rank), halign="center", valign="middle"))
+
+        # files = ["h", "g", "f", "e", "d", "c", "b", "a"]
+        # for file in files:
+        #     self.side_label.add_widget(Label(text=f"{file}", halign="left", valign="middle"))
+
+        # self.side_label.add_widget(Widget(size_hint=(1, 0.4)))
+
+        # self.top_row.add_widget(self.top_label)
+        # self.top_row.add_widget(Widget(size_hint=(0.2, 0.2)))
+
+        # self.bottom_row.add_widget(self.target_board)
+        # self.bottom_row.add_widget(self.side_label)
+
+        # self.board_display.add_widget(self.top_row)
+        # self.board_display.add_widget(self.bottom_row)
+    
+
+
+
+
+
+
+
+
 
         self.gantry_control = gantryControl()
         
