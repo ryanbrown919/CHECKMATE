@@ -297,7 +297,7 @@ class GantryTargetWidget(Widget):
                     Rectangle(pos=(x, y), size=(self.square_size, self.square_size))
 
                     #square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
-                    square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
+                    square_label = f"{chr(ord('h') - (7 - (row-2)))}{8-col}"
                     # Create a CoreLabel to render the text.
                     core_lbl = CoreLabel(text=square_label, font_size=self.square_size * 0.2, color=(0, 0, 0, 0.8))
                     core_lbl.refresh()
