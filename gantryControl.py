@@ -9,15 +9,24 @@ import serial
 import time
 import threading
 
-from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen
+
+from kivy.uix.label import Label
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.textinput import TextInput   
 from kivy.uix.button import Button
-from kivy.uix.textinput import TextInput
-from kivy.uix.label import Label
+from kivy.clock import Clock
+from kivy.app import App
+from kivy.core.window import Window
+Window.fullscreen = True
 
-from customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout, ChessBoardWidget
+
+SQUARE_SIZE_MM = 50    # each square is 50mm
+STEP_MM = 25  # each step is 25mm
+from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout, MagnetControl
 
 # Constant feedrate as in your original code
 FEEDRATE = 10000  # mm/min
@@ -168,133 +177,595 @@ class gantryControl:
             # Attempt to reconnect immediately.
             self.connect_to_grbl()
 
+        def square_to_coord(self, square):
+            """
+            Converts a chess square string (e.g. "e2") to coordinates (x, y)
+            in the following system:
+            - h1 is (0,0)
+            - x increases as rank increases (rank 1 -> 0, rank 8 -> 7)
+            - y increases as file goes from h to a (h->0, a->7)
+            """
+            file = square[0].lower()
+            try:
+                rank = int(square[1])
+            except ValueError:
+                raise ValueError("Invalid square: rank must be a number")
+            x = rank - 1
+            y = ord('h') - ord(file)
+            return (x, y)
 
-
-
-
-
-
-
-
-
-
-
-
-
-class GantryControlScreen(Screen):
-    def __init__(self, **kwargs):
-        super(GantryControlScreen, self).__init__(**kwargs)
-
-       # General Structure of Gameplay Screen
-        root_layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
-        header_layout = headerLayout()
-        playarea_layout = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.9))
-
-        controls_layout=GridLayout(cols=3, rows=4, spacing=5, size_hint=(0.7, 1))
-        boardLayout = BoxLayout(orientation='vertical', spacing=20, size_hint=(0.3, 1))
-        boardLayout.add_widget(ChessBoardWidget())
-
-
-        root_layout.add_widget(header_layout)
-        root_layout.add_widget(HorizontalLine())
-        root_layout.add_widget(playarea_layout)
-        playarea_layout.add_widget(controls_layout)
-        playarea_layout.add_widget(boardLayout)
-        self.add_widget(root_layout)
-
-
-        self.gantry_control= gantryControl()
-
-
-        # ---------------------
-        # LEFT PANEL: Directional Buttons
-        # ---------------------
-        left_panel = GridLayout(cols=3, rows=4, spacing=5, size_hint=(0.7, 1))
-        # Define directional buttons with text indicating x/y movements.
-        buttons = [
-            {"text": "X- Y-", "dx": -1, "dy": -1},
-            {"text": "Y-",   "dx":  0, "dy": -1},
-            {"text": "X+ Y-", "dx":  1, "dy": -1},
-            {"text": "X-",   "dx": -1, "dy":  0},
-            {"text": "",     "dx":  0, "dy":  0},  # Center is left blank.
-            {"text": "X+",   "dx":  1, "dy":  0},
-            {"text": "X- Y+", "dx": -1, "dy":  1},
-            {"text": "Y+",   "dx":  0, "dy":  1},
-            {"text": "X+ Y+", "dx":  1, "dy":  1}
+        def interpret_move(self, move_str, step_value):
+            """
+            Given a move string (e.g. "e2e4") and a step_value (in mm),
+            returns the relative displacement as a tuple (dx_mm, dy_mm).
+            """
+            if len(move_str) < 4:
+                raise ValueError("Move string must be at least 4 characters (e.g. 'e2e4').")
             
-        ]
-        for b in buttons:
-            if b["text"] == "":
-                left_panel.add_widget(Label(font_size=32))
-            else:
-                btn = Button(text=b["text"], font_size=24)
-                btn.dx = b["dx"]
-                btn.dy = b["dy"]
-                # Bind only on_release so that each tap sends one command.
-                btn.bind(on_release=self.on_button_release)
-                left_panel.add_widget(btn)
+            start_square = move_str[:2]
+            end_square = move_str[2:4]
+            
+            start_coord = self.square_to_coord(start_square)
+            end_coord = self.square_to_coord(end_square)
+            
+            # Compute the difference in "steps"
+            dx_steps = end_coord[0] - start_coord[0]
+            dy_steps = end_coord[1] - start_coord[1]
+            
+            # Convert steps to mm
+            dx_mm = dx_steps * step_value
+            dy_mm = dy_steps * step_value
+            
+            return (dx_mm, dy_mm)
 
-        left_panel.add_widget(Button(text="Activate Magnet", font_size=24))
-
-        controls_layout.add_widget(left_panel)
-
-
-        # ---------------------
-        # RIGHT PANEL: Controls & Debug Log
-        # ---------------------
-        right_panel = BoxLayout(orientation='vertical', spacing=10, size_hint=(0.3, 1))
-
-        # Step size controls.
-        step_label = Label(text="Step Size (mm):", size_hint_y=0.1, font_size=24)
-        self.step_input = TextInput(text=str(self.gantry_control.jog_step), multiline=False,
-                                    input_filter='int', size_hint_y=0.1)
-        self.step_input.bind(text=self.gantry_control.on_step_change)
-
-        # Reconnect button (extra action) to manually reconnect to the device.
-        reconnect_button = Button(text="Reconnect", size_hint_y=0.2, font_size=32)
-        reconnect_button.bind(on_release=self.gantry_control.on_reconnect)
-
-        # Debug log area (visible in simulation mode or upon errors).
-        debug_label = Label(text="Debug Log:", size_hint_y=0.1, font_size=32)
-        self.debug_log = TextInput(text="", readonly=True, multiline=True, size_hint_y=0.6, font_size=24)
-
-        right_panel.add_widget(step_label)
-        right_panel.add_widget(self.step_input)
-        right_panel.add_widget(reconnect_button)
-        right_panel.add_widget(debug_label)
-        right_panel.add_widget(self.debug_log)
-
-      
-
-        # Schedule the GRBL connection attempt after initialization.
-        Clock.schedule_once(lambda dt: self.gantry_control.connect_to_grbl(), 0)
+        def send_command(self, coordinates):
+            print(f"Sending command: {coordinates}")
+            pass
 
 
-    def on_button_release(self, instance):
+
+
+class GantryTargetWidget(Widget):
+    """
+    Draws an 8x10 grid:
+      - The inner 8x8 area (rows 2 to 9, columns 0 to 7) is the chessboard.
+      - The extra rows/columns serve as margins.
+    A red dot is drawn on top whose position is maintained in half‑steps.
+    The grid scales relative to the parent widget and is offset from the bottom‑left.
+    When trail mode is active, each new dot center is appended to a continuous red line.
+    
+    The coordinate system is rotated 90° clockwise relative to standard chess so that:
+      - Traditional h1 appears at the top right,
+      - h8 appears at the top left,
+      - a8 appears at the bottom left,
+      - a1 appears at the bottom right.
+    Border labels are drawn in the outermost margin cells.
+    """
+    def __init__(self, **kwargs):
+        super(GantryTargetWidget, self).__init__(**kwargs)
+        self.cols = 8
+        self.rows = 10
+        self.square_size = None  # computed in update_canvas
+        self.step_size = None    # half of square_size
+        # Dot's position in half‑steps (range: 0 to 16 horizontally, 0 to 20 vertically)
+        self.dot_step_x = 8
+        self.dot_step_y = 11  
+        # Offset (in pixels) from the widget's bottom‑left where the grid starts.
+        self.offset_value = 50  
+        # Trail points: list of (x,y) pixel positions.
+        self.trail_points = []
+        self.trail_enabled = False
+        # Lists for border labels.
+        self.top_labels = []
+        self.bottom_labels = []
+        self.left_labels = []
+        self.right_labels = []
+        self.bind(pos=self.update_canvas, size=self.update_canvas)
+        Clock.schedule_once(lambda dt: self.update_canvas(), 0)
+        Clock.schedule_once(lambda dt: self.add_labels(), 0)
+    
+    def update_canvas(self, *args):
+        self.canvas.clear()
+        # Compute square size relative to parent's available size minus the offset.
+        self.square_size = min((self.width - self.offset_value) / self.cols,
+                               (self.height - self.offset_value) / self.rows)
+        self.step_size = self.square_size / 2.0
+        # The full grid origin (bottom‑left of drawn grid)
+        grid_origin = (self.x + self.offset_value, self.y + self.offset_value)
+        with self.canvas:
+            # --- Draw extra two rows (rows 0 and 1) at the bottom ---
+            for row in range(2):
+                for col in range(self.cols):
+                    x = grid_origin[0] + col * self.square_size
+                    y = grid_origin[1] + row * self.square_size
+                    Color(247/255.0, 182/255.0, 114/255.0, 1)
+                    Rectangle(pos=(x, y), size=(self.square_size, self.square_size))
+            # --- Draw chessboard (rows 2 to 9) ---
+            for row in range(2, self.rows):
+                for col in range(self.cols):
+                    x = grid_origin[0] + col * self.square_size
+                    y = grid_origin[1] + row * self.square_size
+                    if (col + row) % 2 == 0:
+                        Color(189/255.0, 100/255.0, 6/255.0, 1)
+                    else:
+                        Color(247/255.0, 182/255.0, 114/255.0, 1)
+                    Rectangle(pos=(x, y), size=(self.square_size, self.square_size))
+            # --- Draw grid lines ---
+            Color(0, 0, 0, 1)
+            for col in range(self.cols + 1):
+                x = grid_origin[0] + col * self.square_size
+                Line(points=[x, grid_origin[1], x, grid_origin[1] + self.rows * self.square_size], width=1)
+            for row in range(self.rows + 1):
+                y = grid_origin[1] + row * self.square_size
+                Line(points=[grid_origin[0], y, grid_origin[0] + self.cols * self.square_size, y], width=1)
+            # --- Draw the trail (continuous red line) ---
+            if len(self.trail_points) >= 2:
+                Color(1, 0, 0, 1)
+                flat_points = [coord for pt in self.trail_points for coord in pt]
+                Line(points=flat_points, width=2)
+            # --- Draw the red dot ---
+            dot_center_x = grid_origin[0] + self.dot_step_x * self.step_size
+            dot_center_y = grid_origin[1] + self.dot_step_y * self.step_size
+            dot_radius = self.step_size * 0.4
+            Color(1, 0, 0, 1)
+            Ellipse(pos=(dot_center_x - dot_radius, dot_center_y - dot_radius),
+                    size=(dot_radius * 2, dot_radius * 2))
+        self.update_labels()
+    
+    def add_labels(self):
+        # Create 8 labels for each border if not already created.
+        if len(self.top_labels) < 8:
+            for i in range(8):
+                lbl = Label(text="", halign="center", valign="middle")
+                self.top_labels.append(lbl)
+                self.add_widget(lbl)
+            for i in range(8):
+                lbl = Label(text="", halign="center", valign="middle")
+                self.bottom_labels.append(lbl)
+                self.add_widget(lbl)
+            for j in range(8):
+                lbl = Label(text="", halign="center", valign="middle")
+                self.left_labels.append(lbl)
+                self.add_widget(lbl)
+            for j in range(8):
+                lbl = Label(text="", halign="center", valign="middle")
+                self.right_labels.append(lbl)
+                self.add_widget(lbl)
+    
+    def update_labels(self):
+        # Ensure labels are present.
+        if len(self.top_labels) < 8:
+            self.add_labels()
+        # Define the inner chessboard as the 8x8 area (rows 2 to 9, cols 0 to 7).
+        grid_origin = (self.x + self.offset_value, self.y + self.offset_value)
+        chess_origin = (grid_origin[0], grid_origin[1] + 2 * self.square_size)
+        board_width = 8 * self.square_size
+        board_height = 8 * self.square_size
+        # Top labels (above the chessboard): Files in rotated coordinates.
+        # In our rotated system, top-left is h8 and top-right is a8.
+        top_files = ["h","g","f","e","d","c","b","a"]
+        for i in range(8):
+            lbl = self.top_labels[i]
+            lbl.text = f"{top_files[i]}8"
+            lbl.font_size = self.square_size * 0.4
+            lbl.size = (self.square_size, self.square_size)
+            lbl.pos = (chess_origin[0] + i * self.square_size, chess_origin[1] + board_height)
+        # Bottom labels (below the chessboard): Files (h1 to a1)
+        bottom_files = ["h","g","f","e","d","c","b","a"]
+        for i in range(8):
+            lbl = self.bottom_labels[i]
+            lbl.text = f"{bottom_files[i]}1"
+            lbl.font_size = self.square_size * 0.4
+            lbl.size = (self.square_size, self.square_size)
+            lbl.pos = (chess_origin[0] + i * self.square_size, chess_origin[1] - self.square_size)
+        # Left labels (to the left of the chessboard): Ranks 8 to 1.
+        for j in range(8):
+            lbl = self.left_labels[j]
+            lbl.text = f"{8 - j}"
+            lbl.font_size = self.square_size * 0.4
+            lbl.size = (self.square_size, self.square_size)
+            lbl.pos = (chess_origin[0] - self.square_size, chess_origin[1] + (7 - j) * self.square_size)
+        # Right labels (to the right of the chessboard): Ranks 8 to 1.
+        for j in range(8):
+            lbl = self.right_labels[j]
+            lbl.text = f"{8 - j}"
+            lbl.font_size = self.square_size * 0.4
+            lbl.size = (self.square_size, self.square_size)
+            lbl.pos = (chess_origin[0] + board_width, chess_origin[1] + (7 - j) * self.square_size)
+    
+    def move_dot(self, dx, dy):
+        new_x = self.dot_step_x + dx
+        new_y = self.dot_step_y + dy
+        new_x = max(0, min(self.cols * 2, new_x))
+        new_y = max(0, min(self.rows * 2, new_y))
+        self.dot_step_x = new_x
+        self.dot_step_y = new_y
+        grid_origin = (self.x + self.offset_value, self.y + self.offset_value)
+        new_center = (grid_origin[0] + self.dot_step_x * self.step_size,
+                      grid_origin[1] + self.dot_step_y * self.step_size)
+        if self.trail_enabled:
+            self.trail_points.append(new_center)
+        self.update_canvas()
+    
+    def clear_trail(self):
+        self.trail_points = []
+        self.update_canvas()
+    
+    def move_dot_to_chess_square(self, square_str):
         """
-        Handle a directional button tap by sending a single jog command.
+        Given a traditional chess square (e.g., "e2"), moves the red dot to that square's center,
+        using a rotated coordinate system (90° clockwise rotation):
+          Standard chess: col = ord(file)-ord('a'), row = rank-1.
+          Then: new_col = 7 - row, new_row = col.
+          For the inner chessboard (rows 2 to 9), set:
+            dot_step_x = 2 * new_col + 1,
+            dot_step_y = 2 * (new_row + 2) + 1.
+        For example, "h8": col=7, row=7 => new_col=0, new_row=7,
+            dot_step_x = 2*0+1 = 1, dot_step_y = 2*(7+2)+1 = 19.
         """
-        dx = instance.dx
-        dy = instance.dy
-        self.gantry_control.send_jog_command(dx, dy)
+        if len(square_str) != 2:
+            return
+        file = square_str[0].lower()
+        try:
+            rank = int(square_str[1])
+        except ValueError:
+            return
+        col_index = ord(file) - ord('a')   # 0 to 7
+        row_index = rank - 1               # 0 to 7
+        new_col_index = 7 - row_index
+        new_row_index = col_index
+        self.dot_step_x = 2 * new_col_index + 1
+        self.dot_step_y = 2 * (new_row_index + 2) + 1
+        grid_origin = (self.x + self.offset_value, self.y + self.offset_value)
+        new_center = (grid_origin[0] + self.dot_step_x * self.step_size,
+                      grid_origin[1] + self.dot_step_y * self.step_size)
+        if self.trail_enabled:
+            self.trail_points.append(new_center)
+        self.update_canvas()
+    
+    def process_chess_move(self, move_str):
+        """
+        Processes a chess move string (e.g., "e2e4").
+        Moves the red dot first to the "from" square then (after 0.5 sec) to the "to" square.
+        """
+        if len(move_str) < 4:
+            return
+        from_sq = move_str[:2]
+        to_sq = move_str[2:4]
+        self.move_dot_to_chess_square(from_sq)
+        Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)
+    
+    def get_current_mm(self):
+        # Get internal half-step coordinates:
+        ix = self.dot_step_x
+        iy = self.dot_step_y
+        # Transform so that h1 (internal (15,19)) becomes (0,0) in half-steps.
+        # In our mapping:
+        #   h1: (15, 19)  => (15 - 15, 19 - 19) = (0, 0)
+        #   a1: should be (0, 14) half-steps, etc.
+        desired_x_steps = (15 - ix)
+        desired_y_steps = (19 - iy)
+        return (desired_x_steps * STEP_MM, desired_y_steps * STEP_MM)
 
 
- 
+class GantryControlWidget(BoxLayout):
+    """
+    A composite widget that displays the gantry target board (grid) and arrow buttons.
+    The arrow buttons move the red dot by 25mm per press.
+    """
+    def __init__(self, **kwargs):
+        super(GantryControlWidget, self).__init__(**kwargs)
+        self.orientation = 'vertical'
+        # The target board occupies most of the space.
+
+        self.header_layout = headerLayout(menu=False)
+        self.body_layout = BoxLayout(orientation='horizontal', spacing=10, padding = 20)
+        self.board_display = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+        self.gantry_controls = BoxLayout(orientation='vertical', spacing=10, padding = 20)
+
+        self.target_board = GantryTargetWidget()
+        self.board_display.add_widget(self.target_board)
+
+        self.gantry_control = gantryControl()
+        
 
 
-# ---------------------
-# Example Integration
-# ---------------------
+        #self.target_board = GantryTargetWidget(size_hint=(1, 0.8))
+        self.add_widget(self.header_layout)
+        self.add_widget(HorizontalLine())
+        self.add_widget(self.body_layout)
+        self.body_layout.add_widget(self.board_display)
+        self.body_layout.add_widget(self.gantry_controls)
+        
+        # Create arrow buttons.
+        btn_layout = GridLayout(size_hint=(1, 1), cols=3, rows=3)
+        # We arrange buttons in a simple vertical layout with a nested grid.
+        arrow_layout = BoxLayout(orientation='vertical')
+
+
+        
+        nw = IconButton(source="figures/nw.png", size_hint=(0.1, 0.1))
+        n  = IconButton(source="figures/n.png",  size_hint=(0.1, 0.1))
+        ne = IconButton(source="figures/ne.png", size_hint=(0.1, 0.1))
+        w  = IconButton(source="figures/w.png",  size_hint=(0.1, 0.1))
+        c = GoButton(gantry_control=self.gantry_control, target_board=self.target_board, size_hint=(0.1, 0.1))
+        e  = IconButton(source="figures/e.png",  size_hint=(0.1, 0.1))
+        sw = IconButton(source="figures/sw.png", size_hint=(0.1, 0.1))
+        s  = IconButton(source="figures/s.png",  size_hint=(0.1, 0.1))
+        se = IconButton(source="figures/se.png", size_hint=(0.1, 0.1))
+
+        self.pathButton = PathPlanToggleButton(target_widget = self.target_board)
+        self.chess_move_input = ChessMoveInput(target_widget=self.target_board,
+                                               path_button=self.pathButton,
+                                               on_move_callback=self.on_move_entered,
+                                               size_hint=(1, 0.1))  
+        c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input)
+        controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
+
+        controls.add_widget(self.pathButton)
+        controls.add_widget(c_clear)
+
+
+        btn_layout.add_widget(nw)
+        btn_layout.add_widget(n)
+        btn_layout.add_widget(ne)
+        btn_layout.add_widget(w)
+        btn_layout.add_widget(c)
+        btn_layout.add_widget(e)
+        btn_layout.add_widget(sw)
+        btn_layout.add_widget(s)
+        btn_layout.add_widget(se)
+
+        self.gantry_controls.add_widget(btn_layout)
+# Instantiate the modular chess move input.
+              
+        # self.move_input.bind(on_text_validate=self.target_board.process_chess_move)
+        self.gantry_controls.add_widget(controls)
+        self.gantry_controls.add_widget(self.chess_move_input)
+        #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
+        self.gantry_controls.add_widget(MagnetControl(size_hint=(1, 0.1)))
+        commandButton = SendCommandButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, size_hint=(1, 0.1))
+
+        self.gantry_controls.add_widget(commandButton)
+
+                #         ↖ ↑ ↗
+                # ← · →
+                # ↙ ↓ ↘
+        
+        # middle_row = BoxLayout()
+        # btn_left = Button(text="Left")
+        # btn_right = Button(text="Right")
+        # middle_row.add_widget(btn_left)
+        # middle_row.add_widget(Label())
+        # middle_row.add_widget(btn_right)
+        
+        # bottom_row = BoxLayout()
+        # btn_down = Button(text="Down")
+        # bottom_row.add_widget(Label())
+        # bottom_row.add_widget(btn_down)
+        # bottom_row.add_widget(Label())
+        
+        # arrow_layout.add_widget(top_row)
+        # arrow_layout.add_widget(middle_row)
+        # arrow_layout.add_widget(bottom_row)
+        # btn_layout.add_widget(arrow_layout)
+        # self.add_widget(btn_layout)
+        
+        # Bind the arrow buttons to move the dot.
+        nw.bind(on_release=lambda inst: self.target_board.move_dot(-1, 1))
+        n.bind(on_release=lambda inst: self.target_board.move_dot(0, 1))
+        ne.bind(on_release=lambda inst: self.target_board.move_dot(1, 1))
+        w.bind(on_release=lambda inst: self.target_board.move_dot(-1, 0))
+        c.bind(on_release=lambda inst: self.target_board.move_dot(0, 0))
+        e.bind(on_release=lambda inst: self.target_board.move_dot(1, 0))
+        sw.bind(on_release=lambda inst: self.target_board.move_dot(-1, -1))
+        s.bind(on_release=lambda inst: self.target_board.move_dot(0, -1))
+        se.bind(on_release=lambda inst: self.target_board.move_dot(1, -1))
+        
+        # Optionally, you can add a label to display the current coordinate in mm.
+        self.coord_label = Label(text="Target: -- mm", size_hint=(1, 0.1))
+        # self.gantry_controls.add_widget(self.coord_label)
+        # Update the label periodically.
+        Clock.schedule_interval(self.update_label, 0.2)
+    
+    def update_label(self, dt):
+        mm_coord = self.target_board.get_current_mm()
+        self.coord_label.text = f"Target: {mm_coord[0]} mm, {mm_coord[1]} mm"
+
+    def on_move_entered(self, move):
+        # When a move is entered via the text input, force trail mode so the moves leave a trail.
+        self.target_board.trail_enabled = True
+        self.target_board.process_chess_move(move)
+        # Disable the text input and update its display with the trail coordinates.
+        self.chess_move_input.disabled = True
+        if self.target_board.trail_points:
+            coords = [f"({int(x)},{int(y)})" for x, y in self.target_board.trail_points]
+            self.chess_move_input.text = "Path: " + " -> " + (move)
+
+
+    def send_command(self):
+        pass
+
+
+
+class PathPlanToggleButton(Button):
+    """
+    A toggle button that enables/disables trail updates.
+    On first press, it changes to "Finish Path Plan" (green), enables trail mode,
+    and disables the text input. On next press, it ends the path, disables trail mode,
+    and then disables itself until the trail is cleared.
+    """
+    def __init__(self, target_widget, **kwargs):
+        super(PathPlanToggleButton, self).__init__(**kwargs)
+        self.target_widget = target_widget
+        self.text = "Start Path Plan"
+        self.background_color = [0.8, 0.8, 0.8, 1]
+        self.bind(on_release=self.toggle_path)
+    
+    def toggle_path(self, instance):
+        if not self.target_widget.trail_enabled:
+            # Enable trail mode.
+            self.target_widget.trail_enabled = True
+            self.text = "Finish Path Plan"
+            self.background_color = [0, 1, 0, 1]
+            board_origin = (self.target_widget.x + self.target_widget.offset_value,
+                            self.target_widget.y + self.target_widget.offset_value)
+            current_center = (board_origin[0] + self.target_widget.dot_step_x * self.target_widget.step_size,
+                              board_origin[1] + self.target_widget.dot_step_y * self.target_widget.step_size)
+            self.target_widget.trail_points.append(current_center)
+            self.target_widget.update_canvas()
+            # Disable the text input.
+            if self.parent and hasattr(self.parent, 'chess_move_input'):
+                self.parent.chess_move_input.disabled = True
+        else:
+            # Finish the path: disable trail mode and disable this button.
+            self.target_widget.trail_enabled = False
+            print("Path Plan finished. Trail points:", self.target_widget.trail_points)
+            self.text = "Path Plan Finished"
+            self.background_color = [0.5, 0.5, 0.5, 1]
+            self.disabled = True
+
+class ClearTrailButton(Button):
+    """
+    A button that clears the current trail, resets the path planning controls,
+    and clears & re-enables the text input.
+    """
+    def __init__(self, target_widget, path_toggle_button, move_input, **kwargs):
+        super(ClearTrailButton, self).__init__(**kwargs)
+        self.target_widget = target_widget
+        self.path_toggle_button = path_toggle_button
+        self.move_input = move_input
+        self.text = "Clear Trail"
+        self.background_color = [1, 0, 0, 1]
+        self.bind(on_release=self.clear_trail)
+    
+    def clear_trail(self, instance):
+        self.target_widget.clear_trail()
+        self.target_widget.trail_enabled = False
+        self.path_toggle_button.text = "Start Path Plan"
+        self.path_toggle_button.background_color = [0.8, 0.8, 0.8, 1]
+        self.path_toggle_button.disabled = False
+        self.move_input.text = ""
+        self.move_input.disabled = False
+
+class GoButton(Button):
+    """
+    A button that clears the current trail, resets the path planning controls,
+    and clears & re-enables the text input.
+    """
+    def __init__(self, gantry_control, target_board, **kwargs):
+        super(GoButton, self).__init__(**kwargs)
+        self.gantry_control = gantry_control
+        self.target_board = target_board
+        self.text = "Go"
+        self.background_color = [0, 0, 0, 1]
+        self.bind(on_release=self.send_commands)
+
+
+    def send_commands(self, instance):
+        dot_location = self.target_board.get_current_mm()
+        self.gantry_control.send_command(dot_location)
+    
+    
+
+
+
+
+class SendCommandButton(Button):
+    """
+    A button that clears the current trail and resets the path plan toggle.
+    """
+    def __init__(self, target_widget, path_toggle_button, move_input, **kwargs):
+        super(SendCommandButton, self).__init__(**kwargs)
+        self.target_widget = target_widget
+        self.path_toggle_button = path_toggle_button
+        self.move_input = move_input
+
+        self.text = "Send Command"
+        self.background_color = [1, 0, 0, 1]
+        self.bind(on_release=self.send_command)
+    
+    def send_command(self, instance):
+        self.target_widget.clear_trail()
+        self.target_widget.trail_enabled = False
+        self.path_toggle_button.text = "Start Path Plan"
+        self.path_toggle_button.background_color = [0.8, 0.8, 0.8, 1]
+        self.path_toggle_button.disabled = False
+        self.move_input.text = ""
+        self.move_input.disabled = False
+
+
+
+class ChessMoveInput(TextInput):
+    """
+    A modular text input widget that either accepts traditional chess moves (e.g. "e2e4")
+    or displays the current trail's coordinates if a path exists.
+    It also disables the path toggle button when there is any text.
+    """
+    def __init__(self, target_widget, path_button, on_move_callback=None, **kwargs):
+        super(ChessMoveInput, self).__init__(**kwargs)
+        self.multiline = False
+        self.hint_text = "Enter chess move (e.g. e2e4)"
+        self.target_widget = target_widget
+        self.path_button = path_button
+        self.on_move_callback = on_move_callback
+        self.bind(on_text_validate=self.handle_move)
+        self.bind(text=self.on_text_change)
+    
+    def on_text_change(self, instance, value):
+        # Disable the path button if there is any text.
+        
+        self.path_button.disabled = bool(value.strip())
+
+    
+    def handle_move(self, instance):
+        move = self.text.strip().lower()
+        # If a path already exists, display its coordinates.
+        if self.target_widget.trail_points:
+            # coords = [f"({int(x)},{int(y)})" for x, y in self.target_widget.trail_points]
+            # self.text = "Path: " + " -> ".join(coords)
+            self.text = "hello"
+            self.disabled = True
+        else:
+            if self.on_move_callback and move:
+                # Force trail mode on so that the movement leaves a trail.
+                self.target_widget.trail_enabled = True
+                self.on_move_callback(move)
+            #self.text = ""
+    
+
+
+
+class TrailWidget(Widget):
+    def update_trail_with_points(self, points):
+        self.canvas.clear()
+        if len(points) >= 2:
+            flat_points = [coord for p in points for coord in p]
+            with self.canvas:
+                Color(1, 0, 0, 1)
+                Line(points=flat_points, width=2)
+    def clear_trail(self):
+        self.canvas.clear()
+
+
+# --- For testing the widget in an app ---
+class TestApp(App):
+    def build(self):
+        return GantryControlWidget()
+
 if __name__ == '__main__':
-    from kivy.app import App
-    from kivy.uix.boxlayout import BoxLayout
-
-    class TestApp(App):
-        def build(self):
-            root = BoxLayout(orientation='vertical')
-            gantry_widget = GantryControlScreen()
-            root.add_widget(gantry_widget)
-            return root
-
     TestApp().run()
+
+
+
+
+
+
+
+
+
+
+
+
+
 

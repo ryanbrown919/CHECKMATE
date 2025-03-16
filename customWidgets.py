@@ -215,7 +215,7 @@ class MagnetControl(BoxLayout):
         self.spacing = 0  # No gap between buttons so they look continuous.
         
         # Define the three options.
-        options = ["OFF", "CHESS MODE", "ON"]
+        options = ["MAG OFF", "MOVE MODE", "MAG ON"]
         
         # Create three ToggleButtons that belong to the same group.
         self.buttons = []
