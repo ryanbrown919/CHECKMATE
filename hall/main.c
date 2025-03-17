@@ -8,15 +8,14 @@
 
 int main() {
     uint8_t board[8] = {0};
+    int count = 0;
 
     gpioInitialise();
     mux_init();
 
     while (1) {
         hall_get_squares(board);
-        for (int i = 0; i < 8; i++) {
-            printf("%d: %d\n", i, board[i]);
-        }
+        printf("%d\n", count++);
         // Print the board all in one go
         for (int r = 0; r < 8; r++) {
             for (int c = 7; c >= 0; c--) {  // Assuming bit 7 is the leftmost column
