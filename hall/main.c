@@ -18,7 +18,7 @@ int main() {
         printf("%d\n", count++);
         // Print the board all in one go
         for (int r = 0; r < 8; r++) {
-            for (int c = 7; c >= 0; c--) {  // Assuming bit 7 is the leftmost column
+            for (int c = 0; c < 8; c++) {  // Assuming bit 7 is the leftmost column
             printf("%d", (board[r] >> c) & 1);
             }
             printf("\n");
