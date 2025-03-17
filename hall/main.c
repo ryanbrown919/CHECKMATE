@@ -11,9 +11,14 @@ int main() {
 
     while (1) {
         hall_get_squares(board);
+        for (int i = 0; i < 8; i++) {
+            printf("%d: %d\n", i, board[i]);
+        }
+        fflush(stdout);
         usleep(10000);
     }
     
     return 0;
 }
+
 
