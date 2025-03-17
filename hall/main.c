@@ -6,8 +6,10 @@
 #include "hall.h"
 
 int main() {
-    gpioInitialise();
     uint8_t board[8] = {0};
+
+    gpioInitialise();
+    mux_init();
 
     while (1) {
         hall_get_squares(board);
