@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "hall.h"
+#include "mux.h"
 
 int main() {
     uint8_t board[8] = {0};
