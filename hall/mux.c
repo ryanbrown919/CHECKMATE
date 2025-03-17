@@ -22,9 +22,10 @@ void mux_set_pins(char nibble){
 uint8_t mux_get_output(void){
     uint8_t output = 0;
     // Read digital inputs for channels corresponding to the multiplexer outputs.
-    // if (gpio_get(MUX_Y_1)) { output |= (1U << 0); }
-    // if (gpio_get(MUX_Y_2)) { output |= (1U << 1); }
-    // if (gpio_get(MUX_Y_3)) { output |= (1U << 2); }
+    if (gpio_get(MUX_Y_1)) { output |= (1U << 0); }
+    if (gpio_get(MUX_Y_2)) { output |= (1U << 1); }
+    if (gpio_get(MUX_Y_3)) { output |= (1U << 2); }
+    if (gpio_get(MUX_Y_3)) { output |= (1U << 3); }
     // If using a fourth channel (MUX_Y_4), read it similarly.
     
     return output;
