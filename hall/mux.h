@@ -7,7 +7,7 @@
 #define MUX_S0 6
 #define MUX_S1 13
 #define MUX_S2 19
-#define MUX_S3 26
+#define MUX_S3 5
 
 // Map the multiplexer output pins to digital GPIO numbers.
 #define MUX_Y_1 26   // Digital input on GPIO26

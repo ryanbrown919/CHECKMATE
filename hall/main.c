@@ -3,17 +3,15 @@
 #include <pigpio.h>
 #include <unistd.h>
 
-#include "mux.h"
+#include "hall.h"
 
 int main() {
     gpioInitialise();
+    uint8_t board[8] = {0};
 
     while (1) {
-        for (int i = 0; i < 16; i++) {
-            uint32_t current_gray = i ^ (i >> 1);
-            mux_set_pins(current_gray);
-            usleep(10000);
-        }
+        hall_get_squares(board);
+        usleep(10000);
     }
     
     return 0;
