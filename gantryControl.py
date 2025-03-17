@@ -39,6 +39,7 @@ class gantryControl:
 
             # Internal state variables
             self.jog_step = 4
+            self.overshoot = 5
             self.step = 1
             self.simulate = False
             self.serial_lock = threading.Lock()
@@ -96,7 +97,7 @@ class gantryControl:
                 except Exception as e:
                     error_msg = f"Error writing command: {e}"
                     print(error_msg)
-                    self.handle_serial_error(e)
+                    #self.handle_serial_error(e)
                     return
 
                 try:
@@ -107,14 +108,14 @@ class gantryControl:
                         if response == "ok":
                             break
                         elif response == "ALARM:1":
-                            self.log_debug("ALARM:1 - Resetting GRBL")
+                            #self.log_debug("ALARM:1 - Resetting GRBL")
                             self.send_gcode("$X")
                             break   
                         
                 except Exception as e:
                     error_msg = f"Error reading response: {e}"
                     print(error_msg)
-                    self.handle_serial_error(e)
+                    #self.handle_serial_error(e)
                     return
 
         def handle_serial_error(self, error):
@@ -145,17 +146,19 @@ class gantryControl:
             self.send_gcode("$X") 
             self.send_gcode(cmd)
 
-        def send_coordinates_command(self, x, y):
+        def send_coordinates_command(self, location):
             """
             Construct and send the jog command based on dx, dy, and the current jog step size.
             Figure out the gcode move command
             """
-            step = self.step
+            x = location[0]
+            y = location[1]
+
             cmd = "$J=G21G90G1"
             if x:
-                cmd += f"X{x * step}"
+                cmd += f"X{x}"
             if y:
-                cmd += f"Y{y * step}"
+                cmd += f"Y{y}"
             cmd += f"F{FEEDRATE}"
             self.send_gcode("$X") 
             self.send_gcode(cmd)
@@ -182,19 +185,22 @@ class gantryControl:
         def square_to_coord(self, square):
             """
             Converts a chess square string (e.g. "e2") to coordinates (x, y)
-            in the following system:
+            in half‐step units using the following system:
             - h1 is (0,0)
-            - x increases as rank increases (rank 1 -> 0, rank 8 -> 7)
-            - y increases as file goes from h to a (h->0, a->7)
+            - x increases as rank increases (rank 1 → 0, rank 8 → 14)
+            - y increases as file goes from h to a (h → 0, a → 14)
+            This yields a difference of 2 between adjacent squares so that there are
+            intermediate half‐steps between them.
             """
             file = square[0].lower()
             try:
                 rank = int(square[1])
             except ValueError:
                 raise ValueError("Invalid square: rank must be a number")
-            x = rank - 1
-            y = ord('h') - ord(file)
+            x = (rank - 1) * 2   # Multiply by 2 to represent half-steps
+            y = (ord('h') - ord(file)) * 2
             return (x, y)
+
 
         def interpret_move(self, move_str, step_value):
             """
@@ -204,25 +210,170 @@ class gantryControl:
             if len(move_str) < 4:
                 raise ValueError("Move string must be at least 4 characters (e.g. 'e2e4').")
             
+            print(f"Interpreting move: {move_str}")
+            
             start_square = move_str[:2]
             end_square = move_str[2:4]
             
             start_coord = self.square_to_coord(start_square)
             end_coord = self.square_to_coord(end_square)
-            
+
+            print(f"Start square: {start_coord}, end square: {end_coord}")
+
+
             # Compute the difference in "steps"
             dx_steps = end_coord[0] - start_coord[0]
             dy_steps = end_coord[1] - start_coord[1]
             
             # Convert steps to mm
-            dx_mm = dx_steps * step_value
-            dy_mm = dy_steps * step_value
+            dx_mm = dx_steps 
+            dy_mm = dy_steps 
+
+            #dx_mm = dx_steps * step_value
+            #dy_mm = dy_steps * step_value
+
+            path = [(start_coord[0]/step_value, start_coord[1]/step_value), (dx_mm, dy_mm)]     
+
+
+            print(f"Interpreted move: {move_str} as dx={dx_mm}, dy={dy_mm} as {path}")
+
             
-            return (dx_mm, dy_mm)
+            return (path)
 
         def send_command(self, coordinates):
             print(f"Sending command: {coordinates}")
             pass
+
+        def sign(self, num):
+            """Helper function: returns the sign of num."""
+            if num > 0:
+                return 1
+            elif num < 0:
+                return -1
+            else:
+                return 0
+
+        # def parse_path_to_movement(self, points):
+        #     """
+        #     Given a list of points (x, y) representing the trajectory in half‑step units,
+        #     returns a list of (dx, dy) moves where consecutive moves in the same direction
+        #     are combined.
+            
+        #     For example:
+        #     Input: [(0,0), (1,0), (2,0), (2,1), (2,2), (3,2), (4,2)]
+        #     Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
+        #     Output: [(2,0), (0,2), (2,0)]
+        #     """
+
+        #     step_size = STEP_MM
+        #     if not points or len(points) < 2:
+        #         return []
+            
+        #     # Calculate differences between consecutive points.
+        #     diffs = []
+        #     for i in range(1, len(points)):
+        #         dx = points[i][0] - points[i-1][0]
+        #         dy = points[i][1] - points[i-1][1]
+        #         diffs.append((dx, dy))
+            
+        #     movements = []
+        #     # Initialize the current accumulated movement.
+        #     current_dx, current_dy = diffs[0]
+            
+        #     # Loop over the remaining differences.
+        #     for dx, dy in diffs[1:]:
+        #         # If the new difference is in the same direction as current, combine them.
+        #         if self.sign(dx) == self.sign(current_dx) and self.sign(dy) == self.sign(current_dy):
+        #             current_dx += dx
+        #             current_dy += dy
+        #         else:
+        #             # Direction changed: store the accumulated movement and start new accumulation.
+        #             movements.append((current_dx*step_size, current_dy*step_size))
+        #             current_dx, current_dy = dx, dy
+        #     # Append the final accumulated movement.
+        #     movements.append((current_dx*step_size, current_dy*step_size))
+        #     #print(f"Calculated movements: {movements}")
+        #     return movements
+
+        def parse_path_to_movement(self, points):
+            """
+            Given a list of points (x, y) representing the trajectory in half‑step units,
+            returns a list of (dx, dy) moves where consecutive moves in the same direction
+            are combined.
+            
+            NOTE: This function currently only returns differences between consecutive points.
+            If you want to include the absolute starting coordinate as the first "move",
+            you must add that explicitly.
+            
+            For example:
+            Input: [(0,0), (1,0), (2,0), (2,1), (2,2), (3,2), (4,2)]
+            Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
+            Output: [(2,0), (0,2), (2,0)]
+            """
+            step_size = STEP_MM
+            if not points or len(points) < 2:
+                return []
+            
+            # Calculate differences between consecutive points.
+            diffs = []
+            for i in range(1, len(points)):
+                dx = points[i][0] - points[i-1][0]
+                dy = points[i][1] - points[i-1][1]
+                diffs.append((dx, dy))
+            
+            movements = []
+            # Initialize the current accumulated movement.
+            current_dx, current_dy = diffs[0]
+            
+            # Loop over the remaining differences.
+            for dx, dy in diffs[1:]:
+                if self.sign(dx) == self.sign(current_dx) and self.sign(dy) == self.sign(current_dy):
+                    current_dx += dx
+                    current_dy += dy
+                else:
+                    movements.append((current_dx * step_size, current_dy * step_size))
+                    current_dx, current_dy = dx, dy
+            movements.append((current_dx * step_size, current_dy * step_size))
+            
+            # If you want the starting coordinate (the absolute position of the first point)
+            # to be included as the very first move, you could prepend it:
+            start = points[0]
+            movements.insert(0, (start[0] * step_size, start[1] * step_size))
+            
+            return movements
+
+
+        def send_commands(self, cmd_list):
+            for cmd in cmd_list:
+                full_cmd = cmd + "\n"
+                self.send_gcode(full_cmd)
+                # Wait for GRBL response ("ok")
+                response = self.ser.readline().decode().strip()
+                while response != "ok":
+                    # You might log the response or wait until "ok" arrives.
+                    response = self.ser.readline().decode().strip()
+                print(f"Sent: {cmd}, Response: {response}")
+
+        def movement_to_gcode(self, move_list):
+            """
+            Given a list of moves (e.g., ["e2e4", "g8h6"]), converts them to relative
+            displacement commands in G-code format.
+            """
+            gcode_commands = []
+            for i, move in enumerate(move_list):
+                if i == 0:
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                elif i == len(move_list) - 1:
+                    dx = self.sign(move_list[-1][0]) * self.overshoot
+                    dy = self.sign(move_list[-1][1]) * self.overshoot
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                else:
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+
+
+            
+            return gcode_commands
 
 
 
@@ -244,8 +395,9 @@ class GantryTargetWidget(Widget):
       - a1 appears at the bottom right.
     Border labels are drawn in the outermost margin cells.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, gantry_control, **kwargs):
         super(GantryTargetWidget, self).__init__(**kwargs)
+        self.gantry_control = gantry_control
         self.cols = 8
         self.rows = 10
         self.square_size = None  # computed in update_canvas
@@ -258,6 +410,8 @@ class GantryTargetWidget(Widget):
         # Trail points: list of (x,y) pixel positions.
         self.trail_points = []
         self.trail_enabled = False
+
+        self.path = []
         # Lists for border labels.
         self.top_labels = []
         self.bottom_labels = []
@@ -405,10 +559,15 @@ class GantryTargetWidget(Widget):
                       grid_origin[1] + self.dot_step_y * self.step_size)
         if self.trail_enabled:
             self.trail_points.append(new_center)
+            self.path.append(self.adjust_coords(new_x, new_y))
         self.update_canvas()
+    
+    def adjust_coords(self, x, y):
+        return (15-x, 19-y)
     
     def clear_trail(self):
         self.trail_points = []
+        self.path = []
         self.update_canvas()
     
     def move_dot_to_chess_square(self, square_str):
@@ -452,8 +611,31 @@ class GantryTargetWidget(Widget):
             return
         from_sq = move_str[:2]
         to_sq = move_str[2:4]
+        
+        self.path = (self.gantry_control.interpret_move(move_str, STEP_MM))
         self.move_dot_to_chess_square(from_sq)
         Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)
+
+    
+    
+    # def square_to_coord(self, square):
+    #         """
+    #         Converts a chess square string (e.g. "e2") to coordinates (x, y)
+    #         in half‐step units using the following system:
+    #         - h1 is (0,0)
+    #         - x increases as rank increases (rank 1 → 0, rank 8 → 14)
+    #         - y increases as file goes from h to a (h → 0, a → 14)
+    #         This yields a difference of 2 between adjacent squares so that there are
+    #         intermediate half‐steps between them.
+    #         """
+    #         file = square[0].lower()
+    #         try:
+    #             rank = int(square[1])
+    #         except ValueError:
+    #             raise ValueError("Invalid square: rank must be a number")
+    #         x = (rank - 1) * 2   # Multiply by 2 to represent half-steps
+    #         y = (ord('h') - ord(file)) * 2
+    #         return (x, y)
     
     def get_current_mm(self):
         # Get internal half-step coordinates:
@@ -483,7 +665,9 @@ class GantryControlWidget(BoxLayout):
         self.board_display = BoxLayout(orientation='vertical', padding=10)
         self.gantry_controls = BoxLayout(orientation='vertical')
 
-        self.target_board = GantryTargetWidget()
+        self.gantry_control = gantryControl()
+
+        self.target_board = GantryTargetWidget(gantry_control=self.gantry_control)
         self.board_display.add_widget(self.target_board)
 
         # # Top row: file labels for the top border (rotated: top row shows h8, g8, ... a8)
@@ -520,7 +704,6 @@ class GantryControlWidget(BoxLayout):
 
 
 
-        self.gantry_control = gantryControl()
         
 
 
@@ -578,7 +761,7 @@ class GantryControlWidget(BoxLayout):
         self.gantry_controls.add_widget(self.chess_move_input)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
         self.gantry_controls.add_widget(MagnetControl(size_hint=(1, 0.1)))
-        commandButton = SendCommandButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, size_hint=(1, 0.1))
+        commandButton = SendCommandButton(gantry_control=self.gantry_control, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, size_hint=(1, 0.1))
 
         self.gantry_controls.add_widget(commandButton)
 
@@ -634,7 +817,7 @@ class GantryControlWidget(BoxLayout):
         self.chess_move_input.disabled = True
         if self.target_board.trail_points:
             coords = [f"({int(x)},{int(y)})" for x, y in self.target_board.trail_points]
-            self.chess_move_input.text = "Path: " + " -> " + (move)
+            self.chess_move_input.text = (move)
 
 
     def send_command(self):
@@ -655,6 +838,9 @@ class PathPlanToggleButton(Button):
         self.text = "Start Path Plan"
         self.background_color = [0.8, 0.8, 0.8, 1]
         self.bind(on_release=self.toggle_path)
+
+    def adjust_coords(self, x, y):
+        return (15-x, 19-y)
     
     def toggle_path(self, instance):
         if not self.target_widget.trail_enabled:
@@ -667,6 +853,9 @@ class PathPlanToggleButton(Button):
             current_center = (board_origin[0] + self.target_widget.dot_step_x * self.target_widget.step_size,
                               board_origin[1] + self.target_widget.dot_step_y * self.target_widget.step_size)
             self.target_widget.trail_points.append(current_center)
+            print((self.target_widget.dot_step_x, self.target_widget.dot_step_y))
+            adjusted_path = self.adjust_coords(self.target_widget.dot_step_x, self.target_widget.dot_step_y)
+            self.target_widget.path.append(adjusted_path)
             self.target_widget.update_canvas()
             # Disable the text input.
             if self.parent and hasattr(self.parent, 'chess_move_input'):
@@ -674,7 +863,7 @@ class PathPlanToggleButton(Button):
         else:
             # Finish the path: disable trail mode and disable this button.
             self.target_widget.trail_enabled = False
-            print("Path Plan finished. Trail points:", self.target_widget.trail_points)
+            print("Path Plan finished. Trail path:", self.target_widget.path)
             self.text = "Path Plan Finished"
             self.background_color = [0.5, 0.5, 0.5, 1]
             self.disabled = True
@@ -718,7 +907,8 @@ class GoButton(Button):
 
     def send_commands(self, instance):
         dot_location = self.target_board.get_current_mm()
-        self.gantry_control.send_command(dot_location)
+        print(f"Sending command: {dot_location}")
+        self.gantry_control.send_coordinates_command(dot_location)
     
     
 
@@ -729,17 +919,28 @@ class SendCommandButton(Button):
     """
     A button that clears the current trail and resets the path plan toggle.
     """
-    def __init__(self, target_widget, path_toggle_button, move_input, **kwargs):
+    def __init__(self, gantry_control, target_widget, path_toggle_button, move_input, **kwargs):
         super(SendCommandButton, self).__init__(**kwargs)
         self.target_widget = target_widget
         self.path_toggle_button = path_toggle_button
         self.move_input = move_input
+        self.gantry_control = gantry_control
 
         self.text = "Send Command"
         self.background_color = [1, 0, 0, 1]
         self.bind(on_release=self.send_command)
     
     def send_command(self, instance):
+        #self.gantry_control.interpret_move(self.move_input.text, STEP_MM)
+        print("Path Plan finished. Trail path:", self.target_widget.path)
+        movements = self.gantry_control.parse_path_to_movement(self.target_widget.path)
+        commands = self.gantry_control.movement_to_gcode(movements)
+        print(f"Sending movements: {movements}")
+        print(f"Sending commands: {commands}")
+
+
+        #self.gantry_control.send_commands(movements)
+
         self.target_widget.clear_trail()
         self.target_widget.trail_enabled = False
         self.path_toggle_button.text = "Start Path Plan"
@@ -747,6 +948,9 @@ class SendCommandButton(Button):
         self.path_toggle_button.disabled = False
         self.move_input.text = ""
         self.move_input.disabled = False
+        self.path = []
+        
+        
 
 
 
