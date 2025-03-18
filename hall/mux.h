@@ -11,9 +11,9 @@
 
 // Map the multiplexer output pins to digital GPIO numbers.
 #define MUX_Y_1 26   // Digital input onf GPIO26
-#define MUX_Y_2 27   // Digital input on GPIO27
-#define MUX_Y_3 28   // Digital input on GPIO28
-#define MUX_Y_4 29   // Optional digital input if available
+#define MUX_Y_2 26   // Digital input on GPIO27
+#define MUX_Y_3 26   // Digital input on GPIO28
+#define MUX_Y_4 26   // Optional digital input if available
 
 void mux_init(void);
 void mux_set_pins(char nibble);
