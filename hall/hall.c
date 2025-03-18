@@ -34,9 +34,9 @@ void hall_get_squares(uint8_t (*halls)[8]) {
             uint32_t row = hall_to_board_mapping[i][j * 2];
             uint32_t col = hall_to_board_mapping[i][j * 2 + 1];
 
-            if (j == 1 || j == 2 || j == 3) {
-                continue;
-            }
+            // if (j == 1 || j == 2 || j == 3) {
+            //     continue;
+            // }
 
             if ((outputs >> j) & 1) {
                 halls[row][col] = 0;
