@@ -20,7 +20,7 @@ const uint32_t hall_to_board_mapping[16][8] = {
     {7, 3,  0, 0,  0, 4,  7, 7}  /* HALL 12 mapping */
 };
 
-void hall_get_squares(uint8_t* halls) {
+void hall_get_squares(uint8_t (*halls)[8]) {
     for (int i = 0; i < 16; i++) {
         uint32_t current_gray = i ^ (i >> 1);
         mux_set_pins(current_gray);
@@ -34,12 +34,10 @@ void hall_get_squares(uint8_t* halls) {
             uint32_t row = hall_to_board_mapping[i][j * 2];
             uint32_t col = hall_to_board_mapping[i][j * 2 + 1];
 
-            // halls[row] ^= (1 << (7 - col));
-
             if ((outputs >> j) & 1) {
-                halls[row] &= ~(1 << col);
+                halls[row][col] = 0;
             } else {
-                halls[row] |= (1 << col);
+                halls[row][col] = 1;
             }
         }
 
@@ -53,7 +51,7 @@ void hall_get_squares(uint8_t* halls) {
                     printf(" ");
                 }
 
-                printf("%d ", (halls[r] >> (7 - c)) & 1);
+                printf("%d ", halls[r][c]);
             }
             printf("\n");
         }  
@@ -62,7 +60,7 @@ void hall_get_squares(uint8_t* halls) {
     }
 }
 
-uint32_t hall_get_square(uint8_t* board, uint32_t x, uint32_t y) {
-    return ((board[y] >> x) & 1);
+uint32_t hall_get_square(uint8_t (*halls)[8], uint32_t x, uint32_t y) {
+    return halls[7 - y][x];
 }
 

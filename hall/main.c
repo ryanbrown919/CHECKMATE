@@ -7,7 +7,7 @@
 #include "mux.h"
 
 int main() {
-    uint8_t board[8] = {0};
+    uint8_t board[8][8] = {0};
 
     gpioInitialise();
     mux_init();
