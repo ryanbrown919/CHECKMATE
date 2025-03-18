@@ -45,7 +45,7 @@ void hall_get_squares(uint8_t (*halls)[8]) {
             }
         }
 
-        for (int r = 7; r >= 0; r++) {
+        for (int r = 7; r >= 0; r--) {
             if (r == 4) {
                 printf("\n");
             }
