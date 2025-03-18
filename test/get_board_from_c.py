@@ -3,7 +3,7 @@ import time
 
 def main():
     # Adjust the path to your binary as necessary. For example, if your binary is built in the hall/build directory:
-    binary_path = "../bin/hall_firmware.bin"
+    binary_path = "./../bin/hall_firmware.bin"
     
     while True:
         try:
@@ -11,7 +11,8 @@ def main():
                 [binary_path],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                executable=binary_path
             )
             output = result.stdout.strip()
             print("C binary output:")
