@@ -19,6 +19,7 @@ from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput   
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.clock import Clock
 from kivy.app import App
@@ -28,7 +29,7 @@ Window.fullscreen = True
 
 SQUARE_SIZE_MM = 50    # each square is 50mm
 STEP_MM = 25  # each step is 25mm
-from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout, MagnetControl
+from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
 
 # Constant feedrate as in your original code
 FEEDRATE = 10000  # mm/min
@@ -40,6 +41,7 @@ class gantryControl:
             # Internal state variables
             self.jog_step = 4
             self.overshoot = 5
+            self.magnet_state =  "MAG OFF"
             self.step = 1
             self.simulate = False
             self.serial_lock = threading.Lock()
@@ -359,21 +361,38 @@ class gantryControl:
             Given a list of moves (e.g., ["e2e4", "g8h6"]), converts them to relative
             displacement commands in G-code format.
             """
+            if self.magnet_state == "MAG OFF":
+                self.send_gcode("M9") # off
+            elif self.magnet_state == "MAG ON":
+                self.send_gcode("M8") # on
+
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
                     gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    if self.magnet_state == "MOVE MODE":
+                        gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
                     gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
                     gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    if self.magnet_state == "MOVE MODE":
+                        gcode_commands.append(f"M9") # deactivate after final movement
                 else:
                     gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
 
 
             
             return gcode_commands
+        
+        def magnet_control(self):
+            if self.magnet_state == "MAG ON":
+                self.send_gcode("M8")
+            elif self.magnet_state == "MAG OFF":
+                self.send_gcode("M9")
+
+        
 
 
 
@@ -760,7 +779,9 @@ class GantryControlWidget(BoxLayout):
         self.gantry_controls.add_widget(controls)
         self.gantry_controls.add_widget(self.chess_move_input)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
-        self.gantry_controls.add_widget(MagnetControl(size_hint=(1, 0.1)))
+        self.magnet_control = MagnetControl(gantry_control=self.gantry_control, size_hint=(1, 0.1))
+        #self.magnet_state = self.magnet_control.get_state()
+        self.gantry_controls.add_widget(self.magnet_control)
         commandButton = SendCommandButton(gantry_control=self.gantry_control, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, size_hint=(1, 0.1))
 
         self.gantry_controls.add_widget(commandButton)
@@ -950,7 +971,49 @@ class SendCommandButton(Button):
         self.move_input.disabled = False
         self.path = []
         
+class MagnetControl(BoxLayout):
+    def __init__(self, gantry_control, **kwargs):
+        super(MagnetControl, self).__init__(**kwargs)
+        self.orientation = 'horizontal'
+        self.spacing = 0  # No gap between buttons so they look continuous.
+        self.gantry_control = gantry_control
         
+        # Define the three options.
+        options = ["MAG OFF", "MOVE MODE", "MAG ON"]
+        
+        # Create three ToggleButtons that belong to the same group.
+        self.buttons = []
+        for option in options:
+            btn = ToggleButton(text=option,
+                               group="segmented",
+                               background_normal='',
+                               background_down='',
+                               # Normal (unselected) background color.
+                               background_color=[0.8, 0.8, 0.8, 1],
+                               color=[0, 0, 0, 1],
+                               size_hint=(1, 1))
+            btn.bind(state=self.on_button_state)
+            self.buttons.append(btn)
+            self.add_widget(btn)
+        
+        # Set a default selection.
+        self.buttons[1].state = 'down'
+
+    def on_button_state(self, instance, value):
+        # When the button is selected, use a highlight color; otherwise, the normal color.
+        if value == 'down':
+            instance.background_color = [0.2, 0.6, 1, 1]  # highlight (blue)
+        else:
+            instance.background_color = [0.8, 0.8, 0.8, 1]
+        self.gantry_control.magnet_state = self.get_state()
+        self.gantry_control.magnet_control()
+
+    def get_state(self):
+        # Return the text of the currently selected button.
+        for btn in self.buttons:
+            if btn.state == 'down':
+                return btn.text
+        return None     
 
 
 

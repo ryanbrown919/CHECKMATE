@@ -208,43 +208,43 @@ class ChessBoardWidget(Widget):
         rank = int(square[1]) - 1
         return file, rank
 
-class MagnetControl(BoxLayout):
-    def __init__(self, **kwargs):
-        super(MagnetControl, self).__init__(**kwargs)
-        self.orientation = 'horizontal'
-        self.spacing = 0  # No gap between buttons so they look continuous.
+# class MagnetControl(BoxLayout):
+#     def __init__(self, **kwargs):
+#         super(MagnetControl, self).__init__(**kwargs)
+#         self.orientation = 'horizontal'
+#         self.spacing = 0  # No gap between buttons so they look continuous.
         
-        # Define the three options.
-        options = ["MAG OFF", "MOVE MODE", "MAG ON"]
+#         # Define the three options.
+#         options = ["MAG OFF", "MOVE MODE", "MAG ON"]
         
-        # Create three ToggleButtons that belong to the same group.
-        self.buttons = []
-        for option in options:
-            btn = ToggleButton(text=option,
-                               group="segmented",
-                               background_normal='',
-                               background_down='',
-                               # Normal (unselected) background color.
-                               background_color=[0.8, 0.8, 0.8, 1],
-                               color=[0, 0, 0, 1],
-                               size_hint=(1, 1))
-            btn.bind(state=self.on_button_state)
-            self.buttons.append(btn)
-            self.add_widget(btn)
+#         # Create three ToggleButtons that belong to the same group.
+#         self.buttons = []
+#         for option in options:
+#             btn = ToggleButton(text=option,
+#                                group="segmented",
+#                                background_normal='',
+#                                background_down='',
+#                                # Normal (unselected) background color.
+#                                background_color=[0.8, 0.8, 0.8, 1],
+#                                color=[0, 0, 0, 1],
+#                                size_hint=(1, 1))
+#             btn.bind(state=self.on_button_state)
+#             self.buttons.append(btn)
+#             self.add_widget(btn)
         
-        # Set a default selection.
-        self.buttons[1].state = 'down'
+#         # Set a default selection.
+#         self.buttons[1].state = 'down'
 
-    def on_button_state(self, instance, value):
-        # When the button is selected, use a highlight color; otherwise, the normal color.
-        if value == 'down':
-            instance.background_color = [0.2, 0.6, 1, 1]  # highlight (blue)
-        else:
-            instance.background_color = [0.8, 0.8, 0.8, 1]
+#     def on_button_state(self, instance, value):
+#         # When the button is selected, use a highlight color; otherwise, the normal color.
+#         if value == 'down':
+#             instance.background_color = [0.2, 0.6, 1, 1]  # highlight (blue)
+#         else:
+#             instance.background_color = [0.8, 0.8, 0.8, 1]
 
-    def get_state(self):
-        # Return the text of the currently selected button.
-        for btn in self.buttons:
-            if btn.state == 'down':
-                return btn.text
-        return None
+#     def get_state(self):
+#         # Return the text of the currently selected button.
+#         for btn in self.buttons:
+#             if btn.state == 'down':
+#                 return btn.text
+#         return None
