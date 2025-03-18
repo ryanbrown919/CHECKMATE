@@ -59,7 +59,7 @@ void hall_get_squares(uint8_t* halls) {
             printf("\n");
         }  
         printf("\n");
-        usleep(500000);
+        usleep(1000000);
     }
 }
 
