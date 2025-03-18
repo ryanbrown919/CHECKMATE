@@ -13,10 +13,10 @@ void mux_init(void) {
 }
 
 void mux_set_pins(char nibble){
-    gpioWrite(MUX_S0, (nibble >> 3) & 0x01);
-    gpioWrite(MUX_S1, (nibble >> 2) & 0x01);
-    gpioWrite(MUX_S2, (nibble >> 1) & 0x01);
-    gpioWrite(MUX_S3, (nibble >> 0) & 0x01);
+    gpioWrite(MUX_S3, (nibble >> 3) & 0x01);
+    gpioWrite(MUX_S2, (nibble >> 2) & 0x01);
+    gpioWrite(MUX_S1, (nibble >> 1) & 0x01);
+    gpioWrite(MUX_S0, (nibble >> 0) & 0x01);
 
     printf(
         "S3: %d, S2: %d, S1: %d, S0: %d\n",
