@@ -27,7 +27,6 @@ void hall_get_squares(uint8_t (*halls)[8]) {
         mux_set_pins(current_gray);
         usleep(10);
 
-        // Get the digital outputs from the multiplexer.
         uint8_t outputs = mux_get_output();
 
         // Update board bits based on the digital hall effect signals
@@ -35,30 +34,12 @@ void hall_get_squares(uint8_t (*halls)[8]) {
             uint32_t col = hall_to_board_mapping[i][j * 2];
             uint32_t row = hall_to_board_mapping[i][j * 2 + 1];
 
-            uint32_t bit = (outputs >> j) & 1;
-            if (bit) {
+            if ((outputs >> j) & 1) {
                 halls[row][col] = 0;
             } else {
                 halls[row][col] = 1;
             }
         }
-
-        for (int r = 0; r < 8; r++) {
-            if (r == 4) {
-                printf("\n");
-            }
-
-            for (int c = 0; c < 8; c++) {
-                if (c == 4) {
-                    printf(" ");
-                }
-
-                printf("%d ", halls[r][c]);
-            }
-            printf("\n");
-        }  
-        printf("\n");
-        // usleep(1000000);
     }
 }
 

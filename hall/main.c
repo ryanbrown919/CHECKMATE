@@ -12,8 +12,16 @@ int main() {
     gpioInitialise();
     mux_init();
 
-    while (1) {
+    while(1) {
         hall_get_squares(board);
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                printf("%d ", board[row][col]);
+            }
+            printf("\n");
+        }  
+        printf("\n");
     }
     
     return 0;
