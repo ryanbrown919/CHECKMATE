@@ -31,8 +31,8 @@ void hall_get_squares(uint8_t* halls) {
 
         // Update board bits based on the digital hall effect signals
         for (uint32_t j = 0; j < 4; j++) {
-            uint32_t col = hall_to_board_mapping[i][j * 2];
-            uint32_t row = hall_to_board_mapping[i][j * 2 + 1];
+            uint32_t row = hall_to_board_mapping[i][j * 2];
+            uint32_t col = hall_to_board_mapping[i][j * 2 + 1];
 
             // halls[row] ^= (1 << (7 - col));
 
