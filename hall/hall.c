@@ -2,23 +2,23 @@
 #include "mux.h"
 
 const uint32_t hall_to_board_mapping[16][8] = {
-    /* q3    q2     q1     q4*/
-    {5, 0,  2, 3,  2, 7,  0, 0}, /* HALL  7 mapping */
-    {4, 0,  3, 3,  3, 7,  0, 0}, /* HALL  3 mapping */
-    {4, 1,  3, 2,  3, 6,  0, 0}, /* HALL  2 mapping */
-    {5, 1,  2, 2,  2, 6,  0, 0}, /* HALL  6 mapping */
-    {4, 3,  3, 0,  3, 4,  0, 0}, /* HALL  0 mapping */
-    {5, 3,  2, 0,  2, 4,  0, 0}, /* HALL  4 mapping */
-    {5, 2,  2, 1,  2, 5,  0, 0}, /* HALL  5 mapping */
-    {4, 2,  3, 1,  3, 5,  0, 0}, /* HALL  1 mapping */
-    {6, 1,  1, 2,  1, 6,  0, 0}, /* HALL 10 mapping */
-    {6, 0,  1, 3,  1, 7,  0, 0}, /* HALL 11 mapping */
-    {7, 0,  0, 3,  0, 7,  0, 0}, /* HALL 15 mapping */
-    {7, 1,  0, 2,  0, 6,  0, 0}, /* HALL 14 mapping */
-    {6, 3,  1, 0,  1, 4,  0, 0}, /* HALL  8 mapping */
-    {6, 2,  1, 1,  1, 5,  0, 0}, /* HALL  9 mapping */
-    {7, 2,  0, 1,  0, 5,  0, 0}, /* HALL 13 mapping */
-    {7, 3,  0, 0,  0, 4,  0, 0}  /* HALL 12 mapping */
+    /* q1    q2     q3     q4*/
+    {2, 7,  2, 3,  5, 0,  0, 0}, /* HALL  7 mapping */
+    {3, 7,  3, 3,  4, 0,  0, 0}, /* HALL  3 mapping */
+    {3, 6,  3, 2,  4, 1,  0, 0}, /* HALL  2 mapping */
+    {2, 6,  2, 2,  5, 1,  0, 0}, /* HALL  6 mapping */
+    {3, 4,  3, 0,  4, 3,  0, 0}, /* HALL  0 mapping */
+    {2, 4,  2, 0,  5, 3,  0, 0}, /* HALL  4 mapping */
+    {2, 5,  2, 1,  5, 2,  0, 0}, /* HALL  5 mapping */
+    {3, 5,  3, 1,  4, 2,  0, 0}, /* HALL  1 mapping */
+    {1, 6,  1, 2,  6, 1,  0, 0}, /* HALL 10 mapping */
+    {1, 7,  1, 3,  6, 0,  0, 0}, /* HALL 11 mapping */
+    {0, 7,  0, 3,  7, 0,  0, 0}, /* HALL 15 mapping */
+    {0, 6,  0, 2,  7, 1,  0, 0}, /* HALL 14 mapping */
+    {1, 4,  1, 0,  6, 3,  0, 0}, /* HALL  8 mapping */
+    {1, 5,  1, 1,  6, 2,  0, 0}, /* HALL  9 mapping */
+    {0, 5,  0, 1,  7, 2,  0, 0}, /* HALL 13 mapping */
+    {0, 4,  0, 0,  7, 3,  0, 0}  /* HALL 12 mapping */
 };
 
 void hall_get_squares(uint8_t (*halls)[8]) {
