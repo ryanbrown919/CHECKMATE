@@ -94,32 +94,6 @@ class ChessBoardScreen(BoxLayout):
                 self.sliders.append(slider)
             self.add_widget(slider_layout)
 
-def get_board_from_subprocess():
-    """
-    Runs a C subprocess that outputs an 8x8 board.
-    The C executable is expected to print 8 lines,
-    each containing 8 space-separated integers.
-    """
-    try:
-        # Adjust the command below to match your C executable.
-        result = subprocess.run(["./hall/build/test"], capture_output=True, text=True, check=True)
-        board = []
-        for line in result.stdout.splitlines():
-            # Skip empty lines.
-            if not line.strip():
-                continue
-            # Remove extra formatting (if a split is done on whitespace) then convert to integers.
-            row = [int(item) for item in line.split()]
-            if len(row) == 8:
-                board.append(row)
-        if len(board) != 8:
-            print("Warning: Expected 8 rows in board, got", len(board))
-        return board
-    except Exception as e:
-        print("Error running subprocess:", e)
-        # Fallback to an 8x8 board of zeros.
-        return [[0]*8 for _ in range(8)]
-
 class ChessBoardApp(App):
     def build(self):
         return ChessBoardScreen()
