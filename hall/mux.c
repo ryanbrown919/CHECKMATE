@@ -20,10 +20,10 @@ void mux_set_pins(char nibble){
 
     printf(
         "S3: %d, S2: %d, S1: %d, S0: %d\n",
-        (nibble >> 0) & 0x01,
-        (nibble >> 1) & 0x01,
+        (nibble >> 3) & 0x01,
         (nibble >> 2) & 0x01,
-        (nibble >> 3) & 0x01
+        (nibble >> 1) & 0x01,
+        (nibble >> 0) & 0x01
     );
 }
 
