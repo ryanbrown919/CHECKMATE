@@ -36,11 +36,10 @@ void hall_get_squares(uint8_t* halls) {
 
             // halls[row] ^= (1 << (7 - col));
 
-            int bit = (outputs >> j) & 0x01;
-            if (!bit) {
-                halls[row] |= (1U << col);
+            if ((outputs >> j) & 1) {
+                halls[row] &= ~(1 << col);
             } else {
-                halls[row] &= ~(1U << col);
+                halls[row] |= (1 << col);
             }
         }
 
