@@ -31,9 +31,9 @@ uint8_t mux_get_output(void){
     uint8_t output = 0;
 
     if (gpioRead(MUX_Y_1)) { output |= (1U << 1); }
-    // if (gpioRead(MUX_Y_2)) { output |= (1U << 1); }
-    // if (gpioRead(MUX_Y_3)) { output |= (1U << 2); }
-    // if (gpioRead(MUX_Y_4)) { output |= (1U << 3); }
+    if (gpioRead(MUX_Y_2)) { output |= (1U << 1); }
+    if (gpioRead(MUX_Y_3)) { output |= (1U << 2); }
+    if (gpioRead(MUX_Y_4)) { output |= (1U << 3); }
 
     return output;
 }
