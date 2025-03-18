@@ -3,7 +3,7 @@ import time
 
 def main():
     # Adjust the path to your binary as necessary. For example, if your binary is built in the hall/build directory:
-    binary_path = "./hall/build/test"
+    binary_path = "../bin/hall_firmware.bin"
     
     while True:
         try:
