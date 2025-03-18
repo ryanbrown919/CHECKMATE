@@ -30,6 +30,7 @@ int main() {
             printf("\n");
         }  
         printf("\n");
+        usleep(2000000);
     }
     
     return 0;
