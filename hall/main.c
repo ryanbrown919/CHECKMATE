@@ -15,8 +15,8 @@ int main() {
     while (1) {
         hall_get_squares(board);
     
-        for (int r = 0; r < 4; r++) {
-            for (int c = 0; c < 4; c++) {
+        for (int r = 0; r < 7; r++) {
+            for (int c = 0; c < 7; c++) {
                 printf("%d ", ((board[r]) & (1 << (7 - c))) >> (7 - c));
             }
             printf("\n");
