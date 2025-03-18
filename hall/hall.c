@@ -2,7 +2,7 @@
 #include "mux.h"
 
 const uint32_t hall_to_board_mapping[16][8] = {
-    {5, 0,  2, 3,  2, 7,  5, 4}, /* HALL  7 mapping */
+    {7, 3,  2, 3,  2, 7,  5, 4}, /* HALL  7 mapping */
     {4, 0,  3, 3,  3, 7,  4, 4}, /* HALL  3 mapping */
     {4, 1,  3, 2,  3, 6,  4, 5}, /* HALL  2 mapping */
     {5, 1,  2, 2,  2, 6,  5, 5}, /* HALL  6 mapping */
