@@ -8,14 +8,12 @@
 
 int main() {
     uint8_t board[8] = {0};
-    int count = 0;
 
     gpioInitialise();
     mux_init();
 
     while (1) {
         hall_get_squares(board);
-        printf("%d\n", count++);
     
         for (int r = 0; r < 4; r++) {
             for (int c = 0; c < 4; c++) {
@@ -23,6 +21,7 @@ int main() {
             }
             printf("\n");
         }  
+        printf("\n");
     }
     
     return 0;
