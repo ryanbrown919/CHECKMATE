@@ -38,7 +38,8 @@ void hall_get_squares(uint8_t (*halls)[8]) {
             //     continue;
             // }
 
-            if ((outputs >> j) & 1) {
+            uint32_t bit = (outputs >> j) & 1;
+            if (bit) {
                 halls[row][col] = 0;
             } else {
                 halls[row][col] = 1;
