@@ -6,7 +6,7 @@ const uint32_t hall_to_board_mapping[16][8] = {
     {4, 0,  3, 3,  3, 7,  4, 4}, /* HALL  3 mapping */
     {4, 1,  3, 2,  3, 6,  4, 5}, /* HALL  2 mapping */
     {5, 1,  2, 2,  2, 6,  5, 5}, /* HALL  6 mapping */
-    {4, 3,  3, 0,  3, 4,  4, 7}, /* HALL  0 mapping */
+    {3, 4,  3, 0,  3, 4,  4, 7}, /* HALL  0 mapping */
     {5, 3,  2, 0,  2, 4,  5, 7}, /* HALL  4 mapping */
     {5, 2,  2, 1,  2, 5,  5, 6}, /* HALL  5 mapping */
     {4, 2,  3, 1,  3, 5,  4, 6}, /* HALL  1 mapping */
