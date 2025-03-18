@@ -42,24 +42,24 @@ void hall_get_squares(uint8_t* halls) {
             } else {
                 halls[row] &= ~(1U << col);
             }
-
-            for (int r = 0; r < 8; r++) {
-                if (r == 4) {
-                    printf("\n");
-                }
-    
-                for (int c = 0; c < 8; c++) {
-                    if (c == 4) {
-                        printf(" ");
-                    }
-    
-                    printf("%d ", (halls[r] >> (7 - c)) & 1);
-                }
-                printf("\n");
-            }  
-            printf("\n");
-            usleep(100000);
         }
+
+        for (int r = 0; r < 8; r++) {
+            if (r == 4) {
+                printf("\n");
+            }
+
+            for (int c = 0; c < 8; c++) {
+                if (c == 4) {
+                    printf(" ");
+                }
+
+                printf("%d ", (halls[r] >> (7 - c)) & 1);
+            }
+            printf("\n");
+        }  
+        printf("\n");
+        usleep(500000);
     }
 }
 
