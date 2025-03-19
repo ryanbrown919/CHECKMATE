@@ -8,6 +8,7 @@ import glob
 import serial
 import time
 import threading
+import sys
 
 from kivy.uix.screenmanager import Screen
 
@@ -32,7 +33,7 @@ STEP_MM = 25  # each step is 25mm
 from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
 
 # Constant feedrate as in your original code
-FEEDRATE = 10000  # mm/min
+FEEDRATE = 15000  # mm/min
 
 class gantryControl:
         def __init__(self):
@@ -40,7 +41,7 @@ class gantryControl:
 
             # Internal state variables
             self.jog_step = 4
-            self.overshoot = 5
+            self.overshoot = 4
             self.magnet_state =  "MAG OFF"
             self.step = 1
             self.simulate = False
@@ -56,8 +57,45 @@ class gantryControl:
             
 
 
-        def home_gantry(self):
+        def home(self):
             self.send_gcode("$H")
+
+        def list_serial_ports(self):
+            if sys.platform.startswith('win'):
+                # Windows: COM1, COM2, etc.
+                ports = ['COM%s' % (i + 1) for i in range(256)]
+            elif sys.platform.startswith('linux'):
+                # Linux: look for typical Arduino device names
+                ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttyUSB*')
+            elif sys.platform.startswith('darwin'):
+                # macOS: serial ports usually look like /dev/tty.*
+                ports = glob.glob('/dev/tty.*')
+            else:
+                raise EnvironmentError('Unsupported platform')
+            return ports
+
+        def find_grbl_port(self, baudrate=115200, timeout=2):
+            ports = self.list_serial_ports()
+            print("Scanning ports:", ports)
+            for port in ports:
+                try:
+                    # Try opening the port
+                    ser = serial.Serial(port, baudrate, timeout=timeout)
+                    # GRBL resets when a connection is established, so wait for it to initialize.
+                    time.sleep(2)
+                    ser.flushInput()  # Clear any initial junk data
+
+                    # Read the welcome message (if any) from GRBL.
+                    # It usually starts with "Grbl" followed by the version number.
+                    response = ser.readline().decode('utf-8', errors='ignore')
+                    if "Grbl" in response:
+                        print(f"Found GRBL on port: {port}")
+                        return ser
+                    else:
+                        ser.close()
+                except Exception as e:
+                    print(f"Could not open port {port}: {e}")
+            return None
 
         def connect_to_grbl(self):
             """
@@ -71,7 +109,7 @@ class gantryControl:
                 return
 
             try:
-                self.ser = serial.Serial(grbl_port, 115200, timeout=1)
+                self.ser = serial.Serial("/dev/tty.usbmodem1201", 115200, timeout=1)
                 time.sleep(2)  # Allow GRBL to initialize.
                 self.send_gcode("$X")  # Clear alarms.
                 print(f"Connected to GRBL on {grbl_port}")
@@ -79,9 +117,9 @@ class gantryControl:
                 print(f"Error connecting to GRBL: {e}")
                 self.simulate = True
 
-        def find_grbl_port(self):
-            ports = glob.glob("/dev/ttyUSB*")
-            return ports[0] if ports else None
+        # def find_grbl_port(self):
+        #     ports = glob.glob("/dev/tty.usbmodem1201")
+        #     return ports[0] if ports else None
 
         def send_gcode(self, command):
             """
@@ -153,15 +191,17 @@ class gantryControl:
             Construct and send the jog command based on dx, dy, and the current jog step size.
             Figure out the gcode move command
             """
-            x = location[0]
-            y = location[1]
+            x_offset = 0
+            y_offset = 0
+            x = location[0] + x_offset
+            y = location[1] + y_offset
 
-            cmd = "$J=G21G90G1"
+            cmd = "G21G90G1"
             if x:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            cmd += f"F{FEEDRATE}"
+            cmd += f"F{FEEDRATE}\n"
             self.send_gcode("$X") 
             self.send_gcode(cmd)
 
@@ -228,13 +268,13 @@ class gantryControl:
             dy_steps = end_coord[1] - start_coord[1]
             
             # Convert steps to mm
-            dx_mm = dx_steps 
-            dy_mm = dy_steps 
+            dx_mm = dx_steps + start_coord[0]
+            dy_mm = dy_steps + start_coord[1]
 
             #dx_mm = dx_steps * step_value
             #dy_mm = dy_steps * step_value
 
-            path = [(start_coord[0]/step_value, start_coord[1]/step_value), (dx_mm, dy_mm)]     
+            path = [(start_coord[0], start_coord[1]), (dx_mm, dy_mm)]     
 
 
             print(f"Interpreted move: {move_str} as dx={dx_mm}, dy={dy_mm} as {path}")
@@ -376,7 +416,14 @@ class gantryControl:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
                     gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"M9") # deactivate after final movement
+
                     gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    # gcode_commands.append(f"M8") # deactivate after final movement
+                    # gcode_commands.append(f"M9") # deactivate after final movement
+
+                
+
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
@@ -685,6 +732,7 @@ class GantryControlWidget(BoxLayout):
         self.gantry_controls = BoxLayout(orientation='vertical')
 
         self.gantry_control = gantryControl()
+        self.gantry_control.connect_to_grbl()
 
         self.target_board = GantryTargetWidget(gantry_control=self.gantry_control)
         self.board_display.add_widget(self.target_board)
@@ -760,6 +808,7 @@ class GantryControlWidget(BoxLayout):
 
         controls.add_widget(self.pathButton)
         controls.add_widget(c_clear)
+        controls.add_widget(Button(text="Home", on_press=lambda instance: self.gantry_control.home()))
 
 
         btn_layout.add_widget(nw)
@@ -960,7 +1009,7 @@ class SendCommandButton(Button):
         print(f"Sending commands: {commands}")
 
 
-        #self.gantry_control.send_commands(movements)
+        self.gantry_control.send_commands(commands)
 
         self.target_widget.clear_trail()
         self.target_widget.trail_enabled = False
