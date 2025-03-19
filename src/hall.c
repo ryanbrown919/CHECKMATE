@@ -1,5 +1,5 @@
-#include "hall.h"
-#include "mux.h"
+#include "../inc/hall.h"
+#include "../inc/mux.h"
 
 const uint32_t hall_to_board_mapping[16][8] = {
     /* q1    q2     q3     q4*/

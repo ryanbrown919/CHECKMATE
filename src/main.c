@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "hall.h"
-#include "mux.h"
+#include "../inc/hall.h"
+#include "../inc/mux.h"
 
 int main() {
     uint8_t board[8][8] = {0};
