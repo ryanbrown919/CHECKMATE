@@ -1,5 +1,6 @@
 import random
 import platform
+import subprocess
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -98,4 +99,9 @@ class ChessBoardApp(App):
         return ChessBoardScreen()
 
 if __name__ == '__main__':
+    # Example usage: get the board from the C subprocess first.
+    board = get_board_from_subprocess()
+    print("Board from subprocess:")
+    for row in board:
+        print(row)
     ChessBoardApp().run()
