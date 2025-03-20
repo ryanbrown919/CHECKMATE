@@ -1,4 +1,4 @@
-#include "mux.h"
+#include "../inc/mux.h"
 
 void mux_init(void) {
     gpioSetMode(MUX_S0, PI_OUTPUT);
