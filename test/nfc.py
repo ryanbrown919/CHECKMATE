@@ -15,8 +15,8 @@ from adafruit_pn532.spi import PN532_SPI
 
 # SPI connection:
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-cs_pin = DigitalInOut(board.D5)
-pn532 = PN532_SPI(spi, cs_pin, debug=False)
+# cs_pin = DigitalInOut(board.D5)
+pn532 = PN532_SPI(spi, 26, debug=False)
 
 # Optionally, perform a hardware reset if needed:
 # reset_pin = DigitalInOut(board.D6)
