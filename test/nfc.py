@@ -3,20 +3,19 @@
 # SPDX-License-Identifier: MIT
 
 """
-Example of detecting and reading a block from a MiFare classic NFC card using SPI.
-This example shows connecting to the PN532 over SPI and writing & reading a MiFare classic RFID tag.
+Example of detecting and reading a block from a MiFare classic NFC card using I2C.
+This example shows connecting to the PN532 over I2C and writing & reading a MiFare classic RFID tag.
 """
 
 import board
 import busio
 from digitalio import DigitalInOut
 from adafruit_pn532.adafruit_pn532 import MIFARE_CMD_AUTH_B
-from adafruit_pn532.spi import PN532_SPI
+from adafruit_pn532.i2c import PN532_I2C
 
-# SPI connection:
-spi = busio.SPI(board.D11, board.D10, board.D9)
-cs_pin = DigitalInOut(board.D26)
-pn532 = PN532_SPI(spi, cs_pin, debug=False)
+# I2C connection:
+i2c = busio.I2C(board.SCL, board.SDA)
+pn532 = PN532_I2C(i2c, debug=False)
 
 # Optionally, perform a hardware reset if needed:
 # reset_pin = DigitalInOut(board.D6)
