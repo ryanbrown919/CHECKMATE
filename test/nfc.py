@@ -9,7 +9,7 @@
 This example shows connecting to the PN532 and writing & reading a mifare classic
 type RFID tag
 """
-import busio
+from adafruit-blinka import busio
 
 # Additional import needed for I2C/SPI
 # from digitalio import DigitalInOut
