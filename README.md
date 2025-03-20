@@ -2,8 +2,9 @@
 <p align="center">
   <img src="assets/logo.png" alt="Check-M.A.T.E Logo">
 </p>
-
-A mechanically articulated table-top experience
+<p align="center">
+  <span style="font-size:1.2em;"><em>A mechanically articulated table-top experience</em></span>
+</p>
 
 ## Overview
 
@@ -34,18 +35,20 @@ pip install -r requirements.txt
 1. Connect your Raspberry Pi 4B to required peripherals
 2. Run the main application:
    ```bash
-   python src/main.py
+   python main.py
    ```
 3. Access the UI through the connected display 
 
 ### Project Structure
 ```
 CHECKMATE/
-├── src/            # Source code
-├── docs/           # Documentation
-├── tests/          # Test suite
-├── config/         # Configuration files
-└── scripts/        # Utility scripts
+├── assets/         # Images/figures
+├── bin/            # Executables
+├── inc/            # Headers
+├── scripts/        # Application
+├── src/            # Source cde
+└── test/           # Unit tests
+└── main.py         # Entry Point
 ```
 
 ## Building the Firmware
