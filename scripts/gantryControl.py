@@ -789,15 +789,15 @@ class GantryControlWidget(BoxLayout):
 
 
         
-        nw = IconButton(source="figures/nw.png", size_hint=(0.1, 0.1))
-        n  = IconButton(source="figures/n.png",  size_hint=(0.1, 0.1))
-        ne = IconButton(source="figures/ne.png", size_hint=(0.1, 0.1))
-        w  = IconButton(source="figures/w.png",  size_hint=(0.1, 0.1))
+        nw = IconButton(source="assets/nw.png", size_hint=(0.1, 0.1))
+        n  = IconButton(source="assets/n.png",  size_hint=(0.1, 0.1))
+        ne = IconButton(source="assets/ne.png", size_hint=(0.1, 0.1))
+        w  = IconButton(source="assets/w.png",  size_hint=(0.1, 0.1))
         c = GoButton(gantry_control=self.gantry_control, target_board=self.target_board, size_hint=(0.1, 0.1))
-        e  = IconButton(source="figures/e.png",  size_hint=(0.1, 0.1))
-        sw = IconButton(source="figures/sw.png", size_hint=(0.1, 0.1))
-        s  = IconButton(source="figures/s.png",  size_hint=(0.1, 0.1))
-        se = IconButton(source="figures/se.png", size_hint=(0.1, 0.1))
+        e  = IconButton(source="assets/e.png",  size_hint=(0.1, 0.1))
+        sw = IconButton(source="assets/sw.png", size_hint=(0.1, 0.1))
+        s  = IconButton(source="assets/s.png",  size_hint=(0.1, 0.1))
+        se = IconButton(source="assets/se.png", size_hint=(0.1, 0.1))
 
         self.pathButton = PathPlanToggleButton(target_widget = self.target_board)
         self.chess_move_input = ChessMoveInput(target_widget=self.target_board,

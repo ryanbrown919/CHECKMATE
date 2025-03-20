@@ -51,7 +51,7 @@ class MainMenuScreen(Screen):
 
         # Right side: a large icon.
         # Replace 'icon.png' with your icon file.
-        icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.4, 1))
+        icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.4, 1))
         root_layout.add_widget(icon)
 
         self.add_widget(root_layout)
