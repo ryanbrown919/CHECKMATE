@@ -1,5 +1,8 @@
 # Check-M.A.T.E
-![Check-M.A.T.E Logo](assets/logo.png)
+<p align="center">
+  <img src="assets/logo.png" alt="Check-M.A.T.E Logo">
+</p>
+
 A mechanically articulated table-top experience
 
 ## Overview
