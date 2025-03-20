@@ -14,9 +14,9 @@ from adafruit_pn532.adafruit_pn532 import MIFARE_CMD_AUTH_B
 from adafruit_pn532.spi import PN532_SPI
 
 # SPI connection:
-spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-# cs_pin = DigitalInOut(board.D5)
-pn532 = PN532_SPI(spi, 26, debug=False)
+spi = busio.SPI(board.D11, board.D10, board.D9)
+cs_pin = DigitalInOut(board.D26)
+pn532 = PN532_SPI(spi, cs_pin, debug=False)
 
 # Optionally, perform a hardware reset if needed:
 # reset_pin = DigitalInOut(board.D6)
