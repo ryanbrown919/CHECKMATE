@@ -12,18 +12,18 @@ from game_logic import GameLogic
 
 # Map chess piece symbols to image file paths.
 piece_images = {
-    'P': 'figures/white_pawn.png',
-    'R': 'figures/white_rook.png',
-    'N': 'figures/white_knight.png',
-    'B': 'figures/white_bishop.png',
-    'Q': 'figures/white_queen.png',
-    'K': 'figures/white_king.png',
-    'p': 'figures/black_pawn.png',
-    'r': 'figures/black_rook.png',
-    'n': 'figures/black_knight.png',
-    'b': 'figures/black_bishop.png',
-    'q': 'figures/black_queen.png',
-    'k': 'figures/black_king.png',
+    'P': 'assets/white_pawn.png',
+    'R': 'assets/white_rook.png',
+    'N': 'assets/white_knight.png',
+    'B': 'assets/white_bishop.png',
+    'Q': 'assets/white_queen.png',
+    'K': 'assets/white_king.png',
+    'p': 'assets/black_pawn.png',
+    'r': 'assets/black_rook.png',
+    'n': 'assets/black_knight.png',
+    'b': 'assets/black_bishop.png',
+    'q': 'assets/black_queen.png',
+    'k': 'assets/black_king.png',
 }
 
 # ------------------------------------------------------------

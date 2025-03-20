@@ -80,13 +80,13 @@ class headerLayout(BoxLayout):
         self.padding=10
         self.spacing=0
         self.size_hint=(1, 0.2)
-        icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
+        icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
 
         if not menu:
             self.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
 
             self.add_widget(Widget(size_hint_x=0.4))
-            self.add_widget(IconButton(source="figures/hamburgMenu.png", 
+            self.add_widget(IconButton(source="assets/hamburgMenu.png", 
                                                 size_hint=(0.1, 1),  # Disable relative sizing
                                                         # Set explicit dimensions
                                                 allow_stretch=True,      # Allow the image to stretch to fill the widget
@@ -97,7 +97,7 @@ class headerLayout(BoxLayout):
         else:
             self.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
             self.add_widget(Widget(size_hint_x=0.5))
-            icon = Image(source='figures/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
+            icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
             self.add_widget(icon)
 
 
