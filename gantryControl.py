@@ -71,6 +71,7 @@ class gantryControl:
                 # macOS: serial ports usually look like /dev/tty.*
                 ports = glob.glob('/dev/tty.*')
             else:
+
                 raise EnvironmentError('Unsupported platform')
             return ports
 
@@ -109,7 +110,7 @@ class gantryControl:
                 return
 
             try:
-                self.ser = serial.Serial("/dev/tty.usbmodem1201", 115200, timeout=1)
+                self.ser = serial.Serial(grbl_port, 115200, timeout=1)
                 time.sleep(2)  # Allow GRBL to initialize.
                 self.send_gcode("$X")  # Clear alarms.
                 print(f"Connected to GRBL on {grbl_port}")
@@ -978,7 +979,8 @@ class GoButton(Button):
     def send_commands(self, instance):
         dot_location = self.target_board.get_current_mm()
         print(f"Sending command: {dot_location}")
-        self.gantry_control.send_coordinates_command(dot_location)
+        if not self.gantry_control.simulate:
+            self.gantry_control.send_coordinates_command(dot_location)
     
     
 
@@ -1008,8 +1010,8 @@ class SendCommandButton(Button):
         print(f"Sending movements: {movements}")
         print(f"Sending commands: {commands}")
 
-
-        self.gantry_control.send_commands(commands)
+        if not self.gantry_control.simulate:
+            self.gantry_control.send_commands(commands)
 
         self.target_widget.clear_trail()
         self.target_widget.trail_enabled = False
