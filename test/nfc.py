@@ -9,8 +9,6 @@
 This example shows connecting to the PN532 and writing & reading a mifare classic
 type RFID tag
 """
-
-import board
 import busio
 
 # Additional import needed for I2C/SPI
@@ -25,7 +23,7 @@ from adafruit_pn532.i2c import PN532_I2C
 # from adafruit_pn532.uart import PN532_UART
 
 # I2C connection:
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = busio.I2C(3, 2)
 
 # Non-hardware reset/request with I2C
 pn532 = PN532_I2C(i2c, debug=False)
