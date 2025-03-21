@@ -7,6 +7,7 @@
 
 #include "mux.h"
 
+void hall_init(void);
 uint32_t** hall_get_squares(void);
 uint32_t hall_get_square(uint32_t x, uint32_t y);
 

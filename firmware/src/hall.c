@@ -20,6 +20,11 @@ const uint32_t hall_to_board_mapping[16][8] = {
     {0, 4,  0, 0,  7, 3,  7, 7}  /* HALL 12 mapping */
 };
 
+void hall_init() {
+    gpioInitialise();
+    mux_init();
+}
+
 uint32_t** hall_get_squares() {
     uint32_t **board = malloc(8 * sizeof(uint32_t *));
 
