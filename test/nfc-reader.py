@@ -66,6 +66,7 @@ def translate_fen(fen_str):
             continue
         if char in fen_piece_map:
             translation.append(fen_piece_map[char])
+            break
         else:
             translation.append(f"Unknown({char})")
     return translation
