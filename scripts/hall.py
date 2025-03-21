@@ -9,7 +9,7 @@ class HallFirmware:
         print(f"Resolved path: {self._lib_path.resolve()}")
         assert self._lib_path.exists(), "File does not exist!"
 
-        self.lib = ctypes.CDLL(str(self._lib_path.resolve()))
+        self.lib = ctypes.CDLL(str(lib_path.resolve()), mode=ctypes.RTLD_GLOBAL)
         
         # Save expected board dimensions (adjust as needed)
         self.rows = 8
