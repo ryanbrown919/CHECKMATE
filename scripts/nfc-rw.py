@@ -10,6 +10,7 @@ def setup():
 def main():
     while True:
         mode = input("Enter mode (read, write): ")
+        
         if mode == "w" or mode == "write":
             while True:
                 piece = input("Enter piece: ")
