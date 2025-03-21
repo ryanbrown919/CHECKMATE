@@ -47,4 +47,6 @@ if __name__ == "__main__":
         board = firmware.get_squares()
         for row in board:
             print(row)
+            
+        print("\n")
         time.sleep(0.1)
