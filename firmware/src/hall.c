@@ -26,11 +26,27 @@ void hall_init() {
 }
 
 uint32_t** hall_get_squares() {
+    // Allocate array for 8 row pointers
     uint32_t **board = malloc(8 * sizeof(uint32_t *));
-
     if (board == NULL)
-        return NULL; 
+        return NULL;
 
+    // Allocate each row (8 columns per row)
+    for (int i = 0; i < 8; i++) {
+        board[i] = malloc(8 * sizeof(uint32_t));
+        if (board[i] == NULL) {
+            // Free previously allocated rows on failure
+            for (int j = 0; j < i; j++)
+                free(board[j]);
+            free(board);
+            return NULL;
+        }
+        // Optional: initialize row to 0
+        for (int j = 0; j < 8; j++)
+            board[i][j] = 0;
+    }
+
+    // Update board bits based on the digital hall effect signals
     for (int i = 0; i < 16; i++) {
         uint32_t current_gray = i ^ (i >> 1);
         mux_set_pins(current_gray);
@@ -50,7 +66,6 @@ uint32_t** hall_get_squares() {
             }
         }
     }
-
     return board;
 }
 
