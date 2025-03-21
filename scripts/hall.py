@@ -41,7 +41,7 @@ if __name__ == "__main__":
     print("Initialized")
 
     while True:
-        board = firmware.get_square(0, 0)
+        print(firmware.get_square(0, 0))
 
         print("\n")
         time.sleep(0.1)
