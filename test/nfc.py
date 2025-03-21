@@ -26,8 +26,8 @@ from pn532pi import Pn532Spi
 from pn532pi import Pn532Hsu
 
 # Set the desired interface to True
-SPI = False
-I2C = True
+SPI = True
+I2C = False
 HSU = False
 
 if SPI:
