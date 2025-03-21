@@ -25,14 +25,14 @@ def main():
             else:
                 print("Write failed")
 
-        elif mode == "r" or "read":
+        elif mode == "r" or mode == "read":
             read_ok, piece = nfc.read()
             if read_ok:
                 print("Read successful")
                 print("Piece: " + piece)
             else:
                 print("Read failed")
-                
+
         else:
             print("Invalid mode. Please try again.")
 

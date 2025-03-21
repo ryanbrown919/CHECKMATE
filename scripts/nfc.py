@@ -45,5 +45,9 @@ class NFC():
         write_ok = self.nfc.mifareultralight_WritePage(4, data)
         if not write_ok:
             return False
-        else:
-            return True
+
+        read_ok, read_char = self.read()
+        if not read_ok or read_char != fen_piece:
+            return False
+
+        return True
