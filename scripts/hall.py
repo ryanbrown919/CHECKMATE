@@ -31,7 +31,9 @@ class HallFirmware:
         return board
 
     def get_square(self, x, y):
-        return self._lib.hall_get_square(x, y)
+        flipped_x = self.rows - 1 - x
+        flipped_y = self.cols - 1 - y
+        return self._lib.hall_get_square(flipped_x, flipped_y)
 
 if __name__ == "__main__":
     firmware = HallFirmware()
@@ -39,16 +41,7 @@ if __name__ == "__main__":
     print("Initialized")
 
     while True:
-        board_state = []
-        for i in range(firmware.rows):
-            row_state = []
-            for j in range(firmware.cols):
-                square = firmware.get_square(i, j)
-                row_state.append(square)
-            board_state.append(row_state)
-        print("Board state (from individual squares):")
-        for row in board_state:
-            print(row)
+        board = firmware.get_square(0, 0)
 
         print("\n")
         time.sleep(0.1)
