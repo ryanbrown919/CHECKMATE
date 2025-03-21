@@ -26,7 +26,7 @@ def main():
                 print("Write failed")
 
         elif mode == "r" or "read":
-            success, uid = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
+            success, uid = nfc.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
 
             if (success):
                 #  Display some basic information about the card
@@ -50,7 +50,7 @@ def main():
                 #  Start with block 4 (the first block of sector 1) since sector 0
                 #  contains the manufacturer data and it's probably better just
                 #  to leave it alone unless you know what you're doing
-                success = self.nfc.mifareclassic_AuthenticateBlock(uid, 4, 0, keya)
+                success = nfc.nfc.mifareclassic_AuthenticateBlock(uid, 4, 0, keya)
 
                 if (success):
                     print("Sector 1 (Blocks 4..7) has been authenticated")
@@ -61,7 +61,7 @@ def main():
                     # success = nfc.mifareclassic_WriteDataBlock (4, data)
 
                     #  Try to read the contents of block 4
-                    success, data = self.nfc.mifareclassic_ReadDataBlock(4)
+                    success, data = nfc.nfc.mifareclassic_ReadDataBlock(4)
 
                     if (success):
                         #  Data seems to have been read ... spit it out
@@ -79,7 +79,7 @@ def main():
 
                 #  Try to read the first general-purpose user page (#4)
                 print("Reading page 4")
-                success, data = self.nfc.mifareultralight_ReadPage(4)
+                success, data = nfc.nfc.mifareultralight_ReadPage(4)
                 if (success):
                     #  Data seems to have been read ... spit it out
                     binascii.hexlify(data)
