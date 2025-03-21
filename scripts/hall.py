@@ -39,6 +39,13 @@ if __name__ == "__main__":
     print("Initialized")
 
     while True:
-        print(firmware.get_square(0, 0))
+        print(firmware.get_square(0, 0), end=" ")
+        print(firmware.get_square(1, 1), end=" ") 
+        print(firmware.get_square(2, 2), end=" ")
+        print(firmware.get_square(3, 3), end=" ")
+        print(firmware.get_square(4, 4), end=" ")
+        print(firmware.get_square(5, 5), end=" ")
+        print(firmware.get_square(6, 6), end=" ")
+        print(firmware.get_square(7, 7), end=" ")
         print("\n")
         time.sleep(0.1)
