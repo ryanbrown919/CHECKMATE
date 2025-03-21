@@ -18,6 +18,9 @@ class HallFirmware:
         self._lib.hall_get_square.argtypes = [c_uint32, c_uint32]
         self._lib.hall_get_square.restype = c_uint32
 
+    def begin(self):
+        self._lib.hall_init()
+
     def get_squares(self):
         """
         Calls the firmware function hall_get_squares and returns the board
@@ -45,6 +48,7 @@ class HallFirmware:
 
 if __name__ == "__main__":
     firmware = HallFirmware()
+    firmware.begin()
     board = firmware.get_squares()
     print("Board state as a 2D array:")
     for row in board:
