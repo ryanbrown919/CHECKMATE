@@ -46,44 +46,20 @@ elif I2C:
 
 def setup():
     nfc.begin()
-
-    versiondata = nfc.getFirmwareVersion()
-    if (not versiondata):
-        print("Didn't find PN53x board")
-        raise RuntimeError("Didn't find PN53x board")  # halt
-
-    #  Got ok data, print it out!
-    print("Found chip PN5 {:#x} Firmware ver. {:d}.{:d}".format((versiondata >> 24) & 0xFF, (versiondata >> 16) & 0xFF,
-                                                                (versiondata >> 8) & 0xFF))
-
-    #  configure board to read RFID tags
-    nfc.SAMConfig()
-
     print("Waiting for an ISO14443A Card ...")
 
 
 def loop():
-    #  Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
-    #  'uid' will be populated with the UID, and uidLength will indicate
-    #  if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
     success, uid = nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS)
 
     if (success):
-        #  Display some basic information about the card
-        print("Found an ISO14443A card")
-        print("UID Length: {:d}".format(len(uid)))
-        print("UID Value: {}".format(binascii.hexlify(uid)))
-
-
-        #  We probably have a Mifare Ultralight card ...
-        print("Seems to be a Mifare Ultralight tag (7 byte UID)")
+        print("Found a Mifare Ultralight tag (7 byte UID)")
 
         #  Try to read the first general-purpose user page (#4)
         print("Reading page 4")
         success, data = nfc.mifareultralight_ReadPage(4)
         if (success):
-            #  Data seems to have been read ... spit it out
-            binascii.hexlify(data)
+            print("Data read (hex): " + binascii.hexlify(data).decode('utf-8'))
             return True
 
         else:
