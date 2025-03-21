@@ -11,12 +11,12 @@ class NFC():
         self.nfc.begin()
     
     def read(self):
-        tag_present = nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
+        tag_present = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
 
         if not tag_present:
             return False, None
 
-        read_ok, data = nfc.mifareultralight_ReadPage(4)
+        read_ok, data = self.nfc.mifareultralight_ReadPage(4)
         if not read_ok:
             return False, None
         
