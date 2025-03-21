@@ -8,46 +8,26 @@ class NFC():
     def __init__(self):
         # Instantiate using I2C interface
         self.nfc = Pn532(Pn532I2c(1))
+        self.firmware_version = None
+        self.uid = None
 
     def begin(self):
         self.nfc.begin()
-        # Optionally, you can print firmware info here if needed.
+        self.firmware_version = self.nfc.getFirmwareVersion()
     
     def read(self):
         # Wait for an ISO14443A card (Mifare, etc.).
-        success, uid = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS)
+        success, self.uid = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
 
         if success:
-            print("\nFound an ISO14443A card")
-            print("UID Length: {:d}".format(len(uid)))
-            print("UID Value: {}".format(binascii.hexlify(uid)))
-
-            if len(uid) == 4:
-                print("Appears to be a Mifare Classic card (4 byte UID)")
-                print("Trying to authenticate block 4 with default KEYA value")
-                keya = bytearray([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
-                success = self.nfc.mifareclassic_AuthenticateBlock(uid, 4, 0, keya)
-                if success:
-                    print("Sector 1 (Blocks 4..7) authenticated")
-                    success, data = self.nfc.mifareclassic_ReadDataBlock(4)
-                    if success:
-                        # Decode the raw data to a string assuming UTF-8 encoding.
-                        tag_str = data.decode('utf-8', errors='ignore')
-                        print("Read tag string: {}".format(tag_str))
-                    else:
-                        print("Unable to read block 4. Try another key?")
-                else:
-                    print("Authentication failed: Try another key?")
-            elif len(uid) == 7:
-                print("Appears to be a Mifare Ultralight tag (7 byte UID)")
-                print("Reading page 4")
-                success, data = self.nfc.mifareultralight_ReadPage(4)
-                if success:
-                    # Decode the raw data from page 4 to a UTF-8 string.
-                    tag_str = data.decode('utf-8', errors='ignore')
-                    print("Read tag string: {}".format(tag_str))
-                else:
-                    print("Unable to read page 4")
+            print("\nFound tag")
+            success, data = self.nfc.mifareultralight_ReadPage(4)
+            if success:
+                # Decode the raw data from page 4 to a UTF-8 string.
+                tag_str = data.decode('utf-8', errors='ignore')
+                print("Read tag string: {}".format(tag_str))
+            else:
+                print("Unable to read page 4")
         else:
             print(".", end="")  # Print a dot to indicate waiting
 
@@ -107,7 +87,6 @@ def setup():
 
 if __name__ == '__main__':
     setup()
-    nfc_global.write("f")
     # In a loop, continuously try reading a tag.
     while True:
         nfc_global.read()
