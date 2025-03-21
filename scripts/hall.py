@@ -39,13 +39,16 @@ if __name__ == "__main__":
     print("Initialized")
 
     while True:
-        print(firmware.get_square(0, 0), end=" ")
-        print(firmware.get_square(1, 1), end=" ") 
-        print(firmware.get_square(2, 2), end=" ")
-        print(firmware.get_square(3, 3), end=" ")
-        print(firmware.get_square(4, 4), end=" ")
-        print(firmware.get_square(5, 5), end=" ")
-        print(firmware.get_square(6, 6), end=" ")
-        print(firmware.get_square(7, 7), end=" ")
+        board_state = []
+        for i in range(firmware.rows):
+            row_state = []
+            for j in range(firmware.cols):
+                square = firmware.get_square(i, j)
+                row_state.append(square)
+            board_state.append(row_state)
+        print("Board state (from individual squares):")
+        for row in board_state:
+            print(row)
+
         print("\n")
         time.sleep(0.1)
