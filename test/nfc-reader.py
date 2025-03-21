@@ -59,7 +59,8 @@ def loop():
         print("Reading page 4")
         success, data = nfc.mifareultralight_ReadPage(4)
         if (success):
-            print("Data read (hex): " + binascii.hexlify(data).decode('utf-8'))
+            first_char = chr(data[0])
+            print("Data read (first char): " + first_char)
             return True
 
         else:
