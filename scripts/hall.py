@@ -2,13 +2,13 @@ import ctypes
 from ctypes import c_uint32, POINTER
 
 class HallFirmware:
-    def __init__(self, lib_path="./../lib/hall_firmware.so", rows=8, cols=8):
+    def __init__(self):
         # Load the shared library
-        self._lib = ctypes.CDLL(lib_path)
+        self._lib = ctypes.CDLL("../lib/hall_firmware.so")
         
         # Save expected board dimensions (adjust as needed)
-        self.rows = rows
-        self.cols = cols
+        self.rows = 8
+        self.cols = 8
         
         # Configure the function prototypes.
         # For hall_get_squares, we expect a uint32_t**.
@@ -30,12 +30,10 @@ class HallFirmware:
         board = []
         # Assuming an 'rows' x 'cols' board.
         for i in range(self.rows):
-            # Access the pointer to row i from board_ptr.
-            # board_ptr[i] is of type POINTER(c_uint32)
+            # board_ptr[i] is a POINTER(c_uint32) that points to a row.
             row_ptr = board_ptr[i]
             row = []
             for j in range(self.cols):
-                # Access jth element in this row.
                 row.append(row_ptr[j])
             board.append(row)
         return board
