@@ -2,7 +2,7 @@ import ctypes
 from ctypes import c_uint32, POINTER
 
 class HallFirmware:
-    def __init__(self, lib_path="../lib/hall_firmware.so", rows=8, cols=8):
+    def __init__(self, lib_path="./../lib/hall_firmware.so", rows=8, cols=8):
         # Load the shared library
         self._lib = ctypes.CDLL(lib_path)
         
