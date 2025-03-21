@@ -40,6 +40,35 @@ elif I2C:
     PN532_I2C = Pn532I2c(1)
     nfc = Pn532(PN532_I2C)
 
+fen_piece_map = {
+    'K': 'White King',
+    'Q': 'White Queen',
+    'R': 'White Rook',
+    'B': 'White Bishop',
+    'N': 'White Knight',
+    'P': 'White Pawn',
+    'k': 'Black King',
+    'q': 'Black Queen',
+    'r': 'Black Rook',
+    'b': 'Black Bishop',
+    'n': 'Black Knight',
+    'p': 'Black Pawn'
+}
+
+def translate_fen(fen_str):
+    """Translate each FEN character to descriptive piece name.
+    Numbers in FEN indicate empty squares and are skipped.
+    """
+    translation = []
+    for char in fen_str:
+        if char.isdigit():
+            # Skip digits (or handle empty squares as needed)
+            continue
+        if char in fen_piece_map:
+            translation.append(fen_piece_map[char])
+        else:
+            translation.append(f"Unknown({char})")
+    return translation
 
 def setup():
     nfc.begin()
@@ -79,7 +108,14 @@ def loop():
                 print("Sector 1 (Blocks 4..7) authenticated")
                 success, data = nfc.mifareclassic_ReadDataBlock(4)
                 if success:
-                    print("Reading Block 4: {}".format(binascii.hexlify(data)))
+                    # Decode the raw data to a string assuming UTF-8 encoding.
+                    fen_str = data.decode('utf-8', errors='ignore')
+                    print("Raw tag data (decoded):", fen_str)
+                    # Translate the FEN data using your dictionary
+                    translation = translate_fen(fen_str)
+                    print("Translated FEN data:")
+                    for piece in translation:
+                        print(piece)
                 else:
                     print("Unable to read block 4. Try another key?")
             else:
@@ -89,7 +125,14 @@ def loop():
             print("Reading page 4")
             success, data = nfc.mifareultralight_ReadPage(4)
             if success:
-                print("Page 4 Data: {}".format(binascii.hexlify(data)))
+                # Decode the raw data from page 4 to a UTF-8 string.
+                fen_str = data.decode('utf-8', errors='ignore')
+                print("Raw tag data (decoded):", fen_str)
+                # Translate the FEN string using your dictionary and translation function.
+                translation = translate_fen(fen_str)
+                print("Translated FEN data:")
+                for piece in translation:
+                    print(piece)
             else:
                 print("Unable to read page 4")
     else:
