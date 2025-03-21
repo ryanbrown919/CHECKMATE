@@ -72,7 +72,7 @@ uint32_t** hall_get_squares() {
 uint32_t hall_get_square(uint32_t x, uint32_t y) {
     for (uint32_t i = 0; i < 16; i++) {
         for (uint32_t j = 0; j < 4; j++) {
-            if (hall_to_board_mapping[i][j * 2] != x || hall_to_board_mapping[i][j * 2 + 1] != y) 
+            if (hall_to_board_mapping[i][j * 2] != y || hall_to_board_mapping[i][j * 2 + 1] != x) 
                 continue;
 
             uint32_t current_gray = i ^ (i >> 1);
