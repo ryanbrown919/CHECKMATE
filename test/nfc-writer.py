@@ -49,6 +49,9 @@ def setup():
     nfc.SAMConfig()
 
 def loop():
+    # Get input string from user
+    s = input("Enter the string to write to the tag: ")
+    data = s.encode('utf-8')
     print("Waiting for a tag...")
     tag_present = False
     while not tag_present:
@@ -69,10 +72,6 @@ def loop():
     # Calculate total number of writable pages (pages start at 4)
     total_pages = capacity_bytes // 4
     writable_pages = total_pages - 4  # pages 0-3 are reserved
-    
-    # Get input string from user
-    s = input("Enter the string to write to the tag: ")
-    data = s.encode('utf-8')
     
     # Calculate number of pages needed
     pages_needed = math.ceil(len(data) / 4)
