@@ -31,9 +31,8 @@ class HallFirmware:
         return board
 
     def get_square(self, x, y):
-        flipped_x = self.rows - 1 - x
-        flipped_y = self.cols - 1 - y
-        return self._lib.hall_get_square(flipped_x, flipped_y)
+        board = self.get_squares()
+        return board[7 - x][y]
 
 if __name__ == "__main__":
     firmware = HallFirmware()
