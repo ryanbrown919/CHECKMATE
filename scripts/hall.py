@@ -1,10 +1,15 @@
+from pathlib import Path
 import ctypes
 from ctypes import c_uint32, POINTER
 
 class HallFirmware:
     def __init__(self):
         # Load the shared library
-        self._lib = ctypes.CDLL("../lib/hall_firmware.so")
+        self._lib_path = Path(__file__).parent / "hall_firmware.so"
+        print(f"Resolved path: {lib_path.resolve()}")
+        assert lib_path.exists(), "File does not exist!"
+
+        lib = CDLL(str(lib_path.resolve()))
         
         # Save expected board dimensions (adjust as needed)
         self.rows = 8
