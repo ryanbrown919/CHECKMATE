@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <pigpio.h>
-#include <stdio.h>
 
 #define MUX_S0 6
 #define MUX_S1 13
