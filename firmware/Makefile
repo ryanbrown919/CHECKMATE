@@ -13,7 +13,7 @@ OBJ = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRC))
 all: $(TARGET)
 
 $(TARGET): $(OBJ) | $(BUILDDIR)
-	$(CC) $(LDFLAGS) -o $(TARGET) $(OBJ) $(LIBS)
+	$(CC) $(LDFLAGS) -fPIC -o $(TARGET) $(OBJ) $(LIBS)
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
