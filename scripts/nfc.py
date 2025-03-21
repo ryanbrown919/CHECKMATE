@@ -1,7 +1,5 @@
 from pn532pi import Pn532, pn532, Pn532I2c
 
-
-# @TODO: verify read/write
 class NFC():
     def __init__(self):
         # Attach to I2C bus 1 on the pi
@@ -22,8 +20,6 @@ class NFC():
         
         first_char = chr(data[0])
         return True, first_char
-
-        
 
     def write(self, fen_piece):
         fen_pieces = ["K", "Q", "R", "B", "N", "P", # white pieces
