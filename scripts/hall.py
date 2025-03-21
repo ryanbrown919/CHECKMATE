@@ -51,7 +51,7 @@ if __name__ == "__main__":
     firmware.begin()
     print("Initialized")
 
-    firmware.get_square(0, 0)
+    print(firmware.get_square(0, 0))
     # board = firmware.get_squares()
     # print("Board state as a 2D array:")
     # for row in board:
