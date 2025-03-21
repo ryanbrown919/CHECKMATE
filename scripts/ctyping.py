@@ -2,8 +2,8 @@ import ctypes
 from pathlib import Path
 
 lib_path = Path(__file__).parent / "hall_firmware.so"
-
 print(f"Resolved path: {lib_path.resolve()}")
+
 assert lib_path.exists(), f"{lib_path} does not exist!"
 
 try:
