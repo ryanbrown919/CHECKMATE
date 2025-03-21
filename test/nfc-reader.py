@@ -86,7 +86,7 @@ def setup():
         (versiondata >> 8)  & 0xFF))
 
     # Configure board to read RFID tags
-    nfc.SAMConfig()
+    # nfc.SAMConfig()
 
     print("Waiting for an ISO14443A Card ...")
 
