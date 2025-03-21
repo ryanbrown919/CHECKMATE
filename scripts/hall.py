@@ -1,6 +1,7 @@
 from pathlib import Path
 import ctypes
 from ctypes import c_uint32, POINTER
+import time
 
 class HallFirmware:
     def __init__(self):
@@ -46,3 +47,4 @@ if __name__ == "__main__":
         board = firmware.get_squares()
         for row in board:
             print(row)
+        time.sleep(0.1)
