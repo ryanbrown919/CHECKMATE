@@ -3,7 +3,7 @@ from nfc import NFC
 
 nfc = NFC()
 
-def setup()
+def setup():
     nfc.begin()
     print("NFC reader initialized")
 
