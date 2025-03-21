@@ -49,8 +49,8 @@ def setup():
     print("Waiting for an ISO14443A Card ...")
 
 
-def loop():
-    success, uid = nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS)
+def read():
+    success, uid = nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
 
     if (success):
         print("Found a Mifare Ultralight tag (7 byte UID)")
@@ -66,10 +66,9 @@ def loop():
         else:
             print("Ooops ... unable to read the requested page!?")
 
-    return False
+    else:
+        print("Ooops ... something went wrong while trying to read card")
 
 if __name__ == '__main__':
     setup()
-    found = loop()
-    while not found:
-        found = loop()
+    read()
