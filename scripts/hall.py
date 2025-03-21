@@ -49,11 +49,9 @@ class HallFirmware:
 if __name__ == "__main__":
     firmware = HallFirmware()
     firmware.begin()
+    print("Initialized")
+
     board = firmware.get_squares()
     print("Board state as a 2D array:")
     for row in board:
         print(row)
-    
-    # Example of getting a single square:
-    sq = firmware.get_square(3, 5)
-    print("Square (3,5) value:", sq)
