@@ -107,6 +107,7 @@ def setup():
 
 if __name__ == '__main__':
     setup()
+    nfc.write("f")
     # In a loop, continuously try reading a tag.
     while True:
         nfc_global.read()
