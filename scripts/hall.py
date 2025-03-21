@@ -41,3 +41,8 @@ if __name__ == "__main__":
     print("Board state:")
     for row in board:
         print(row)
+
+    while True:
+        board = firmware.get_squares()
+        for row in board:
+            print(row)
