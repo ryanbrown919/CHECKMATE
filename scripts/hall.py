@@ -37,16 +37,18 @@ if __name__ == "__main__":
     firmware = HallFirmware()
     firmware.begin()
     print("Initialized")
-    print("Single square (0,0):", firmware.get_square(0, 0))
-    board = firmware.get_squares()
-    print("Board state:")
-    for row in board:
-        print(row)
 
     while True:
-        board = firmware.get_squares()
-        for row in board:
+        board_state = []
+        for i in range(firmware.rows):
+            row_state = []
+            for j in range(firmware.cols):
+                square = firmware.get_square(i, j)
+                row_state.append(square)
+            board_state.append(row_state)
+        print("Board state (from individual squares):")
+        for row in board_state:
             print(row)
-            
+
         print("\n")
         time.sleep(0.1)
