@@ -1,11 +1,9 @@
-from pathlib import Path
-import ctypes
-from ctypes import c_uint32, POINTER
-import time
+from ctypes import CDLL, c_uint32, POINTER
 
-class HallFirmware:
+class SenseLayer:
     def __init__(self):
-        self._lib = ctypes.CDLL("../firmware/build/hall_firmware.so", mode=ctypes.RTLD_GLOBAL)
+        # ryan: change path to firmware
+        self._lib = CDLL("../firmware/build/hall_firmware.so", mode=ctypes.RTLD_GLOBAL)
         self.rows = 8
         self.cols = 8
 
@@ -33,14 +31,3 @@ class HallFirmware:
     def get_square(self, x, y):
         board = self.get_squares()
         return board[7 - x][y]
-
-if __name__ == "__main__":
-    firmware = HallFirmware()
-    firmware.begin()
-    print("Initialized")
-
-    while True:
-        print(firmware.get_square(0, 0))
-
-        print("\n")
-        time.sleep(0.1)
