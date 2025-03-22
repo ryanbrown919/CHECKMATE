@@ -51,25 +51,6 @@ CHECKMATE/
 └── main.py         # Entry Point
 ```
 
-## Building the Firmware
-
-The project includes C firmware for interfacing with a custom sense PCB.
-
-### Prerequisites
-- GCC compiler
-- pigpio library (`sudo apt-get install pigpio`)
-
-### Compiling the Firmware
-To build simply run
-```bash
-make # binary file located in build/hall_firmware.bin
-```
-And to clean the build run
-```bash
-make clean
-```
-Once verified replace the binary file in the bin/ directory with the up-to-date version.
-
 ### Prerequisites
 - Raspberry Pi 4B
 - Python 3.7+

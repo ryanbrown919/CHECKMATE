@@ -1,11 +1,11 @@
 CC = gcc
-CFLAGS = -O3
-LDFLAGS =
-LIBS = -lpigpio 
+CFLAGS = -O3 -fPIC -Wall -Wextra -Werror -std=c11 -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L
+LDFLAGS = -shared
+LIBS = -lpigpio
 
 SRCDIR = src
 BUILDDIR = build
-TARGET = $(BUILDDIR)/hall_firmware.bin
+TARGET = $(BUILDDIR)/hall_firmware.so
 
 SRC := $(wildcard $(SRCDIR)/*.c)
 OBJ = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRC))
