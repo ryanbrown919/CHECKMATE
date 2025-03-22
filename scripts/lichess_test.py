@@ -10,7 +10,7 @@ running_on_mac = sys.platform.startswith("darwin")
 
 class ChessBackend(threading.Thread):
     def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
-                 engine_time_limit=0.1, difficulty_level=5):
+                 engine_time_limit=0.1, difficulty_level=5, elo=1400):
         """
         :param lichess_token: Your Lichess API token (used in online mode).
         :param ui_move_callback: A callback function to update the UI with opponent moves.
@@ -26,6 +26,7 @@ class ChessBackend(threading.Thread):
         self.board = chess.Board()
         self.board_lock = threading.Lock()
         self._stop_event = threading.Event()
+        self.elo = elo
         
         # Online mode variables
         self.game_id = None
@@ -36,9 +37,9 @@ class ChessBackend(threading.Thread):
         # Offline mode variables
 
         if running_on_pi:
-            engine_path = "engines/stockfish-android-armv8"
+            engine_path = "./bin/stockfish-android-armv8"
         elif running_on_mac:
-            engine_path = "engines/stockfish-macos-m1-apple-silicon"
+            engine_path = "./bin/stockfish-macos-m1-apple-silicon"
 
 
         self.engine_path = engine_path
@@ -52,6 +53,8 @@ class ChessBackend(threading.Thread):
         self.SQUARES = chess.SQUARES
         self.observers = []
         self.game_state = "UNFINISHED"
+        self.captured_pieces = []
+        self.move_history = []
 
 
 
@@ -67,9 +70,9 @@ class ChessBackend(threading.Thread):
                     self.engine = chess.engine.SimpleEngine.popen_uci(self.engine_path)
                     # Configure the engine for a variable difficulty.
                     # Map difficulty_level (1 to 10) to an Elo value between 1350 and 2850.
-                    elo = int(1350 + (self.difficulty_level - 1) * (1500 / 9))
-                    self.engine.configure({"UCI_LimitStrength": True, "UCI_Elo": elo})
-                    print(f"Offline engine configured at difficulty level {self.difficulty_level} (Elo {elo}).")
+                    #elo = int(1350 + (self.difficulty_level - 1) * (1500 / 9))
+                    self.engine.configure({"UCI_LimitStrength": True, "UCI_Elo": self.elo})
+                    print(f"Offline engine configured at difficulty level {self.difficulty_level} (Elo {self.elo}).")
                 except Exception as e:
                     print("Error initializing offline engine:", e)
                     return
@@ -85,7 +88,20 @@ class ChessBackend(threading.Thread):
                         try:
                             result = self.engine.play(self.board, chess.engine.Limit(time=self.engine_time_limit))
                             move = result.move
+                            print(f"Test move: {move}")
+                            self.move_history.append(f"{move}")
+
+                            if self.board.is_capture(move):
+                            # For a normal capture, the captured piece is on the destination square.
+                                captured_piece = self.board.piece_at(move.to_square)
+                                if captured_piece:
+                                    self.captured_pieces.append(captured_piece.symbol())
+                                    # Note: You might need special handling for en passant captures.
+                                
+
                             self.board.push(move)
+                            #self.notify_observers()
+                            #self.push_move(move)
                             if self.ui_move_callback:
                                 self.ui_move_callback(move.uci())
                         except Exception as e:
@@ -130,7 +146,21 @@ class ChessBackend(threading.Thread):
                 for move_uci in new_moves:
                     try:
                         move = chess.Move.from_uci(move_uci)
-                        self.board.push(move)
+                        # self.move_history.append(move)
+
+                        ##self.board.push(move)
+                        self.push_move(move)
+
+                        # if self.board.is_capture(move):
+                        #     # For a normal capture, the captured piece is on the destination square.
+                        #     captured_piece = self.board.piece_at(move.to_square)
+                        #     if captured_piece:
+                        #         self.captured_pieces.append(captured_piece.symbol())
+                        #         # Note: You might need special handling for en passant captures.
+                        
+                        # #self.move_history.append(move)
+
+
                         if self.ui_move_callback:
                             self.ui_move_callback(move.uci())
                     except Exception as e:
@@ -157,7 +187,10 @@ class ChessBackend(threading.Thread):
         Processes a move input (as a UCI string, e.g., "e2e4") from the UI.
         Validates and applies the move to the board, then sends it online if in online mode.
         """
+
+        print(f"Trying to execute: {move_text}")
         with self.board_lock:
+            print("ollo")
             try:
                 move = chess.Move.from_uci(move_text)
             except ValueError as e:
@@ -167,14 +200,35 @@ class ChessBackend(threading.Thread):
             if move not in self.board.legal_moves:
                 print("Illegal move attempted:", move_text)
                 return
+            
+                    # Check if the move is a capture before pushing it.
+            if self.board.is_capture(move):
+                # For a normal capture, the captured piece is on the destination square.
+                captured_piece = self.board.piece_at(move.to_square)
+                if captured_piece:
+                    self.captured_pieces.append(captured_piece.symbol())
+                    # Note: You might need special handling for en passant captures.
+            
+            self.move_history.append(move_text)
+
+
+            print("hi")
 
             self.board.push(move)
+
+            print("you made it")
+
+            self.notify_observers()
 
         if self.mode == "online":
             try:
                 self.client.bots.make_move(self.game_id, move_text)
             except Exception as e:
                 print("Error sending move to Lichess:", e)
+
+
+
+
 
     def stop(self):
         self._stop_event.set()
@@ -207,31 +261,33 @@ class ChessBackend(threading.Thread):
         return chess.square_rank(sq)
     import chess
 
-def calculate_material(self, board):
-    # Standard piece values: pawn=1, knight=3, bishop=3, rook=5, queen=9, king=0
-    values = {
-        chess.PAWN: 1,
-        chess.KNIGHT: 3,
-        chess.BISHOP: 3,
-        chess.ROOK: 5,
-        chess.QUEEN: 9,
-        chess.KING: 0
-    }
-    white_score = 0
-    black_score = 0
+    def calculate_material(self, board):
+        # Standard piece values: pawn=1, knight=3, bishop=3, rook=5, queen=9, king=0
+        values = {
+            chess.PAWN: 1,
+            chess.KNIGHT: 3,
+            chess.BISHOP: 3,
+            chess.ROOK: 5,
+            chess.QUEEN: 9,
+            chess.KING: 0
+        }
+        white_score = 0
+        black_score = 0
 
-    if board is None:
-        board = self.board
+        if board is None:
+            board = self.board
 
-    for square, piece in board.piece_map().items():
-        if piece.color == chess.WHITE:
-            white_score += values[piece.piece_type]
-        else:
-            black_score += values[piece.piece_type]
-    
-    # A positive result indicates a material advantage for White,
-    # while a negative result indicates an advantage for Black.
-    return white_score, black_score
+        for square, piece in board.piece_map().items():
+            if piece.color == chess.WHITE:
+                white_score += values[piece.piece_type]
+            else:
+                black_score += values[piece.piece_type]
+
+        print(f"White: {white_score}, Black: {black_score}")
+        
+        # A positive result indicates a material advantage for White,
+        # while a negative result indicates an advantage for Black.
+        return white_score, black_score
 
 
 
@@ -245,9 +301,9 @@ if __name__ == "__main__":
     TOKEN = "your-lichess-api-token"
 
     if running_on_pi:
-        STOCKFISH_PATH = "engines/stockfish-android-armv8"
+        STOCKFISH_PATH = "./bin/stockfish-android-armv8"
     elif running_on_mac:
-        STOCKFISH_PATH = "engines/stockfish-macos-m1-apple-silicon"
+        STOCKFISH_PATH = "./bin/stockfish-macos-m1-apple-silicon"
     #STOCKFISH_PATH = "/usr/local/bin/stockfish"  # Adjust as necessary for your OS.
 
     # Create the backend in offline mode with a chosen difficulty level.
