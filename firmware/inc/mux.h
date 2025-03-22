@@ -12,7 +12,7 @@
 #define MUX_Y_1 26   
 #define MUX_Y_2 22   
 #define MUX_Y_3 27   
-#define MUX_Y_4 17   
+#define MUX_Y_4 21 
 
 void mux_init(void);
 void mux_set_pins(char nibble);
