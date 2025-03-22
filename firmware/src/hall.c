@@ -2,10 +2,10 @@
 
 const uint32_t hall_to_board_mapping[16][8] = {
     /* q1    q2     q3     q4*/
-    {3, 4,  2, 3,  5, 0,  5, 4}, /* HALL  7 mapping */
+    {3, 5,  2, 3,  5, 0,  5, 4}, /* HALL  7 mapping */
     {3, 4,  3, 3,  4, 0,  4, 4}, /* HALL  3 mapping */
     {2, 4,  3, 2,  4, 1,  4, 5}, /* HALL  2 mapping */
-    {2, 6,  2, 2,  5, 1,  5, 5}, /* HALL  6 mapping */
+    {2, 5,  2, 2,  5, 1,  5, 5}, /* HALL  6 mapping */
     {0, 4,  3, 0,  4, 3,  4, 7}, /* HALL  0 mapping */
     {0, 5,  2, 0,  5, 3,  5, 7}, /* HALL  4 mapping */
     {1, 5,  2, 1,  5, 2,  5, 6}, /* HALL  5 mapping */
