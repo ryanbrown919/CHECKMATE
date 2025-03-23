@@ -13,7 +13,7 @@ grbl = GrblStreamer(my_callback)
 grbl.setup_logging()
 
 # Connect to your GRBL controller (change the port if needed)
-grbl.cnect("/dev/ttyUSB0", 115200)
+grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state
 grbl.poll_start()
