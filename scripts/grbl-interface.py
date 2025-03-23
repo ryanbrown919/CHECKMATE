@@ -29,11 +29,11 @@ try:
     while True:
         command = input("Direction (W/A/S/D/Q): ").strip().lower()
         if command == "w":
-            cmd = cmd = f"$J=G21G91Y{JOG_STEP}F{FEED_DRATE}"
+            cmd = cmd = f"$J=G21G91Y{JOG_STEP}F{FEED_RATE}"
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "s":
-            cmd = f"$J=G21G91Y-{JOG_STEP}F{FEED_DRATE}"  
+            cmd = f"$J=G21G91Y-{JOG_STEP}F{FEED_RATE}"  
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "a":
