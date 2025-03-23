@@ -2,12 +2,15 @@ from grbl_streamer import GrblStreamer
 import time
 
 # Step size in mm
-STEP_SIZE = 8  # adjust as needed
+STEP_SIZE = 50  # adjust as needed
 FEED_RATE = 10000  # change as needed
 
 # Callback function to handle events from GRBL
 def my_callback(eventstring, *data):
-    print(f"EVENT: {eventstring.ljust(30)} DATA: {', '.join(str(d) for d in data)}")
+    args = []
+    for d in data:
+        args.append(str(d))
+    print("MY CALLBACK: event={} data={}".format(eventstring.ljust(30), ", ".join(args)))
 
 # Create GrblStreamer instance
 grbl = GrblStreamer(my_callback)
@@ -22,7 +25,7 @@ grbl.poll_start()
 # Set units to mm and relative positioning mode (G21 G91) before jogging
 init_cmd = "$J=G21G91X0F{0}\n".format(FEED_RATE)
 print("Sending init jogging command:", repr(init_cmd))
-grbl.send_immediately(init_cmd)
+grbl.send_immediately("$$")
 
 print("Use W/A/S/D to jog (W: Y+, S: Y-, A: X-, D: X+). Press Q to quit.")
 
@@ -30,21 +33,21 @@ try:
     while True:
         command = input("Direction (W/A/S/D/Q): ").strip().lower()
         if command == "w":
-            cmd = "$J=G21G91Y{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
+            cmd = cmd = f"$J=G21G91Y{STEP_SIZE}F{FEEDRATE}"
             print("Sending command:", repr(cmd))
-            grbl.stream(cmd)
+            grbl.send_immediately(cmd)
         elif command == "s":
-            cmd = "$J=G21G91Y{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
+            cmd = f"$J=G21G91Y-{JOG_STEP}F{FEEDRATE}"  
             print("Sending command:", repr(cmd))
-            grbl.stream(cmd)
+            grbl.send_immediately(cmd)
         elif command == "a":
-            cmd = "$J=G21G91X{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
+            cmd = f"$J=G21G91X-{JOG_STEP}F{FEEDRATE}"  # Jog X-
             print("Sending command:", repr(cmd))
-            grbl.stream(cmd)
+            grbl.send_immediately(cmd)
         elif command == "d":
-            cmd = "$J=G21G91X{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
+            cmd = f"$J=G21G91X{JOG_STEP}F{FEEDRATE}"  # Jog X+
             print("Sending command:", repr(cmd))
-            grbl.stream(cmd)
+            grbl.send_immediately(cmd)
         elif command == "q":
             print("Exiting.")
             break
