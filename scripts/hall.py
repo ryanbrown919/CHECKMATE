@@ -7,7 +7,7 @@ class SenseLayer:
 
     def __init__(self):
         # ryan: change path to firmware
-        self._lib = ctypes.CDLL("../firmware/build/hall_firmware.so", mode=RTLD_GLOBAL)
+        self._lib = CDLL("../firmware/build/hall_firmware.so", mode=RTLD_GLOBAL)
         self.rows = 8
         self.cols = 8
 
