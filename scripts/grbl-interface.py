@@ -56,6 +56,12 @@ while True:
     elif mode == "d":
         send_jog_command("X", STEP_SIZE)
 
+    elif mode == "on":
+        grbl.send_immediately("$M8\n")
+
+    elif mode == "off":
+        grbl.send_immediately("$M9\n")
+
     elif mode == "h":
         # Home command; usually $H triggers GRBL homing cycle (ensure your GRBL supports it)
         home_cmd = "$H\n"
@@ -81,7 +87,7 @@ while True:
             print("Sending manual command:", repr(gcode))
             grbl.send_immediately(gcode)
 
-    elif mode == "r":
+    elif mode == "read":
         read_ok, piece = nfc.read()
         if read_ok:
             print("Read successful")
@@ -89,7 +95,7 @@ while True:
         else:
             print("Read failed")
 
-    elif mode == "w":
+    elif mode == "write":
         while True:
             piece = input("Enter piece: ")
             if piece in ["K", "Q", "R", "B", "N", "P", "k", "q", "r", "b", "n", "p"]:
