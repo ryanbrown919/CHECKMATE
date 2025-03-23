@@ -83,25 +83,25 @@ while True:
 
     elif mode == "r":
         read_ok, piece = nfc.read()
-            if read_ok:
-                print("Read successful")
-                print("Piece: " + piece)
-            else:
-                print("Read failed")
+        if read_ok:
+            print("Read successful")
+            print("Piece: " + piece)
+        else:
+            print("Read failed")
 
     elif mode == "w":
         while True:
-                piece = input("Enter piece: ")
-                if piece in ["K", "Q", "R", "B", "N", "P", "k", "q", "r", "b", "n", "p"]:
-                    break
-                else:
-                    print("Invalid piece. Please try again.")
-
-            write_ok = nfc.write(piece)
-            if write_ok:
-                print("Write successful")
+            piece = input("Enter piece: ")
+            if piece in ["K", "Q", "R", "B", "N", "P", "k", "q", "r", "b", "n", "p"]:
+                break
             else:
-                print("Write failed")
+                print("Invalid piece. Please try again.")
+
+        write_ok = nfc.write(piece)
+        if write_ok:
+            print("Write successful")
+        else:
+            print("Write failed")
 
     else:
         print("Invalid command. Please use W/A/S/D, H, C, M, or Q.")
