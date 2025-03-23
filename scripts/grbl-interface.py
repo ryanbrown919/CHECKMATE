@@ -13,7 +13,7 @@ def my_callback(eventstring, *data):
 # Create GrblStreamer instance and connect
 grbl = GrblStreamer(my_callback)
 grbl.setup_logging()
-grbl.cnect("/dev/ttyACM0", 115200)``
+grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state and clear alarms
 grbl.poll_start()
