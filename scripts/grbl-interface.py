@@ -10,18 +10,20 @@ def my_callback(eventstring, *data):
     args = [str(d) for d in data]
     print("MY CALLBACK: event={} data={}".format(eventstring.ljust(30), ", ".join(args)))
 
-# Create GrblStreamer instance and connect
+# Create GrblStreamer instance
 grbl = GrblStreamer(my_callback)
 grbl.setup_logging()
+
+# Create NFC instance
+nfc = NFC()
+nfc.begin()
+
+# Connect to your GRBL controller (change the port if needed)
 grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state and clear alarms
 grbl.poll_start()
 grbl.send_immediately("$X\n")
-
-# Initialize the NFC device
-nfc_device = NFC()
-nfc_device.begin()
 
 # Display control menu
 print("Control Menu:")
@@ -29,7 +31,6 @@ print("  WASD: Jog (W=Y+, S=Y-, A=X-, D=X+)")
 print("  H   : Home")
 print("  C   : Clear alarms")
 print("  M   : Manual G-code input mode")
-print("  N   : NFC mode (Read/Write)")
 print("  Q   : Quit")
 
 def send_jog_command(axis, distance):
@@ -39,7 +40,7 @@ def send_jog_command(axis, distance):
     grbl.send_immediately(cmd)
 
 while True:
-    mode = input("Enter command (W/A/S/D, H, C, M, N, Q): ").strip().lower()
+    mode = input("Enter command (W/A/S/D, H, C, M, Q): ").strip().lower()
     if mode == "q":
         print("Exiting.")
         break
@@ -52,7 +53,7 @@ while True:
     elif mode == "d":
         send_jog_command("X", STEP_SIZE)
     elif mode == "h":
-        # Home command (ensure your GRBL supports homing)
+        # Home command; usually $H triggers GRBL homing cycle (ensure your GRBL supports it)
         home_cmd = "$H\n"
         print("Sending home command:", repr(home_cmd))
         grbl.send_immediately(home_cmd)
@@ -62,8 +63,8 @@ while True:
         print("Sending clear alarms command:", repr(clear_cmd))
         grbl.send_immediately(clear_cmd)
     elif mode == "m":
-        # Manual G-code input mode
-        print("Manual G-code mode. Enter G-code commands (enter 'b' to return to main menu).")
+        # Manual mode: prompt for arbitrary G-code strings.
+        print("Manual G-code mode. Enter G-code commands (type 'b' to return to main menu).")
         while True:
             gcode = input("Manual G-code: ").strip()
             if gcode.lower() == "b":
@@ -73,29 +74,7 @@ while True:
                 gcode += "\n"
             print("Sending manual command:", repr(gcode))
             grbl.send_immediately(gcode)
-    elif mode == "n":
-        # NFC mode: prompt for NFC operations
-        print("NFC Mode. Enter 'r' to read, 'w' to write, or 'b' to return to main menu.")
-        while True:
-            nfc_action = input("NFC command (r/w/b): ").strip().lower()
-            if nfc_action == "b":
-                print("Returning to main menu.")
-                break
-            elif nfc_action == "r":
-                success, data = nfc_device.read()
-                if success:
-                    print("NFC read success. Data:", data)
-                else:
-                    print("NFC read failed.")
-            elif nfc_action == "w":
-                fen_piece = input("Enter FEN piece to write (e.g., K, Q, R, etc.): ").strip()
-                if nfc_device.write(fen_piece):
-                    print("NFC write successful.")
-                else:
-                    print("NFC write failed.")
-            else:
-                print("Invalid NFC command. Use 'r', 'w', or 'b'.")
     else:
-        print("Invalid command. Please use W/A/S/D, H, C, M, N, or Q.")
+        print("Invalid command. Please use W/A/S/D, H, C, M, or Q.")
 
 grbl.disconnect()
