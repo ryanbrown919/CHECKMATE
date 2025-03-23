@@ -21,10 +21,6 @@ grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state
 grbl.poll_start()
-
-# Set units to mm and relative positioning mode (G21 G91) before jogging
-init_cmd = "$J=G21G91X0F{0}\n".format(FEED_RATE)
-print("Sending init jogging command:", repr(init_cmd))
 grbl.send_immediately("$$")
 
 print("Use W/A/S/D to jog (W: Y+, S: Y-, A: X-, D: X+). Press Q to quit.")
@@ -33,19 +29,19 @@ try:
     while True:
         command = input("Direction (W/A/S/D/Q): ").strip().lower()
         if command == "w":
-            cmd = cmd = f"$J=G21G91Y{STEP_SIZE}F{FEEDRATE}"
+            cmd = cmd = f"$J=G21G91Y{STEP_SIZE}F{FEE_DRATE}"
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "s":
-            cmd = f"$J=G21G91Y-{JOG_STEP}F{FEEDRATE}"  
+            cmd = f"$J=G21G91Y-{JOG_STEP}F{FEE_DRATE}"  
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "a":
-            cmd = f"$J=G21G91X-{JOG_STEP}F{FEEDRATE}"  # Jog X-
+            cmd = f"$J=G21G91X-{JOG_STEP}F{FEED_RATE}"  # Jog X-
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "d":
-            cmd = f"$J=G21G91X{JOG_STEP}F{FEEDRATE}"  # Jog X+
+            cmd = f"$J=G21G91X{JOG_STEP}F{FEED_RATE}"  # Jog X+
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "q":
