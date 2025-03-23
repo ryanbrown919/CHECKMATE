@@ -7,15 +7,11 @@ def setup():
     layer.begin()
 
 def main():
-    # board = layer.get_squares()
-    # for row in board:
-    #     print(row)
-    # print() 
-    print(layer.get_square(7, 7))
+    square = input("Enter square: to read: ")
+    print(layer.get_square_from_notation(square))
 
 
 if __name__ == "__main__":
     setup()
     while True:
         main()
-        time.sleep(0.1)

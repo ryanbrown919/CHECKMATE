@@ -1,10 +1,13 @@
-import ctypes
-from ctypes import CDLL, c_uint32, POINTER
+from ctypes import CDLL, c_uint32, POINTER, RTLD_GLOBAL
+
 
 class SenseLayer:
+    square_mapping = {f"{file}{rank}": (ord(file) - ord('a'), int(rank) - 1)
+                      for file in "abcdefgh" for rank in "12345678"}
+
     def __init__(self):
         # ryan: change path to firmware
-        self._lib = CDLL("../firmware/build/hall_firmware.so", mode=ctypes.RTLD_GLOBAL)
+        self._lib = ctypes.CDLL("../firmware/build/hall_firmware.so", mode=RTLD_GLOBAL)
         self.rows = 8
         self.cols = 8
 
@@ -29,5 +32,12 @@ class SenseLayer:
             board.append(row)
         return board
 
-    def get_square(self, x, y):
+    def get_square_cartesian(self, x, y):
         return self._lib.hall_get_square(x, y)
+
+    def get_square_from_notation(self, square):
+        if square not in square_mapping:
+            return False
+
+        x, y = self.square_mapping[square]
+        return self.get_square_cartesian(x, y)
