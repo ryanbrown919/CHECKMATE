@@ -57,10 +57,10 @@ while True:
         send_jog_command("X", STEP_SIZE)
 
     elif mode == "on":
-        grbl.send_immediately("$M8\n")
+        grbl.send_immediately("M8\n")
 
     elif mode == "off":
-        grbl.send_immediately("$M9\n")
+        grbl.send_immediately("M9\n")
 
     elif mode == "h":
         # Home command; usually $H triggers GRBL homing cycle (ensure your GRBL supports it)
