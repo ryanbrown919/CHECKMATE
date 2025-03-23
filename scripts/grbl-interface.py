@@ -18,8 +18,8 @@ grbl.cnect("/dev/ttyACM0", 115200)
 # Start polling GRBL state
 grbl.poll_start()
 
-# Set relative positioning mode
-grbl.send_immediately("G91")
+# Set relative positioning mode and add newline at the end
+grbl.send_immediately("G91\n")
 
 print("Use W/A/S/D to move Up/Left/Down/Right by 50mm. Press Q to quit.")
 
@@ -27,18 +27,19 @@ try:
     while True:
         command = input("Direction (W/A/S/D/Q): ").strip().lower()
         if command == "w":
-            grbl.send_immediately(f"G1 Y{STEP_SIZE} F1000")
+            grbl.send_immediately(f"G1 Y{STEP_SIZE} F1000\n")
         elif command == "s":
-            grbl.send_immediately(f"G1 Y{-STEP_SIZE} F1000")
+            grbl.send_immediately(f"G1 Y{-STEP_SIZE} F1000\n")
         elif command == "a":
-            grbl.send_immediately(f"G1 X{-STEP_SIZE} F1000")
+            grbl.send_immediately(f"G1 X{-STEP_SIZE} F1000\n")
         elif command == "d":
-            grbl.send_immediately(f"G1 X{STEP_SIZE} F1000")
+            grbl.send_immediately(f"G1 X{STEP_SIZE} F1000\n")
         elif command == "q":
             print("Exiting.")
             break
         else:
             print("Invalid input. Use W/A/S/D/Q.")
 finally:
-    grbl.send_immediately("G90")  # Return to absolute positioning
+    # Return to absolute positioning and ensure newline is appended
+    grbl.send_immediately("G90\n")
     grbl.disconnect()
