@@ -2,7 +2,8 @@ from grbl_streamer import GrblStreamer
 import time
 
 # Step size in mm
-STEP_SIZE = 50
+STEP_SIZE = 8  # adjust as needed
+FEED_RATE = 10000  # change as needed
 
 # Callback function to handle events from GRBL
 def my_callback(eventstring, *data):
@@ -18,30 +19,30 @@ grbl.cnect("/dev/ttyACM0", 115200)
 # Start polling GRBL state
 grbl.poll_start()
 
-# Set relative positioning mode (G91)
-cmd = "G91\n"
-print("Sending command:", repr(cmd))
-grbl.send_immediately(cmd)
+# Set units to mm and relative positioning mode (G21 G91) before jogging
+init_cmd = "$J=G21G91X0F{0}\n".format(FEED_RATE)
+print("Sending init jogging command:", repr(init_cmd))
+grbl.send_immediately(init_cmd)
 
-print("Use W/A/S/D to move Up/Left/Down/Right by 50mm. Press Q to quit.")
+print("Use W/A/S/D to jog (W: Y+, S: Y-, A: X-, D: X+). Press Q to quit.")
 
 try:
     while True:
         command = input("Direction (W/A/S/D/Q): ").strip().lower()
         if command == "w":
-            cmd = "G1 " + "Y" + str(STEP_SIZE) + " " + "F1000\n"
+            cmd = "$J=G21G91Y{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "s":
-            cmd = "G1 " + "Y" + str(-STEP_SIZE) + " " + "F1000\n"
+            cmd = "$J=G21G91Y{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "a":
-            cmd = "G1 " + "X" + str(-STEP_SIZE) + " " + "F1000\n"
+            cmd = "$J=G21G91X{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "d":
-            cmd = "G1 " + "X" + str(STEP_SIZE) + " " + "F1000\n"
+            cmd = "$J=G21G91X{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
             grbl.send_immediately(cmd)
         elif command == "q":
@@ -50,8 +51,8 @@ try:
         else:
             print("Invalid input. Use W/A/S/D/Q.")
 finally:
-    # Return to absolute positioning (G90)
-    cmd = "G90\n"
-    print("Sending command:", repr(cmd))
-    grbl.send_immediately(cmd)
+    # Optionally send a command to stop jogging
+    stop_cmd = "$J=G21G91X0Y0F{0}\n".format(FEED_RATE)
+    print("Sending stop command:", repr(stop_cmd))
+    grbl.send_immediately(stop_cmd)
     grbl.disconnect()
