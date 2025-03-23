@@ -1,3 +1,4 @@
+import ctypes
 from ctypes import CDLL, c_uint32, POINTER
 
 class SenseLayer:
