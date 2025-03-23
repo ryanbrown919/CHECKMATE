@@ -82,19 +82,26 @@ while True:
             grbl.send_immediately(gcode)
 
     elif mode == "r":
-        nfcread = nfc.read()
-        if nfcread[0]:
-            print("Read NFC tag:", nfcread[1])
-        else:
-            print("No tag detected.")
+        read_ok, piece = nfc.read()
+            if read_ok:
+                print("Read successful")
+                print("Piece: " + piece)
+            else:
+                print("Read failed")
 
     elif mode == "w":
-        input_piece = input("Enter piece to write (K, Q, R, B, N, P, k, q, r, b, n, p): ")
-        nfcwrite = nfc.write("input_piece")
-        if nfcwrite:
-            print("Wrote piece:", input_piece)
-        else:
-            print("Failed to write piece.")
+        while True:
+                piece = input("Enter piece: ")
+                if piece in ["K", "Q", "R", "B", "N", "P", "k", "q", "r", "b", "n", "p"]:
+                    break
+                else:
+                    print("Invalid piece. Please try again.")
+
+            write_ok = nfc.write(piece)
+            if write_ok:
+                print("Write successful")
+            else:
+                print("Write failed")
 
     else:
         print("Invalid command. Please use W/A/S/D, H, C, M, or Q.")
