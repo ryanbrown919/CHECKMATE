@@ -297,11 +297,12 @@ class ChessBackend(threading.Thread):
     
 
 class clock_logic:
-    def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10):
+    def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10, timer_enabled=True):
         self.total_time = total_time
         self.enable_increment = enable_increment
         self.increment_time = increment_time
         self.increment_threshold = increment_threshold
+        self.timer_enabled = timer_enabled
 
         self.white_time = total_time
         self.black_time = total_time

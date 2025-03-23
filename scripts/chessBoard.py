@@ -557,7 +557,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 
 class PlayerClock(Widget):
-    def __init__(self, side="white", clock_instance=None, timer_enabled=True, **kwargs):
+    def __init__(self, side="white", clock_instance=None, **kwargs):
         """
         :param side: "white" or "black" indicating which clock this is.
         :param clock_logic: An instance of clock_logic that provides:
@@ -571,7 +571,7 @@ class PlayerClock(Widget):
         super(PlayerClock, self).__init__(**kwargs)
         self.side = side.lower()
         self.clock_logic = clock_instance
-        self.timer_enabled = timer_enabled
+        self.timer_enabled = self.clock_logic.timer_enabled
 
         # Create a label to display the time or arrow.
         self.label = Label(text=self.get_initial_text(), font_size="40sp",
@@ -582,7 +582,7 @@ class PlayerClock(Widget):
         self.bind(pos=self.update_layout, size=self.update_layout)
 
         # Schedule periodic updates.
-        Clock.schedule_interval(self.update_clock, 0.5)
+        Clock.schedule_interval(self.update_clock, 0.1)
 
     def get_initial_text(self):
         if self.timer_enabled and self.clock_logic:
@@ -606,12 +606,12 @@ class PlayerClock(Widget):
         with self.label.canvas.before:
             if self.is_active():
                 # Active clock: dark background with light text.
-                Color(0, 0, 0, 1)
-                self.label.color = (1, 1, 1, 1)
-            else:
-                # Inactive clock: light background with dark text.
                 Color(1, 1, 1, 1)
                 self.label.color = (0, 0, 0, 1)
+            else:
+                # Inactive clock: light background with dark text.
+                Color(0, 0, 0, 1)
+                self.label.color = (1, 1, 1, 1)
             Rectangle(pos=self.label.pos, size=self.label.size)
 
     def is_active(self):

@@ -10,11 +10,11 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.uix.widget import Widget
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.graphics import Color, Rectangle
-from kivy.uix.scrollview import ScrollView
+# from kivy.uix.image import Image
+# from kivy.uix.widget import Widget
+# from kivy.uix.behaviors import ButtonBehavior
+# from kivy.graphics import Color, Rectangle
+# from kivy.uix.scrollview import ScrollView
 from kivy.clock import Clock
 
 from kivy.core.window import Window
@@ -23,10 +23,8 @@ from kivy.core.window import Window
 Window.fullscreen = True
 
 
-import chess
 
 from chessBoard import ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock
-from chessClock import ChessClock
 from chessBackend import ChessBackend, clock_logic
 from customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout
 from gantryControl import gantryControl
@@ -69,7 +67,7 @@ class GameplayScreen(Screen):
             print("Received opponent move:", move)
             Clock.schedule_once(lambda dt: self.gameLogic_instance.notify_observers(), 0)
 
-        self.clock_logic = clock_logic()
+        self.clock_logic = clock_logic(timer_enabled=False)
 
         # Start an instance of game logic, hard coded to bot play right now
         self.gameLogic_instance = ChessBackend(lichess_token=api_key, ui_move_callback=ui_callback, mode="offline",
