@@ -36,7 +36,7 @@ class SenseLayer:
         return self._lib.hall_get_square(x, y)
 
     def get_square_from_notation(self, square):
-        if square not in square_mapping:
+        if square not in self.square_mapping:
             return False
 
         x, y = self.square_mapping[square]
