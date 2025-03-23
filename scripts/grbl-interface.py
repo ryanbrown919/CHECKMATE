@@ -1,48 +1,44 @@
-from grbl_streamer import GrblStreamerimport serial
+from grbl_streamer import GrblStreamer
 import time
 
-# Configuration
-PORT = "/dev/ttyUSB0"  # Change to COM3 or similar on Windows
-BAUD = 115200
-STEP_SIZE = 50  # mm
+# Step size in mm
+STEP_SIZE = 50
 
-# Initialize GRBL serial connection
-ser = serial.Serial(PORT, BAUD)
-time.sleep(2)  # Wait for GRBL to initialize
-ser.flushInput()
+# Callback function to handle events from GRBL
+def my_callback(eventstring, *data):
+    print(f"EVENT: {eventstring.ljust(30)} DATA: {', '.join(str(d) for d in data)}")
 
-# Set to relative positioning mode
-ser.write(b"G91\n")
-time.sleep(0.1)
+# Create GrblStreamer instance
+grbl = GrblStreamer(my_callback)
+grbl.setup_logging()
 
-print("Connected to GRBL. Enter direction to move (u/d/l/r), or 'q' to quit.")
-print("Each move is 50mm. Commands: u=up, d=down, l=left, r=right")
+# Connect to your GRBL controller (change the port if needed)
+grbl.cnect("/dev/ttyUSB0", 115200)
 
-def send_move(command):
-    ser.write((command + "\n").encode())
-    while True:
-        response = ser.readline().decode().strip()
-        print(f"GRBL: {response}")
-        if response in ["ok", "error"]:
-            break
+# Start polling GRBL state
+grbl.poll_start()
+
+# Set relative positioning mode
+grbl.send_immediately("G91")
+
+print("Use W/A/S/D to move Up/Left/Down/Right by 50mm. Press Q to quit.")
 
 try:
     while True:
-        direction = input("Move (u/d/l/r): ").lower()
-        if direction == "u":
-            send_move(f"G0 Y{STEP_SIZE}")
-        elif direction == "d":
-            send_move(f"G0 Y{-STEP_SIZE}")
-        elif direction == "l":
-            send_move(f"G0 X{-STEP_SIZE}")
-        elif direction == "r":
-            send_move(f"G0 X{STEP_SIZE}")
-        elif direction == "q":
-            print("Exiting...")
+        command = input("Direction (W/A/S/D/Q): ").strip().lower()
+        if command == "w":
+            grbl.send_immediately(f"G1 Y{STEP_SIZE} F1000")
+        elif command == "s":
+            grbl.send_immediately(f"G1 Y{-STEP_SIZE} F1000")
+        elif command == "a":
+            grbl.send_immediately(f"G1 X{-STEP_SIZE} F1000")
+        elif command == "d":
+            grbl.send_immediately(f"G1 X{STEP_SIZE} F1000")
+        elif command == "q":
+            print("Exiting.")
             break
         else:
-            print("Invalid input. Use u/d/l/r/q.")
-
+            print("Invalid input. Use W/A/S/D/Q.")
 finally:
-    ser.write(b"G90\n")  # Reset to absolute mode
-    ser.close()
+    grbl.send_immediately("G90")  # Return to absolute positioning
+    grbl.disconnect()
