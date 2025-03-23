@@ -30,4 +30,4 @@ class SenseLayer:
         return board
 
     def get_square(self, x, y):
-        return self.get_square(x, y)
+        return self._lib.hall_get_square(x, y)
