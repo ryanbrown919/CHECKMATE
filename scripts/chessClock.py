@@ -9,7 +9,7 @@ from kivy.uix.button import Button
 # Chess clock logic module
 # -------------------------------
 
-class ChessClock:
+class clock_logic:
     def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10):
         self.total_time = total_time
         self.enable_increment = enable_increment
@@ -79,7 +79,7 @@ class ChessClockWidget(BoxLayout):
         self.spacing = 20
 
         # If no external ChessClock is provided, create one.
-        self.clock_instance = clock_instance or ChessClock()
+        self.clock_instance = clock_instance
 
         # Create labels to display times
         clocks_layout = BoxLayout(orientation='horizontal', spacing=20)

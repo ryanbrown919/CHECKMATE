@@ -10,7 +10,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.clock import Clock
 
 # External game logic (assumed to be defined in game_logic.py)
-from game_logic import GameLogic
+#from scripts.game_logic_old import GameLogic
 
 # Map chess piece symbols to image file paths.
 piece_images = {
@@ -549,6 +549,108 @@ class MaterialBar(BoxLayout):
         self.black_percentage = self.black_value / total * 100
         self.white_percentage = self.white_value / total * 100
         self.update_canvas()
+
+
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.graphics import Color, Rectangle
+from kivy.clock import Clock
+
+class PlayerClock(Widget):
+    def __init__(self, side="white", clock_instance=None, timer_enabled=True, **kwargs):
+        """
+        :param side: "white" or "black" indicating which clock this is.
+        :param clock_logic: An instance of clock_logic that provides:
+                           - player1_time (for white) and player2_time (for black)
+                           - active_player (1 for white, 2 for black)
+                           - update(dt): updates the active player's time.
+                           - format_time(seconds): returns a string formatted as mm:ss.
+        :param timer_enabled: If True, display the timer countdown.
+                              If False, display an arrow indicating the active side.
+        """
+        super(PlayerClock, self).__init__(**kwargs)
+        self.side = side.lower()
+        self.clock_logic = clock_instance
+        self.timer_enabled = timer_enabled
+
+        # Create a label to display the time or arrow.
+        self.label = Label(text=self.get_initial_text(), font_size="40sp",
+                           halign="center", valign="middle")
+        self.add_widget(self.label)
+
+        # Bind layout updates.
+        self.bind(pos=self.update_layout, size=self.update_layout)
+
+        # Schedule periodic updates.
+        Clock.schedule_interval(self.update_clock, 0.5)
+
+    def get_initial_text(self):
+        if self.timer_enabled and self.clock_logic:
+            if self.side == "white":
+                return self.clock_logic.format_time(self.clock_logic.white_time)
+            else:
+                return self.clock_logic.format_time(self.clock_logic.black_time)
+        # When timer is disabled, show no arrow initially.
+        return ""
+
+    def update_layout(self, *args):
+        # Make the label fill this widget.
+        self.label.size = self.size
+        self.label.pos = self.pos
+        self.label.text_size = self.label.size
+        self.update_background()
+
+    def update_background(self):
+        # Clear existing background instructions.
+        self.label.canvas.before.clear()
+        with self.label.canvas.before:
+            if self.is_active():
+                # Active clock: dark background with light text.
+                Color(0, 0, 0, 1)
+                self.label.color = (1, 1, 1, 1)
+            else:
+                # Inactive clock: light background with dark text.
+                Color(1, 1, 1, 1)
+                self.label.color = (0, 0, 0, 1)
+            Rectangle(pos=self.label.pos, size=self.label.size)
+
+    def is_active(self):
+        """
+        Returns True if this clock is the active clock.
+        For clock_logic, active_player==1 means white is active,
+        and active_player==2 means black is active.
+        """
+        if not self.clock_logic:
+            return False
+        if self.side == "white":
+            return self.clock_logic.active_player == 1
+        else:
+            return self.clock_logic.active_player == 2
+
+    def update_clock(self, dt):
+        if not self.clock_logic:
+            return
+
+        # Update the clock logic regardless of display mode.
+        self.clock_logic.update(dt)
+
+        if self.timer_enabled:
+            # Update the label text with the formatted time.
+            if self.side == "white":
+                time_remaining = self.clock_logic.white_time
+            else:
+                time_remaining = self.clock_logic.black_time
+            self.label.text = self.clock_logic.format_time(time_remaining)
+        else:
+            # When timer is disabled, display an arrow for the active clock.
+            if ((self.side == "white" and self.clock_logic.active_player == 1) or
+                (self.side == "black" and self.clock_logic.active_player == 2)):
+                self.label.text = "➤"
+            else:
+                self.label.text = ""
+        # Refresh the background to reflect active state.
+        self.update_background()
+
 
 # ------------------------------------------------------------
 # TestChessApp: builds an app with multiple ChessBoard instances to validate scaling.

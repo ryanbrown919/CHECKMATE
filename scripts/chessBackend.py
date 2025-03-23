@@ -10,7 +10,7 @@ running_on_mac = sys.platform.startswith("darwin")
 
 class ChessBackend(threading.Thread):
     def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
-                 engine_time_limit=0.1, difficulty_level=5, elo=1400):
+                 engine_time_limit=0.1, difficulty_level=5, elo=1400, clock_logic=None):
         """
         :param lichess_token: Your Lichess API token (used in online mode).
         :param ui_move_callback: A callback function to update the UI with opponent moves.
@@ -27,6 +27,8 @@ class ChessBackend(threading.Thread):
         self.board_lock = threading.Lock()
         self._stop_event = threading.Event()
         self.elo = elo
+
+        self.clock_logic = clock_logic
         
         # Online mode variables
         self.game_id = None
@@ -48,6 +50,7 @@ class ChessBackend(threading.Thread):
         self.engine = None  # Will be initialized in offline mode
 
 
+        self.first_move = True
 
         self.game_history = []
         self.SQUARES = chess.SQUARES
@@ -55,6 +58,7 @@ class ChessBackend(threading.Thread):
         self.game_state = "UNFINISHED"
         self.captured_pieces = []
         self.move_history = []
+        self.clock_logic = clock_logic
 
 
 
@@ -90,6 +94,8 @@ class ChessBackend(threading.Thread):
                             move = result.move
                             print(f"Test move: {move}")
                             self.move_history.append(f"{move}")
+
+                            time.sleep(1)
 
                             if self.board.is_capture(move):
                             # For a normal capture, the captured piece is on the destination square.
@@ -288,6 +294,83 @@ class ChessBackend(threading.Thread):
         # A positive result indicates a material advantage for White,
         # while a negative result indicates an advantage for Black.
         return white_score, black_score
+    
+
+class clock_logic:
+    def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10):
+        self.total_time = total_time
+        self.enable_increment = enable_increment
+        self.increment_time = increment_time
+        self.increment_threshold = increment_threshold
+
+        self.white_time = total_time
+        self.black_time = total_time
+        self.active_player = 1  # 1 for player1, 2 for player2
+        self.paused = True     # False = running, True = paused
+
+    def update(self, dt):
+        """Call this method regularly to update the active player's clock."""
+        if self.paused:
+            return
+        if self.active_player == 1 and self.white_time > 0:
+            self.white_time = max(0, self.white_time - dt)
+        elif self.active_player == 2 and self.black_time > 0:
+            self.black_time = max(0, self.black_time - dt)
+
+    def toggle_active_player(self):
+        """
+        Switch the active player. If increment is enabled and the current player's remaining
+        time is below the threshold, add extra seconds.
+        """
+        if self.enable_increment:
+            if self.active_player == 1 and self.white_time < self.increment_threshold:
+                self.white_time += self.increment_time
+                print("Incremented player 1 time by", self.increment_time)
+            elif self.active_player == 2 and self.black_time < self.increment_threshold:
+                self.black_time += self.increment_time
+                print("Incremented player 2 time by", self.increment_time)
+        self.active_player = 2 if self.active_player == 1 else 1
+        print("Switched active player to", self.active_player)
+
+    def toggle_pause(self):
+        """Toggle between pause and play modes."""
+        self.paused = not self.paused
+        if self.paused:
+            print("Paused")
+        else:
+            print("Resumed")
+
+    def reset(self):
+        """Reset both clocks to the initial total time and set active player to 1."""
+        self.white_time = self.total_time
+        self.black_time = self.total_time
+        self.active_player = 1
+        self.paused = False
+        print("Clocks have been reset.")
+
+    def format_time(self, seconds):
+        """Return a string in mm:ss format."""
+        minutes = int(seconds) // 60
+        secs = int(seconds) % 60
+        return f"{minutes:02d}:{secs:02d}"
+
+    def update_display(self, dt):
+        """Update the ChessClock and refresh the display labels."""
+        self.clock_instance.update(dt)
+        self.player1_label.text = self.format_time(self.clock_instance.white_time)
+        self.player2_label.text = self.format_time(self.clock_instance.black_time)
+
+    def on_pause(self, instance):
+        """Toggle pause and update the button text."""
+        self.clock_instance.toggle_pause()
+        self.pause_button.text = "Play" if self.clock_instance.paused else "Pause"
+
+    def on_reset(self, instance):
+        """Reset the clock and update the display immediately."""
+        self.clock_instance.reset()
+        self.player1_label.text = self.format_time(self.clock_instance.white_time)
+        self.player2_label.text = self.format_time(self.clock_instance.black_time)
+        self.pause_button.text = "Pause"
 
 
 
