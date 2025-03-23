@@ -11,10 +11,10 @@ def main():
     # for row in board:
     #     print(row)
     # print() 
-    board = layer.get_square(7, 7)
+    print(layer.get_square(7, 7))
 
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     setup()
     while True:
         main()
