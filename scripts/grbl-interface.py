@@ -15,7 +15,9 @@ grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state
 grbl.poll_start()
-grbl.send_immediately("$$\n")  # Ensuring newline termination
+grbl.send_immediately("$$") 
+time.sleep(0.5)
+grbl.send_immediately("$X\n")
 
 print("Enter any G-code command to send. Type 'q' to quit.")
 
