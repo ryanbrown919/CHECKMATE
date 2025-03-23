@@ -7,10 +7,11 @@ def setup():
     layer.begin()
 
 def main():
-    board = layer.get_squares()
-    for row in board:
-        print(row)
-    print() 
+    # board = layer.get_squares()
+    # for row in board:
+    #     print(row)
+    # print() 
+    board = layer.get_square(7, 7)
 
 
 if __name__ == "__main__"

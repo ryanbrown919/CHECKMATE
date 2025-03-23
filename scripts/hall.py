@@ -29,5 +29,4 @@ class SenseLayer:
         return board
 
     def get_square(self, x, y):
-        board = self.get_squares()
-        return board[7 - x][y]
+        return self.get_square(x, y)
