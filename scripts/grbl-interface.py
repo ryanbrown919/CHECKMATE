@@ -32,19 +32,19 @@ try:
         if command == "w":
             cmd = "$J=G21G91Y{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
-            grbl.send_immediately(cmd)
+            grbl.stream(cmd)
         elif command == "s":
             cmd = "$J=G21G91Y{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
-            grbl.send_immediately(cmd)
+            grbl.stream(cmd)
         elif command == "a":
             cmd = "$J=G21G91X{0}F{1}\n".format(-STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
-            grbl.send_immediately(cmd)
+            grbl.stream(cmd)
         elif command == "d":
             cmd = "$J=G21G91X{0}F{1}\n".format(STEP_SIZE, FEED_RATE)
             print("Sending command:", repr(cmd))
-            grbl.send_immediately(cmd)
+            grbl.stream(cmd)
         elif command == "q":
             print("Exiting.")
             break
