@@ -46,22 +46,28 @@ while True:
         break
     elif mode == "w":
         send_jog_command("Y", STEP_SIZE)
+
     elif mode == "s":
         send_jog_command("Y", -STEP_SIZE)
+
     elif mode == "a":
         send_jog_command("X", -STEP_SIZE)
+
     elif mode == "d":
         send_jog_command("X", STEP_SIZE)
+
     elif mode == "h":
         # Home command; usually $H triggers GRBL homing cycle (ensure your GRBL supports it)
         home_cmd = "$H\n"
         print("Sending home command:", repr(home_cmd))
         grbl.send_immediately(home_cmd)
+
     elif mode == "c":
         # Clear alarms command
         clear_cmd = "$X\n"
         print("Sending clear alarms command:", repr(clear_cmd))
         grbl.send_immediately(clear_cmd)
+
     elif mode == "m":
         # Manual mode: prompt for arbitrary G-code strings.
         print("Manual G-code mode. Enter G-code commands (type 'b' to return to main menu).")
@@ -74,6 +80,22 @@ while True:
                 gcode += "\n"
             print("Sending manual command:", repr(gcode))
             grbl.send_immediately(gcode)
+
+    elif mode == "r":
+        nfcread = nfc.read()
+        if nfcread[0]:
+            print("Read NFC tag:", nfcread[1])
+        else:
+            print("No tag detected.")
+
+    elif mode == "w":
+        input_piece = input("Enter piece to write (K, Q, R, B, N, P, k, q, r, b, n, p): ")
+        nfcwrite = nfc.write("input_piece")
+        if nfcwrite:
+            print("Wrote piece:", input_piece)
+        else:
+            print("Failed to write piece.")
+
     else:
         print("Invalid command. Please use W/A/S/D, H, C, M, or Q.")
 
