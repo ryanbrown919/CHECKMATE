@@ -2,7 +2,7 @@ from grbl_streamer import GrblStreamer
 import time
 
 # Step size in mm
-STEP_SIZE = 50  # adjust as needed
+JOG_STEP = 50  # adjust as needed
 FEED_RATE = 10000  # change as needed
 
 # Callback function to handle events from GRBL
