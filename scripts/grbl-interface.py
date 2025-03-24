@@ -1,9 +1,10 @@
 from grbl_streamer import GrblStreamer
 from nfc import NFC
+import time
 
 # Configuration parameters
 STEP_SIZE = 50       # Jog distance in mm
-FEED_RATE = 10000    # Feed rate in mm/min
+FEED_RATE = 50000    # Feed rate in mm/min
 
 # Callback function to handle events from GRBL
 def my_callback(eventstring, *data):
@@ -23,7 +24,8 @@ grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state and clear alarms
 grbl.poll_start()
-grbl.send_immediately("$X\n")
+time.sleep(2)
+# grbl.send_immediately("$X\n")
 
 # Display control menu
 print("Control Menu:")
