@@ -5,8 +5,15 @@ import berserk  # For online play; pip install berserk
 import chess.engine  # For offline UCI engine support
 import sys
 
+
+
+
 running_on_pi = sys.platform.startswith("linux")
 running_on_mac = sys.platform.startswith("darwin")
+
+if running_on_pi:
+    import RPi.GPIO as GPIO
+
 
 class ChessBackend(threading.Thread):
     def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
@@ -373,6 +380,64 @@ class clock_logic:
         self.player2_label.text = self.format_time(self.clock_instance.black_time)
         self.pause_button.text = "Pause"
 
+class servo_control:        
+    def __init__(self, servo_pin=18, freq=50, neutral_dc=7.5, step_size=0.5, move_delay=0.5, clock_logic=None):
+        """
+        Initialize the ServoController.
+        
+        :param servo_pin: The GPIO pin connected to the servo signal.
+        :param freq: PWM frequency in Hz (typically 50Hz for servo motors).
+        :param neutral_dc: Duty cycle corresponding to the neutral (center) position.
+        :param step_size: Change in duty cycle per step.
+        :param move_delay: Delay in seconds after moving the servo to allow it to settle.
+        """
+        self.servo_pin = servo_pin
+        self.freq = freq
+        self.neutral_dc = neutral_dc
+        self.step_size = step_size
+        self.move_delay = move_delay
+
+        self.clock_logic = clock_logic
+        self.active_player = self.clock_logic.active_player
+        
+        # Initialize GPIO settings
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.servo_pin, GPIO.OUT)
+        
+        # Setup PWM on the specified pin
+        self.pwm = GPIO.PWM(self.servo_pin, self.freq)
+        self.pwm.start(self.neutral_dc)
+    
+    def move_servo(self, steps):
+        """
+        Moves the servo a few steps away from neutral, then returns it to the neutral position.
+        
+        :param steps: Number of steps to move from the neutral position. 
+                      Positive values move in one direction, negative values in the opposite.
+        """
+        # Calculate target duty cycle
+        target_dc = self.neutral_dc + (steps * self.step_size)
+        
+        # Move to target position
+        self.pwm.ChangeDutyCycle(target_dc)
+        time.sleep(self.move_delay)
+        
+        # Return to neutral position
+        self.pwm.ChangeDutyCycle(self.neutral_dc)
+        time.sleep(self.move_delay)
+        
+    def cleanup(self):
+        """
+        Stop the PWM signal and clean up the GPIO settings.
+        """
+        self.pwm.stop()
+        GPIO.cleanup()
+
+    def toggle_active_player(self):
+        
+        pass
+
+
 
 
 # Example usage:
@@ -410,3 +475,4 @@ if __name__ == "__main__":
     time.sleep(5)
     backend.stop()
     backend.join()
+

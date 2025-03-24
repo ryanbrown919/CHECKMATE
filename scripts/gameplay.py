@@ -24,17 +24,20 @@ Window.fullscreen = True
 
 
 
-from chessBoard import ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock
-from chessBackend import ChessBackend, clock_logic
-from customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout
-from gantryControl import gantryControl
+from .chessBoard import ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock
+from .chessBackend import ChessBackend, clock_logic
+from .customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout
+from .gantryControl import gantryControl
 
 class GameplayScreen(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, gantry_control=None, **kwargs):
         super(GameplayScreen, self).__init__(**kwargs)
 
 
-
+        self.gantry_control=gantry_control
+        if self.gantry_control is None:
+            self.gantry_control=gantryControl()
+            self.gantry_control.connect_to_grbl()
         # General Structure of Gameplay Screen
         root_layout = BoxLayout(orientation='vertical', padding=10, spacing=0)
 
@@ -77,12 +80,12 @@ class GameplayScreen(Screen):
         #self.gameLogic_instance.start_game()
         self.gameLogic_instance.start()
 
-        self.gantry_control = gantryControl()
-        try:
-            self.gantry_control.connect_to_grbl()
-        except:
-            pass
-        self.simulation_mode = self.gantry_control.simulate
+        # self.gantry_control = gantryControl()
+        # try:
+        #     self.gantry_control.connect_to_grbl()
+        # except:
+        #     pass
+        # self.simulation_mode = self.gantry_control.simulate
 
     
         
