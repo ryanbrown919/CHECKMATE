@@ -33,6 +33,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```  
-
-This loop will keep prompting until the user types "exit", "quit", or "q".
