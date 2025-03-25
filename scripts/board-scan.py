@@ -1,35 +1,63 @@
 import math
+from grbl_streamer import GrblStreamer
+import time
 
 # Set the y-offset (in mm); all y values will be increased by this value.
-NFC_OFFSET = 10  # Adjust this offset as needed
+NFC_OFFSET = 50  # Adjust this offset as needed
 
-# Static 8x8 mapping from chess square labels to physical (x, y) coordinates.
-# Assumption: A1 is at (0, 0), each square is 50 mm apart, and the y coordinate is offset by NFC_OFFSET.
 BOARD_TO_PHYSICAL = {
-    "A1": (0, 0 + NFC_OFFSET),    "B1": (50, 0 + NFC_OFFSET),    "C1": (100, 0 + NFC_OFFSET),   "D1": (150, 0 + NFC_OFFSET),
-    "E1": (200, 0 + NFC_OFFSET),   "F1": (250, 0 + NFC_OFFSET),   "G1": (300, 0 + NFC_OFFSET),   "H1": (350, 0 + NFC_OFFSET),
+    # Rank 1 (x = 0)
+    "H1": (0, 0   + NFC_OFFSET), "G1": (0, 50  + NFC_OFFSET), "F1": (0, 100 + NFC_OFFSET), "E1": (0, 150 + NFC_OFFSET),
+    "D1": (0, 200 + NFC_OFFSET), "C1": (0, 250 + NFC_OFFSET), "B1": (0, 300 + NFC_OFFSET), "A1": (0, 350 + NFC_OFFSET),
 
-    "A2": (0, 50 + NFC_OFFSET),   "B2": (50, 50 + NFC_OFFSET),   "C2": (100, 50 + NFC_OFFSET),  "D2": (150, 50 + NFC_OFFSET),
-    "E2": (200, 50 + NFC_OFFSET),  "F2": (250, 50 + NFC_OFFSET),  "G2": (300, 50 + NFC_OFFSET),  "H2": (350, 50 + NFC_OFFSET),
+    # Rank 2 (x = 50)
+    "H2": (50, 0   + NFC_OFFSET), "G2": (50, 50  + NFC_OFFSET), "F2": (50, 100 + NFC_OFFSET), "E2": (50, 150 + NFC_OFFSET),
+    "D2": (50, 200 + NFC_OFFSET), "C2": (50, 250 + NFC_OFFSET), "B2": (50, 300 + NFC_OFFSET), "A2": (50, 350 + NFC_OFFSET),
 
-    "A3": (0, 100 + NFC_OFFSET),  "B3": (50, 100 + NFC_OFFSET),  "C3": (100, 100 + NFC_OFFSET), "D3": (150, 100 + NFC_OFFSET),
-    "E3": (200, 100 + NFC_OFFSET), "F3": (250, 100 + NFC_OFFSET), "G3": (300, 100 + NFC_OFFSET), "H3": (350, 100 + NFC_OFFSET),
+    # Rank 3 (x = 100)
+    "H3": (100, 0   + NFC_OFFSET), "G3": (100, 50  + NFC_OFFSET), "F3": (100, 100 + NFC_OFFSET), "E3": (100, 150 + NFC_OFFSET),
+    "D3": (100, 200 + NFC_OFFSET), "C3": (100, 250 + NFC_OFFSET), "B3": (100, 300 + NFC_OFFSET), "A3": (100, 350 + NFC_OFFSET),
 
-    "A4": (0, 150 + NFC_OFFSET),  "B4": (50, 150 + NFC_OFFSET),  "C4": (100, 150 + NFC_OFFSET), "D4": (150, 150 + NFC_OFFSET),
-    "E4": (200, 150 + NFC_OFFSET), "F4": (250, 150 + NFC_OFFSET), "G4": (300, 150 + NFC_OFFSET), "H4": (350, 150 + NFC_OFFSET),
+    # Rank 4 (x = 150)
+    "H4": (150, 0   + NFC_OFFSET), "G4": (150, 50  + NFC_OFFSET), "F4": (150, 100 + NFC_OFFSET), "E4": (150, 150 + NFC_OFFSET),
+    "D4": (150, 200 + NFC_OFFSET), "C4": (150, 250 + NFC_OFFSET), "B4": (150, 300 + NFC_OFFSET), "A4": (150, 350 + NFC_OFFSET),
 
-    "A5": (0, 200 + NFC_OFFSET),  "B5": (50, 200 + NFC_OFFSET),  "C5": (100, 200 + NFC_OFFSET), "D5": (150, 200 + NFC_OFFSET),
-    "E5": (200, 200 + NFC_OFFSET), "F5": (250, 200 + NFC_OFFSET), "G5": (300, 200 + NFC_OFFSET), "H5": (350, 200 + NFC_OFFSET),
+    # Rank 5 (x = 200)
+    "H5": (200, 0   + NFC_OFFSET), "G5": (200, 50  + NFC_OFFSET), "F5": (200, 100 + NFC_OFFSET), "E5": (200, 150 + NFC_OFFSET),
+    "D5": (200, 200 + NFC_OFFSET), "C5": (200, 250 + NFC_OFFSET), "B5": (200, 300 + NFC_OFFSET), "A5": (200, 350 + NFC_OFFSET),
 
-    "A6": (0, 250 + NFC_OFFSET),  "B6": (50, 250 + NFC_OFFSET),  "C6": (100, 250 + NFC_OFFSET), "D6": (150, 250 + NFC_OFFSET),
-    "E6": (200, 250 + NFC_OFFSET), "F6": (250, 250 + NFC_OFFSET), "G6": (300, 250 + NFC_OFFSET), "H6": (350, 250 + NFC_OFFSET),
+    # Rank 6 (x = 250)
+    "H6": (250, 0   + NFC_OFFSET), "G6": (250, 50  + NFC_OFFSET), "F6": (250, 100 + NFC_OFFSET), "E6": (250, 150 + NFC_OFFSET),
+    "D6": (250, 200 + NFC_OFFSET), "C6": (250, 250 + NFC_OFFSET), "B6": (250, 300 + NFC_OFFSET), "A6": (250, 350 + NFC_OFFSET),
 
-    "A7": (0, 300 + NFC_OFFSET),  "B7": (50, 300 + NFC_OFFSET),  "C7": (100, 300 + NFC_OFFSET), "D7": (150, 300 + NFC_OFFSET),
-    "E7": (200, 300 + NFC_OFFSET), "F7": (250, 300 + NFC_OFFSET), "G7": (300, 300 + NFC_OFFSET), "H7": (350, 300 + NFC_OFFSET),
+    # Rank 7 (x = 300)
+    "H7": (300, 0   + NFC_OFFSET), "G7": (300, 50  + NFC_OFFSET), "F7": (300, 100 + NFC_OFFSET), "E7": (300, 150 + NFC_OFFSET),
+    "D7": (300, 200 + NFC_OFFSET), "C7": (300, 250 + NFC_OFFSET), "B7": (300, 300 + NFC_OFFSET), "A7": (300, 350 + NFC_OFFSET),
 
-    "A8": (0, 350 + NFC_OFFSET),  "B8": (50, 350 + NFC_OFFSET),  "C8": (100, 350 + NFC_OFFSET), "D8": (150, 350 + NFC_OFFSET),
-    "E8": (200, 350 + NFC_OFFSET), "F8": (250, 350 + NFC_OFFSET), "G8": (300, 350 + NFC_OFFSET), "H8": (350, 350 + NFC_OFFSET)
+    # Rank 8 (x = 350)
+    "H8": (350, 0   + NFC_OFFSET), "G8": (350, 50  + NFC_OFFSET), "F8": (350, 100 + NFC_OFFSET), "E8": (350, 150 + NFC_OFFSET),
+    "D8": (350, 200 + NFC_OFFSET), "C8": (350, 250 + NFC_OFFSET), "B8": (350, 300 + NFC_OFFSET), "A8": (350, 350 + NFC_OFFSET),
 }
+
+# Configuration parameters
+STEP_SIZE = 50       # Jog distance in mm
+FEED_RATE = 50000    # Feed rate in mm/min
+
+# Callback function to handle events from GRBL
+def my_callback(eventstring, *data):
+    args = [str(d) for d in data]
+    print("MY CALLBACK: event={} data={}".format(eventstring.ljust(30), ", ".join(args)))
+
+# Create GrblStreamer instance
+grbl = GrblStreamer(my_callback)
+grbl.setup_logging()
+
+# Connect to your GRBL controller (change the port if needed)
+grbl.cnect("/dev/ttyACM0", 115200)
+
+# Start polling GRBL state and clear alarms
+grbl.poll_start()
+time.sleep(2)
 
 def distance(x, y):
     """Calculate the Manhattan distance between two board coordinates."""
@@ -67,11 +95,12 @@ def nearest_neighbor(start, targets):
 def coord_to_chess_square(coord):
     """
     Convert board coordinate (x, y) into a chess square label.
-    Assumption: Board coordinate (0,0) corresponds to A1 and (7,7) corresponds to H8.
+    Assumption: Board row 0 is rank 8 and row 7 is rank 1.
     """
     x, y = coord
-    # Files: A through H; Ranks: 1 through 8.
-    return chr(ord('A') + x) + str(y + 1)
+    file = chr(ord('A') + x)
+    rank = str(8 - y)
+    return file + rank
 
 if __name__ == "__main__":
     # Example 8x8 board: 1 indicates an occupied square (magnet); 0 indicates an empty square.
@@ -88,7 +117,7 @@ if __name__ == "__main__":
     ]
 
     # Toolhead's starting position (board coordinate).
-    start = (7, 7)
+    start = (7, 0)
 
     # Get the occupied squares and compute the nearest neighbor path.
     occupied_squares = get_occupied_squares(board)
@@ -105,3 +134,18 @@ if __name__ == "__main__":
     print(chess_path)
     print("\nChess Squares to Physical Coordinates:")
     print(physical_mapping)
+
+    # Move the toolhead to the starting position
+    grbl.send_immediately("$H\n")  # Home the machine
+    grbl.send_immediately("G21")  # Set units to mm
+    grbl.send_immediately("G92X0Y0Z0")  # Set zero
+
+    for square in path:
+        # Get the physical coordinates for the current square
+        x, y = physical_mapping[coord_to_chess_square(square)]
+        print("Moving to: \n", x, y)
+        # Move the toolhead to the next square
+        cmd = f"G90 X{x} Y{y} F{FEED_RATE}\n"
+        print("Moving to:", cmd.strip())
+        grbl.send_immediately(cmd)
+        time.sleep(1)
