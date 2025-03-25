@@ -57,7 +57,6 @@ grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state and clear alarms
 grbl.poll_start()
-time.sleep(2)
 
 def distance(x, y):
     """Calculate the Manhattan distance between two board coordinates."""
@@ -140,6 +139,8 @@ if __name__ == "__main__":
     grbl.send_immediately("G21")  # Set units to mm
     grbl.send_immediately("G92X0Y0Z0")  # Set zero
 
+    yep = input("Press Enter after homing is committed: ")
+
     for square in path:
         # Get the physical coordinates for the current square
         x, y = physical_mapping[coord_to_chess_square(square)]
@@ -148,4 +149,3 @@ if __name__ == "__main__":
         cmd = f"G90 X{x} Y{y} F{FEED_RATE}\n"
         print("Moving to:", cmd.strip())
         grbl.send_immediately(cmd)
-        time.sleep(1)
