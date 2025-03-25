@@ -30,7 +30,10 @@ Window.fullscreen = True
 
 SQUARE_SIZE_MM = 50    # each square is 50mm
 STEP_MM = 25  # each step is 25mm
-from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
+try:
+    from scripts.customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
+except:
+    from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
 
 # Constant feedrate as in your original code
 FEEDRATE = 15000  # mm/min
@@ -718,23 +721,28 @@ class GantryTargetWidget(Widget):
         return (desired_x_steps * STEP_MM, desired_y_steps * STEP_MM)
 
 
-class GantryControlWidget(BoxLayout):
+class GantryControlWidget(Screen):
     """
     A composite widget that displays the gantry target board (grid) and arrow buttons.
     The arrow buttons move the red dot by 25mm per press.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, gantry_control=None, **kwargs):
         super(GantryControlWidget, self).__init__(**kwargs)
         self.orientation = 'vertical'
         # The target board occupies most of the space.
+        self.root_layout = BoxLayout(orientation='vertical')
 
         self.header_layout = headerLayout(menu=False)
         self.body_layout = BoxLayout(orientation='horizontal')
         self.board_display = BoxLayout(orientation='vertical', padding=10)
         self.gantry_controls = BoxLayout(orientation='vertical')
 
-        self.gantry_control = gantryControl()
-        self.gantry_control.connect_to_grbl()
+        if gantry_control is None:
+            self.gantry_control = gantryControl()
+            self.gantry_control.connect_to_grbl()
+        else: 
+            self.gantry_control=gantry_control
+
 
         self.target_board = GantryTargetWidget(gantry_control=self.gantry_control)
         self.board_display.add_widget(self.target_board)
@@ -777,9 +785,9 @@ class GantryControlWidget(BoxLayout):
 
 
         #self.target_board = GantryTargetWidget(size_hint=(1, 0.8))
-        self.add_widget(self.header_layout)
-        self.add_widget(HorizontalLine())
-        self.add_widget(self.body_layout)
+        self.root_layout.add_widget(self.header_layout)
+        self.root_layout.add_widget(HorizontalLine())
+        self.root_layout.add_widget(self.body_layout)
         self.body_layout.add_widget(self.board_display)
         self.body_layout.add_widget(self.gantry_controls)
         
@@ -870,7 +878,7 @@ class GantryControlWidget(BoxLayout):
         sw.bind(on_release=lambda inst: self.target_board.move_dot(-1, -1))
         s.bind(on_release=lambda inst: self.target_board.move_dot(0, -1))
         se.bind(on_release=lambda inst: self.target_board.move_dot(1, -1))
-        
+        self.add_widget(self.root_layout)
         # Optionally, you can add a label to display the current coordinate in mm.
         self.coord_label = Label(text="Target: -- mm", size_hint=(1, 0.1))
         # self.gantry_controls.add_widget(self.coord_label)
