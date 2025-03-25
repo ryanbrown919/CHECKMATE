@@ -3,6 +3,9 @@ from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTra
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.slider import Slider
+from kivy.uix.togglebutton import ToggleButton
 from kivy.core.window import Window
 from kivy.clock import Clock
 from threading import Thread
@@ -21,6 +24,8 @@ class MainMenuScreen(Screen):
 
         self.gantry_control = gantryControl()
         self.gantry_control.connect_to_grbl()
+        self.preferred_color = 'White'
+        self.chess_elo = 1500
 
         # Create your main menu layout as before
         root_layout = BoxLayout(orientation='vertical', padding=10, spacing=0)
@@ -49,13 +54,20 @@ class MainMenuScreen(Screen):
         custom2 = RoundedButton(text="Control Gantry", font_size=FONT_SIZE, size_hint=(1, 1))
         custom2.bind(on_release=lambda instance: self.change_screen("gantry_control"))
 
+        custom3 = RoundedButton(text="BOT v BOT", font_size=FONT_SIZE, size_hint=(1, 1))
+        custom3.bind(on_release=lambda instance: self.change_screen("loading"))
+
+
         quickplay_layout.add_widget(custom1)
         quickplay_layout.add_widget(custom2)
-        quickplay_layout.add_widget(RoundedButton(text="Set Game", size_hint=(1, 1), font_size=FONT_SIZE))
+        quickplay_layout.add_widget(custom3)
         quickplay_layout.add_widget(RoundedButton(text="Load Game", size_hint=(1, 1), font_size=FONT_SIZE))
 
         customplay_layout.add_widget(IconButton(source="assets/Play.png", size_hint=(None, None), size=(200, 200)))
-        customplay_layout.add_widget(RoundedButton(text="Set Modes", size_hint=(0.7, 1), font_size=FONT_SIZE))
+
+        set_modes_button = RoundedButton(text="Set Modes", size_hint=(0.7, 1), font_size=FONT_SIZE)
+        set_modes_button.bind(on_release=self.open_mode_popup)
+        customplay_layout.add_widget(set_modes_button)
 
         option_layout.add_widget(IconButton(source="assets/user.png", 
                                             size_hint=(1, 0.3),
@@ -78,7 +90,7 @@ class MainMenuScreen(Screen):
             # Remove any previous loading screen if it exists.
             if self.manager.has_screen("loading"):
                 self.manager.remove_widget(self.manager.get_screen("loading"))
-            loading_screen = LoadingScreen(name="loading", gantry_control=self.gantry_control)
+            loading_screen = LoadingScreen(name="loading", gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.chess_elo)
             self.manager.add_widget(loading_screen)
             self.manager.transition.direction = 'right'
             self.manager.current = "loading"
@@ -93,15 +105,29 @@ class MainMenuScreen(Screen):
             self.manager.transition.direction = 'right'
             self.manager.current = screen_name
 
+    def open_mode_popup(self, instance):
+        popup = ModePopup(current_color=getattr(self, "preferred_color", "Random"),
+                        current_elo=getattr(self, "chess_elo", 1500))
+        # When the user confirms, update the main menu’s stored values.
+        popup.on_mode_selected = self.on_mode_selected
+        popup.open()
+
+    def on_mode_selected(self, color, elo):
+        self.preferred_color = color
+        self.chess_elo = elo
+        print(f"Selected mode: {color}, ELO: {elo}")
+
 
 class LoadingScreen(Screen):
-    def __init__(self, gantry_control=None, **kwargs):
+    def __init__(self, gantry_control=None, elo=None, preferred_color=None, **kwargs):
         super(LoadingScreen, self).__init__(**kwargs)
         layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
         self.info_label = Label(text="Loading... Please wait.", font_size=FONT_SIZE)
         layout.add_widget(self.info_label)
         self.add_widget(layout)
-        self.gantry_control=gantry_control
+        self.gantry_control = gantry_control
+        self.elo = elo
+        self.preferred_color=preferred_color
 
     def on_enter(self):
         # Start the heavy loading process on a separate thread so the UI stays responsive.
@@ -120,7 +146,7 @@ class LoadingScreen(Screen):
         # Create a fresh ChessGameScreen instance and switch to it.
         if self.manager.has_screen("chess"):
             self.manager.remove_widget(self.manager.get_screen("chess"))
-        new_game = ChessGameScreen(name="chess", gantry_control=self.gantry_control)
+        new_game = ChessGameScreen(name="chess", gantry_control=self.gantry_control, elo=self.elo, preferred_color=self.preferred_color)
         self.manager.add_widget(new_game)
         self.manager.current = "chess"
         # Remove the loading screen.
@@ -145,13 +171,15 @@ class BaseScreen(Screen):
 
 
 class ChessGameScreen(BaseScreen):
-    def __init__(self, gantry_control=None, **kwargs):
+    def __init__(self, gantry_control=None, preferred_color=None, elo=None, **kwargs):
         super(ChessGameScreen, self).__init__(**kwargs)
+        self.preferred_color=preferred_color
+        self.elo=elo
         root = BoxLayout(orientation='vertical')
         self.gantry_control = gantry_control
         self.add_back_button(root)
         # Add your gameplay widget (loaded from scripts.gameplay) to fill the screen.
-        root.add_widget(GameplayScreen(gantry_control=self.gantry_control))
+        root.add_widget(GameplayScreen(gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.elo))
         self.add_widget(root)
 
 
@@ -163,6 +191,89 @@ class GantryControlScreen(BaseScreen):
         root.add_widget(GantryControlWidget(gantry_control = self.gantry_control))
         self.add_back_button(root)
         self.add_widget(root)
+
+
+class ModePopup(Popup):
+    def __init__(self, current_color="Random", current_elo=1500, **kwargs):
+        super(ModePopup, self).__init__(**kwargs)
+        self.title = "Select Mode"
+        self.size_hint = (0.8, 0.5)
+        self.auto_dismiss = False
+
+        self.selected_color = current_color
+        self.selected_elo = current_elo
+
+        layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
+
+        # Color selection section
+        color_layout = BoxLayout(orientation="horizontal", spacing=10)
+        color_layout.add_widget(Label(text="Preferred Color:", size_hint=(0.4, 1)))
+        self.white_btn = ToggleButton(text="White", group="color", allow_no_selection=False)
+        self.black_btn = ToggleButton(text="Black", group="color", allow_no_selection=False)
+        self.random_btn = ToggleButton(text="Random", group="color", allow_no_selection=False)
+        self.botvbot_btn = ToggleButton(text="Bot V Bot", group="color", allow_no_selection=False)
+
+        
+        # Set initial selection
+        if current_color == "White":
+            self.white_btn.state = "down"
+        elif current_color == "Black":
+            self.black_btn.state = "down"
+        elif current_color == 'Random':
+            self.random_btn.state = "down"
+        else:
+            self.botvbot_btn.state = "down"
+
+        # Bind selection to update current value
+        self.white_btn.bind(on_press=self.on_color_selected)
+        self.black_btn.bind(on_press=self.on_color_selected)
+        self.random_btn.bind(on_press=self.on_color_selected)
+        self.botvbot_btn.bind(on_press=self.on_color_selected)
+
+        
+        color_layout.add_widget(self.white_btn)
+        color_layout.add_widget(self.black_btn)
+        color_layout.add_widget(self.random_btn)
+        color_layout.add_widget(self.botvbot_btn)
+        layout.add_widget(color_layout)
+
+        # ELO selection section
+        elo_layout = BoxLayout(orientation="vertical", spacing=10)
+        elo_layout.add_widget(Label(text="Engine ELO Rating:", size_hint=(1, 0.3)))
+        self.elo_slider = Slider(min=1320, max=2800, value=current_elo, step=50, size_hint=(1, 0.3))
+        elo_layout.add_widget(self.elo_slider)
+        self.elo_label = Label(text=f"ELO: {int(self.elo_slider.value)}", size_hint=(1, 0.3))
+        elo_layout.add_widget(self.elo_label)
+        self.elo_slider.bind(value=self.on_elo_changed)
+        layout.add_widget(elo_layout)
+
+        # OK and Cancel buttons
+        button_layout = BoxLayout(orientation="horizontal", spacing=10, size_hint=(1, 0.3))
+        ok_button = Button(text="OK")
+        cancel_button = Button(text="Cancel")
+        ok_button.bind(on_release=self.on_ok)
+        cancel_button.bind(on_release=self.on_cancel)
+        button_layout.add_widget(ok_button)
+        button_layout.add_widget(cancel_button)
+        layout.add_widget(button_layout)
+        
+        self.content = layout
+
+    def on_color_selected(self, instance):
+        self.selected_color = instance.text
+
+    def on_elo_changed(self, instance, value):
+        self.selected_elo = int(value)
+        self.elo_label.text = f"ELO: {self.selected_elo}"
+
+    def on_ok(self, instance):
+        # Call a callback if defined, passing the selected values
+        if hasattr(self, "on_mode_selected"):
+            self.on_mode_selected(self.selected_color, self.selected_elo)
+        self.dismiss()
+
+    def on_cancel(self, instance):
+        self.dismiss()
 
 
 class FullApp(App):

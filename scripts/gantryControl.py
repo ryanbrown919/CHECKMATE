@@ -47,7 +47,7 @@ class gantryControl:
             self.overshoot = 4
             self.magnet_state =  "MAG OFF"
             self.step = 1
-            self.simulate = True
+            self.simulate = False
             self.serial_lock = threading.Lock()
             self.board_coordinates =   {"a1": (0, 14), "a2": (2,14), "a3": (4,14), "a4": (6,14), "a5": (8,14), "a6": (10,14), "a7": (12,14), "a8": (14, 14),
                                         "b1": (0, 12), "b2": (2,12), "b3": (4,12), "b4": (6,12), "b5": (8,12), "b6": (10,12), "b7": (12,12), "b8": (14, 12),
@@ -63,18 +63,23 @@ class gantryControl:
         def home(self):
             self.send_gcode("$H")
 
+        def correct_position(self):
+            self.home()
+            self.send_gcode("G92X0Y0Z0")
+            self.send_gcode("$120=100") # X accl = 100
+            self.send_gcode("$121=100") # Y accl = 100
+
         def list_serial_ports(self):
-            if sys.platform.startswith('win'):
-                # Windows: COM1, COM2, etc.
+            if sys.platform.startswith('darwin'):
+                # macOS: use a wildcard pattern
+                ports = glob.glob('/dev/tty.usbmodem*')
+            elif sys.platform.startswith('win'):
+                # Windows: Try a range of COM ports
                 ports = ['COM%s' % (i + 1) for i in range(256)]
             elif sys.platform.startswith('linux'):
-                # Linux: look for typical Arduino device names
-                ports = glob.glob('/dev/ttyACM*') + glob.glob('/dev/ttyUSB*')
-            elif sys.platform.startswith('darwin'):
-                # macOS: serial ports usually look like /dev/tty.*
-                ports = glob.glob('/dev/tty.*')
+                # Linux: use a wildcard pattern
+                ports = glob.glob('/dev/ttyACM*')
             else:
-
                 raise EnvironmentError('Unsupported platform')
             return ports
 
@@ -83,18 +88,23 @@ class gantryControl:
             print("Scanning ports:", ports)
             for port in ports:
                 try:
-                    # Try opening the port
+                    print(f"Trying to open port: {port}")
                     ser = serial.Serial(port, baudrate, timeout=timeout)
-                    # GRBL resets when a connection is established, so wait for it to initialize.
+                    # Allow time for GRBL to reset and output its welcome message.
                     time.sleep(2)
-                    ser.flushInput()  # Clear any initial junk data
-
-                    # Read the welcome message (if any) from GRBL.
-                    # It usually starts with "Grbl" followed by the version number.
-                    response = ser.readline().decode('utf-8', errors='ignore')
-                    if "Grbl" in response:
+                    # Do not flush immediately to avoid discarding data.
+                    welcome = ""
+                    # Try reading lines for up to 3 seconds.
+                    start_time = time.time()
+                    while time.time() - start_time < 3:
+                        line = ser.readline().decode('utf-8', errors='ignore').strip()
+                        if line:
+                            welcome += line + "\n"
+                    print("Welcome message received:")
+                    print(welcome)
+                    if "Grbl" in welcome:
                         print(f"Found GRBL on port: {port}")
-                        return ser
+                        return ser  # Return the already-opened serial instance.
                     else:
                         ser.close()
                 except Exception as e:
@@ -106,21 +116,89 @@ class gantryControl:
             Attempt to connect to a GRBL device via serial.
             If no device is found or an error occurs, simulation mode is enabled.
             """
-            grbl_port = self.find_grbl_port()
-            if not grbl_port:
+            grbl_serial = self.find_grbl_port()
+            print(f"grbl_serial: {grbl_serial}")
+            if not grbl_serial:
                 print("No GRBL device found, switching to simulation mode.")
                 self.simulate = True
                 return
 
             try:
                 self.simulate = False
-                self.ser = serial.Serial(grbl_port, 115200, timeout=1)
+                # Use the serial instance returned by find_grbl_port directly.
+                self.ser = grbl_serial
                 time.sleep(2)  # Allow GRBL to initialize.
                 self.send_gcode("$X")  # Clear alarms.
-                print(f"Connected to GRBL on {grbl_port}")
+                print(f"Connected to GRBL on port: {self.ser.port}")
+                self.correct_position()
             except Exception as e:
                 print(f"Error connecting to GRBL: {e}")
                 self.simulate = True
+
+
+        # def list_serial_ports(self):
+        #     if sys.platform.startswith('darwin'):
+        #         # macOS: serial ports usually look like /dev/tty.*
+        #         ports = glob.glob('/dev/tty.usbmodem1201')
+        #     elif sys.platform.startswith('win'):
+        #         # Windows: COM1, COM2, etc.
+        #         ports = ['COM%s' % (i + 1) for i in range(256)]
+        #     elif sys.platform.startswith('linux'):
+        #         # Linux: look for typical Arduino device names
+        #         ports = glob.glob('/dev/ttyACM0')
+            
+        #     else:
+        #         pass
+
+        #         raise EnvironmentError('Unsupported platform')
+        #     return ports
+
+        # def find_grbl_port(self, baudrate=115200, timeout=2):
+        #     ports = self.list_serial_ports()
+        #     print("Scanning ports:", ports)
+        #     for port in ports:
+        #         try:
+        #             # Try opening the port
+        #             print(f"trying to open port: {port}")
+        #             ser = serial.Serial(port, baudrate, timeout=timeout)
+        #             # GRBL resets when a connection is established, so wait for it to initialize.
+        #             time.sleep(0.5)
+        #             ser.flushInput()  # Clear any initial junk data
+
+        #             # Read the welcome message (if any) from GRBL.
+        #             # It usually starts with "Grbl" followed by the version number.
+        #             response = ser.readline().decode('utf-8', errors='ignore')
+        #             print("response")
+        #             print(response)
+        #             if "Grbl" in response:
+        #                 print(f"Found GRBL on port: {port}")
+        #                 return ser
+        #             else:
+        #                 ser.close()
+        #         except Exception as e:
+        #             print(f"Could not open port {port}: {e}")
+        #     return None
+
+        # def connect_to_grbl(self):
+        #     """
+        #     Attempt to connect to a GRBL device via serial.
+        #     If no device is found or an error occurs, simulation mode is enabled.
+        #     """
+        #     grbl_port = self.find_grbl_port()
+        #     if not grbl_port:
+        #         print("No GRBL device found, switching to simulation mode.")
+        #         self.simulate = True
+        #         return
+
+        #     try:
+        #         self.simulate = False
+        #         self.ser = serial.Serial(grbl_port, 115200, timeout=1)
+        #         time.sleep(2)  # Allow GRBL to initialize.
+        #         self.send_gcode("$X")  # Clear alarms.
+        #         print(f"Connected to GRBL on {grbl_port}")
+        #     except Exception as e:
+        #         print(f"Error connecting to GRBL: {e}")
+        #         self.simulate = True
 
         # def find_grbl_port(self):
         #     ports = glob.glob("/dev/tty.usbmodem1201")
@@ -249,7 +327,7 @@ class gantryControl:
             return (x, y)
 
 
-        def interpret_move(self, move_str, step_value):
+        def interpret_move(self, move_str):
             """
             Given a move string (e.g. "e2e4") and a step_value (in mm),
             returns the relative displacement as a tuple (dx_mm, dy_mm).
@@ -683,7 +761,7 @@ class GantryTargetWidget(Widget):
         from_sq = move_str[:2]
         to_sq = move_str[2:4]
         
-        self.path = (self.gantry_control.interpret_move(move_str, STEP_MM))
+        self.path = (self.gantry_control.interpret_move(move_str))
         self.move_dot_to_chess_square(from_sq)
         Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)
 

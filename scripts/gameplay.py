@@ -30,8 +30,13 @@ from .customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayou
 from .gantryControl import gantryControl
 
 class GameplayScreen(Screen):
-    def __init__(self, gantry_control=None, **kwargs):
+    def __init__(self, gantry_control=None, preferred_color=None, elo=None, bot_mode=False, **kwargs):
         super(GameplayScreen, self).__init__(**kwargs)
+
+        self.elo = elo
+        self.preferred_color = preferred_color
+        self.bot_mode=bot_mode
+        print(f"Elo: {self.elo}, Color: {self.preferred_color}, Bot Game: {self.bot_mode}")
 
 
         self.gantry_control=gantry_control
@@ -74,7 +79,7 @@ class GameplayScreen(Screen):
 
         # Start an instance of game logic, hard coded to bot play right now
         self.gameLogic_instance = ChessBackend(lichess_token=api_key, ui_move_callback=ui_callback, mode="offline",
-                           engine_time_limit=0.1, difficulty_level=5, clock_logic = self.clock_logic)
+                           engine_time_limit=0.1, difficulty_level=5, elo=self.elo, preferred_color=self.preferred_color, clock_logic = self.clock_logic, bot_mode=self.bot_mode, gantry_control=self.gantry_control)
 
         # Start a new game and start the backend thread
         #self.gameLogic_instance.start_game()
@@ -85,7 +90,7 @@ class GameplayScreen(Screen):
         #     self.gantry_control.connect_to_grbl()
         # except:
         #     pass
-        # self.simulation_mode = self.gantry_control.simulate
+        self.simulation_mode = self.gantry_control.simulate
 
     
         
@@ -98,7 +103,7 @@ class GameplayScreen(Screen):
 
 
         black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, game_logic=self.gameLogic_instance, size_hint=(1, 1))
-        white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, game_logic=self.gameLogic_instance, size_hint=(1, 1))
+        white_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=True, bottom_colour_white=True, game_logic=self.gameLogic_instance, size_hint=(1, 1))
         
         black_layout.add_widget(black_board)
         black_layout.add_widget(HorizontalLine())
@@ -160,11 +165,11 @@ class GameplayScreen(Screen):
         if self.gameLogic_instance.first_move:
             self.clock_logic.toggle_pause()
             self.gameLogic_instance.first_move=False
-        if not self.simulation_mode:
-            path = self.gantry_control.interpret_move(self.gameLogic_instance.move_history[-1])
-            movements = self.gantry_control.parse_path_to_movement(path)
-            commands = self.gantry_control.movement_to_gcode(movements)
-            self.gantry_control.send_commands(commands)
+        # if not self.simulation_mode:
+        #     path = self.gantry_control.interpret_move(self.gameLogic_instance.move_history[-1])
+        #     movements = self.gantry_control.parse_path_to_movement(path)
+        #     commands = self.gantry_control.movement_to_gcode(movements)
+        #     self.gantry_control.send_commands(commands)
 
 
         
