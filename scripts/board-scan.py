@@ -57,6 +57,7 @@ grbl.cnect("/dev/ttyACM0", 115200)
 
 # Start polling GRBL state and clear alarms
 grbl.poll_start()
+time.sleep(2)
 
 def distance(x, y):
     """Calculate the Manhattan distance between two board coordinates."""
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     print(physical_mapping)
 
     # Move the toolhead to the starting position
+    grbl.send_immediately("$X\n")  # Home the machine
     grbl.send_immediately("$H\n")  # Home the machine
     grbl.send_immediately("G21")  # Set units to mm
     grbl.send_immediately("G92X0Y0Z0")  # Set zero
