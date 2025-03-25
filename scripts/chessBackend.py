@@ -4,6 +4,8 @@ import chess
 import berserk  # For online play; pip install berserk
 import chess.engine  # For offline UCI engine support
 import sys
+import random
+
 
 
 
@@ -17,7 +19,7 @@ if running_on_pi:
 
 class ChessBackend(threading.Thread):
     def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
-                 engine_time_limit=0.1, difficulty_level=5, elo=1400, clock_logic=None):
+                 engine_time_limit=0.1, difficulty_level=5, elo=1400, preferred_color='white', clock_logic=None, bot_mode=False, gantry_control=None):
         """
         :param lichess_token: Your Lichess API token (used in online mode).
         :param ui_move_callback: A callback function to update the UI with opponent moves.
@@ -34,6 +36,23 @@ class ChessBackend(threading.Thread):
         self.board_lock = threading.Lock()
         self._stop_event = threading.Event()
         self.elo = elo
+        self.preferred_color = preferred_color
+        self.bot_mode = bot_mode
+        self.gantry_control = gantry_control
+
+        if self.preferred_color == 'Random':
+            self.preferred_color = random.choice(['White', 'Black'])
+        elif self.preferred_color == "Bot V Bot":
+            self.bot_mode = True
+            self.engine_color = chess.WHITE
+        
+        if self.preferred_color == "Black":
+            self.engine_color = chess.WHITE
+        else:
+            self.engine_color = chess.BLACK
+
+
+        
 
         self.clock_logic = clock_logic
         
@@ -95,14 +114,25 @@ class ChessBackend(threading.Thread):
             while not self._stop_event.is_set():
                 with self.board_lock:
                     # In this example, the offline bot plays as Black.
-                    if self.board.turn == chess.BLACK:
+                    # if self.board.turn == chess.BLACK:
+                    if self.board.turn == self.engine_color or self.bot_mode:
                         try:
                             result = self.engine.play(self.board, chess.engine.Limit(time=self.engine_time_limit))
                             move = result.move
                             print(f"Test move: {move}")
                             self.move_history.append(f"{move}")
 
-                            time.sleep(1)
+                            if self.gantry_control.simulate:
+                                time.sleep(3)
+                            
+                            else:
+
+                                #Insert g-code send and wait for completion
+                                path = self.gantry_control.interpret_chess_move(move, self.board.is_capture(move))
+                                movements = self.gantry_control.parse_path_to_movement(path)
+                                commands = self.gantry_control.movement_to_gcode(movements)
+                                print(f"Moving a piece via commands: {commands}")
+                                self.gantry_control.send_commands(commands)
 
                             if self.board.is_capture(move):
                             # For a normal capture, the captured piece is on the destination square.
@@ -110,9 +140,17 @@ class ChessBackend(threading.Thread):
                                 if captured_piece:
                                     self.captured_pieces.append(captured_piece.symbol())
                                     # Note: You might need special handling for en passant captures.
+
+                            if self.board.is_check:
+                                self.game_state = 'CHECK'
+
+                            elif self.board.is_checkmate:
+                                self.game_state = 'CHECKMATE'
                                 
 
                             self.board.push(move)
+
+                            #if self.board.is_variant_win()
                             #self.notify_observers()
                             #self.push_move(move)
                             if self.ui_move_callback:
