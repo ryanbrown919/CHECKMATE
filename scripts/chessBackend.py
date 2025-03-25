@@ -122,13 +122,17 @@ class ChessBackend(threading.Thread):
                             print(f"Test move: {move}")
                             self.move_history.append(f"{move}")
 
-                            #Insert g-code send and wait for completion
-                            path = self.gantry_control.interpret_move(self.move_history[-1])
-                            movements = self.gantry_control.parse_path_to_movement(path)
-                            commands = self.gantry_control.movement_to_gcode(movements)
-                            self.gantry_control.send_commands(commands)
-                            print(commands)
-                            time.sleep(5)
+                            if self.gantry_control.simulate:
+                                time.sleep(3)
+                            
+                            else:
+
+                                #Insert g-code send and wait for completion
+                                path = self.gantry_control.interpret_chess_move(move, self.board.is_capture(move))
+                                movements = self.gantry_control.parse_path_to_movement(path)
+                                commands = self.gantry_control.movement_to_gcode(movements)
+                                print(f"Moving a piece via commands: {commands}")
+                                self.gantry_control.send_commands(commands)
 
                             if self.board.is_capture(move):
                             # For a normal capture, the captured piece is on the destination square.
@@ -136,6 +140,12 @@ class ChessBackend(threading.Thread):
                                 if captured_piece:
                                     self.captured_pieces.append(captured_piece.symbol())
                                     # Note: You might need special handling for en passant captures.
+
+                            if self.board.is_check:
+                                self.game_state = 'CHECK'
+
+                            elif self.board.is_checkmate:
+                                self.game_state = 'CHECKMATE'
                                 
 
                             self.board.push(move)

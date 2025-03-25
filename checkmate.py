@@ -63,7 +63,10 @@ class MainMenuScreen(Screen):
         quickplay_layout.add_widget(custom3)
         quickplay_layout.add_widget(RoundedButton(text="Load Game", size_hint=(1, 1), font_size=FONT_SIZE))
 
-        customplay_layout.add_widget(IconButton(source="assets/Play.png", size_hint=(None, None), size=(200, 200)))
+        play_btn = IconButton(source="assets/Play.png", size_hint=(None, None), size=(200, 200))
+        play_btn.bind(on_release=lambda instance: self.change_screen("loading"))
+        customplay_layout.add_widget(play_btn)
+
 
         set_modes_button = RoundedButton(text="Set Modes", size_hint=(0.7, 1), font_size=FONT_SIZE)
         set_modes_button.bind(on_release=self.open_mode_popup)
