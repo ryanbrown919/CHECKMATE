@@ -19,17 +19,8 @@ def main():
     layer.begin()
 
     while True:
-        cmd = input("Enter command ([full] for full scan, [single] for single square, [exit] to quit): ").strip().lower()
-        if cmd == "full":
-            scan_full(layer)
-        elif cmd == "single":
-            square = input("Enter square notation (e.g., a1, b5): ").strip().lower()
-            scan_square(layer, square)
-        elif cmd in ["exit", "quit", "q"]:
-            print("Exiting.")
-            break
-        else:
-            print("Unknown command. Please try again.")
+        scan_full(layer)
+        
 
 if __name__ == "__main__":
     main()
