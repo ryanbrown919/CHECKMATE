@@ -46,6 +46,7 @@ STEP_MM = 25  # each step is 25mm
 try:
     from scripts.customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
     from scripts.hall import SenseLayer
+    from scripts.servo import Servo
 except:
     from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
     from hall import SenseLayer
@@ -88,10 +89,12 @@ class gantryControl:
 
         def correct_position(self):
             self.home()
-            self.send_gcode("$120=100") # X accl = 100
-            self.send_gcode("$121=100") # Y accl = 100
+            self.send_gcode("$120=500") # X accl = 100
+            self.send_gcode("$121=500") # Y accl = 100
             self.send_gcode("G21G91G1Y-11F15000")
             self.send_gcode("G92X0Y0Z0")
+            self.servo = Servo()
+            self.servo.begin()
 
         def list_serial_ports(self):
             if sys.platform.startswith('darwin'):

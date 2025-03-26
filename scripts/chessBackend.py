@@ -342,12 +342,13 @@ class ChessBackend(threading.Thread):
     
 
 class clock_logic:
-    def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10, timer_enabled=True):
+    def __init__(self, total_time=300, enable_increment=True, increment_time=5, increment_threshold=10, timer_enabled=True, gantry_control=None):
         self.total_time = total_time
         self.enable_increment = enable_increment
         self.increment_time = increment_time
         self.increment_threshold = increment_threshold
         self.timer_enabled = timer_enabled
+        self.gantry_control = gantry_control
 
         self.white_time = total_time
         self.black_time = total_time
@@ -377,6 +378,7 @@ class clock_logic:
                 print("Incremented player 2 time by", self.increment_time)
         self.active_player = 2 if self.active_player == 1 else 1
         print("Switched active player to", self.active_player)
+        self.gantry_control.servo.toggle()
 
     def toggle_pause(self):
         """Toggle between pause and play modes."""
