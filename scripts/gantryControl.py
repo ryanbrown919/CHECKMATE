@@ -51,7 +51,7 @@ class gantryControl:
                 setattr(self, key, value)
 
             # Internal state variables
-            self.deadzone_origin = (0, 500)
+            self.deadzone_origin = (0, 400)
 
             self.jog_step = 4
             self.overshoot = 4
@@ -375,6 +375,7 @@ class gantryControl:
                 else:
                     print("Probably a horse")
                     angled_movement = (self.sign(dx) * offset, self.sign(dy)*offset)
+                    print(angled_movement)
 
                     # inital offset is (sign(dx) * dx, sing(dy)*dy)
                     if abs(dx) > abs(dy):
@@ -448,8 +449,8 @@ class gantryControl:
                 dz_x, dz_y = self.deadzone_origin
 
                 if dz_x == 400:
-                    dz_x = 0
-                    dz_y = 450
+                    dz_x = -25
+                    dz_y = 400
 
                 self.deadzone_origin = (dz_x + 2*offset, dz_y)
 
@@ -509,55 +510,141 @@ class gantryControl:
             elif num < 0:
                 return -1
             else:
-                return 0
-
-
+                return 1
+            
         def parse_path_to_movement(self, points):
             """
-            Given a list of points (x, y) representing the trajectory in half‑step units,
-            returns a list of (dx, dy) moves where consecutive moves in the same direction
-            are combined.
-            
-            NOTE: This function currently only returns differences between consecutive points.
-            If you want to include the absolute starting coordinate as the first "move",
-            you must add that explicitly.
+            Given a list of absolute points [(x, y), ...], this function returns a new list where:
+            - The first element is the original starting point.
+            - Each subsequent element is the relative displacement from that starting point,
+                with colinear segments merged into a single vector.
             
             For example:
-            Input: [(0,0), (1,0), (2,0), (2,1), (2,2), (3,2), (4,2)]
-            Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
-            Output: [(2,0), (0,2), (2,0)]
+            Absolute points: [(0,300), (25,275), (50,300), (75,275)]
+            After normalization (subtracting starting point (0,300)):
+                [(0,0), (25,-25), (50,0), (75,-25)]
+            Differences between normalized points:
+                (25,-25), (25,25), (25,-25)
+            Merging colinear segments (if applicable) and then
+            computing cumulative relative positions gives:
+                [(0,0), (25,-25), (50,0), (25,-25)]
+            Finally, the function outputs:
+                [(0,300), (25,-25), (50,0), (25,-25)]
+
             """
-            step_size = 1
             if not points or len(points) < 2:
-                return []
+                return points
             
-            # Calculate differences between consecutive points.
+            if points[1][0] % 25 == 0 or points[1][1] % 25 ==0:
+                return points
+
+            # Save the absolute starting point.
+            base = points[0]
+
+            # Convert all points into relative coordinates, so that the start is (0,0).
+            rel_points = [(p[0] - base[0], p[1] - base[1]) for p in points]
+
+            # Compute differences between consecutive relative points.
             diffs = []
-            for i in range(1, len(points)):
-                dx = points[i][0] - points[i-1][0]
-                dy = points[i][1] - points[i-1][1]
+            for i in range(1, len(rel_points)):
+                dx = rel_points[i][0] - rel_points[i - 1][0]
+                dy = rel_points[i][1] - rel_points[i - 1][1]
                 diffs.append((dx, dy))
-            
-            movements = []
-            # Initialize the current accumulated movement.
-            current_dx, current_dy = diffs[0]
-            
-            # Loop over the remaining differences.
-            for dx, dy in diffs[1:]:
-                if self.sign(dx) == self.sign(current_dx) and self.sign(dy) == self.sign(current_dy):
-                    current_dx += dx
-                    current_dy += dy
+
+            # Helper to check if two vectors are colinear and in the same direction.
+            def same_direction(v1, v2):
+                # Cross product: if nonzero, vectors are not colinear.
+                cross = v1[0] * v2[1] - v1[1] * v2[0]
+                if cross != 0:
+                    return False
+                # Dot product > 0 ensures they're pointing in the same direction.
+                return (v1[0] * v2[0] + v1[1] * v2[1]) > 0
+
+            # Merge consecutive differences if they are colinear.
+            merged = []
+            current = diffs[0]
+            for d in diffs[1:]:
+                if same_direction(current, d):
+                    # Sum the two differences.
+                    current = (current[0] + d[0], current[1] + d[1])
                 else:
-                    movements.append((current_dx * step_size, current_dy * step_size))
-                    current_dx, current_dy = dx, dy
-            movements.append((current_dx * step_size, current_dy * step_size))
+                    merged.append(current)
+                    current = d
+            merged.append(current)
+
+            # Rebuild the cumulative relative positions from the merged differences.
+            cumulative = [(0, 0)]
+            current_pos = (0, 0)
+            for d in merged:
+                current_pos = (current_pos[0] + d[0], current_pos[1] + d[1])
+                cumulative.append(current_pos)
+
+            # The final output:
+            # The first element is the original absolute starting point.
+            # Every subsequent element is the relative movement from the starting point.
+            final_points = [base] + cumulative[1:]
+            return final_points
+
+
+        # def parse_path_to_movement(self, points):
+
+        #     print(f"Points:{points}")
+        #     """
+        #     Given a list of points (x, y) representing the trajectory in half‑step units,
+        #     returns a list of (dx, dy) moves where consecutive moves in the same direction
+        #     are combined.
             
-            # If you want the starting coordinate (the absolute position of the first point)
-            # to be included as the very first move, you could prepend it:
-            start = points[0]
-            movements.insert(0, (start[0] * step_size, start[1] * step_size))
+        #     NOTE: This function currently only returns differences between consecutive points.
+        #     If you want to include the absolute starting coordinate as the first "move",
+        #     you must add that explicitly.
             
-            return movements
+        #     For example:
+        #     Input: [(0,0), (1,0), (2,0), (2,1), (2,2), (3,2), (4,2)]
+        #     Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
+        #     Output: [(2,0), (0,2), (2,0)]
+        #     """
+        #     step_size = 1
+        #     if not points or len(points) < 2:
+        #         return []
+            
+        #     start = points[0]
+
+        #     points[0] = (0,0)
+            
+        #     # Calculate differences between consecutive points.
+        #     diffs = []
+        #     for i in range(1, len(points)):
+        #         print(points[i])
+        #         print(points[i-1])
+        #         dx = points[i][0] - points[i-1][0]
+        #         dy = points[i][1] - points[i-1][1]
+        #         diffs.append((dx, dy))
+        #     print("diffs")
+        #     print(diffs)
+            
+        #     movements = []
+        #     # Initialize the current accumulated movement.
+        #     current_dx, current_dy = diffs[0]
+            
+        #     # Loop over the remaining differences.
+        #     for dx, dy in diffs[1:]:
+        #         if self.sign(dx) == self.sign(current_dx) and self.sign(dy) == self.sign(current_dy):
+        #             current_dx += dx
+        #             current_dy += dy
+        #             print(f'test: {current_dx, current_dy}')
+        #         else:
+        #             movements.append((current_dx * step_size, current_dy * step_size))
+        #             current_dx, current_dy = dx, dy
+        #             print(f'test2: {current_dx, current_dy}')
+        #     movements.append((current_dx * step_size, current_dy * step_size))
+            
+        #     # If you want the starting coordinate (the absolute position of the first point)
+        #     # to be included as the very first move, you could prepend it:
+        #     print(f"movements almost done: {movements}")
+        #     movements.insert(0, (start[0] * step_size, start[1] * step_size))
+
+            
+        #     return movements
 
 
         def send_commands(self, cmd_list):
@@ -566,8 +653,9 @@ class gantryControl:
                 time.sleep(2)
                 print(f"Sent commands")
             else:
-                self.finished = False
+                
                 for cmd in cmd_list:
+                    self.finished = False
                     full_cmd = cmd + "\n"
                     self.send_gcode(full_cmd)
                     # Wait for GRBL response ("ok")
@@ -598,6 +686,8 @@ class gantryControl:
             Given a list of moves (e.g., ["e2e4", "g8h6"]), converts them to relative
             displacement commands in G-code format.
             """
+
+            print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
                 self.send_gcode("M9") # off
             elif self.magnet_state == "MAG ON":
@@ -613,7 +703,6 @@ class gantryControl:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
                     gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
-                    gcode_commands.append(f"M9") # deactivate after final movement
 
                     gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
@@ -1228,7 +1317,7 @@ class SendCommandButton(Button):
     
     def send_command(self, instance):
         #self.gantry_control.interpret_move(self.move_input.text, STEP_MM)
-        print("Path Plan finished. Trail path:", self.target_widget.path)
+        print("Path Plan finished HAHA. Trail path:", self.target_widget.path)
         movements = self.gantry_control.parse_path_to_movement(self.target_widget.path)
         commands = self.gantry_control.movement_to_gcode(movements)
         print(f"Sending movements: {movements}")
