@@ -1361,6 +1361,7 @@ class GoButton(Button):
         self.gantry_control = gantry_control
         self.target_board = target_board
         self.text = "Go"
+        self.font_size = 40
         self.background_color = [0, 0, 0, 1]
         self.bind(on_release=self.send_commands)
 

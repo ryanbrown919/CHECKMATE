@@ -282,7 +282,7 @@ class ModePopup(Popup):
 class FullApp(App):
     def build(self):
         # Only add the main menu initially; other screens are added lazily.
-        sm = ScreenManager(transition=WipeTransition())
+        sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainMenuScreen(name="menu"))
         return sm
 
