@@ -472,7 +472,7 @@ class gantryControl:
 
                 dz_x, dz_y = self.deadzone_origin
 
-                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*15)]
+                path = [dead_coordinates, (0, offset*16 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*16)]
 
                 print(f"moving to deadzone: {path}")
 
