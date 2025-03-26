@@ -403,7 +403,7 @@ class gantryControl:
                 print('Not a castle')
 
                 # Computational method for determineing if it is a knight.
-                if min(dx, dy) == 0 or abs(dx) == abs(dy):
+                if min(abs(dx), abs(dy)) == 0 or abs(dx) == abs(dy):
                     print("Not a knight")
 
                     path = [(start_coord[0], start_coord[1]), (dx, dy)]   
