@@ -25,11 +25,11 @@ class Servo():
         return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
 
     def begin(self):
-        self.close()
+        self.open()
         time.sleep(0.5)
         self.home()
         self.state = "home"
-        self.last_state = "close"
+        self.last_state = "open"
 
     def home(self):
         pulse_width = self.duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
