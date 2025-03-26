@@ -48,25 +48,33 @@ class Gantry():
     def home(self):
         self.grbl.send_immediately("$H\n")
         self.grbl.send_immediately("G90 X-475 Y-486\n")
-        self.grbl.send_immediately("G92 X0 Y0 Z0\n")
+        self.grbl.send_immediately("G92 X0 Y0\n")
 
-    def move_to_square(self, x, y):
-        self.grbl.send_immediately(f"G90 X{x} Y{y}\n")
+    def move_to_square(self, square):
+        if square not in self.board_mapping:
+            return False
+        
+        x, y = self.board_mapping[square]
+        self.grbl.send_immediately(f"G0 X{x} Y{y}\n")
+        return True
+
+# Create a global gantry variable
+gantry = None
 
 def setup():
+    global gantry
     gantry = Gantry()
-    gantry.home()
-    return gantry
 
 def main():
     cmd = input("Enter square: ")
-    gantry.move_to_square(cmd)
-
+    if not gantry.move_to_square(cmd):
+        print("Invalid square notation.")
 
 if __name__ == "__main__":
     setup()
     time.sleep(2)
-    while(True):
+    gantry.home()
+    while True:
         main()
 
 
