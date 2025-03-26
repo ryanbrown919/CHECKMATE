@@ -32,17 +32,17 @@ class Servo():
         self.last_sate = "close"
 
     def home(self):
-        pulse_width = duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+        pulse_width = self.duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
         pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
         self.state = "home"
     
     def open(self):
-        pulse_width = duty_cycle_to_pulsewidth(62, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+        pulse_width = self.duty_cycle_to_pulsewidth(62, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
         pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
         self.state = "open"
     
     def close(self):
-        pulse_width = duty_cycle_to_pulsewidth(38, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+        pulse_width = self.duty_cycle_to_pulsewidth(38, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
         pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
         self.state = "close"
     
@@ -58,6 +58,17 @@ class Servo():
             time.sleep(0.5)
             self.home()
             self.last_sate = "open"
+
+if __name__ == "__main__":
+    servo = Servo()
+    servo.begin()
+    try:
+        while True:
+            input("Press Enter to toggle the servo")
+            servo.toggle()
+    except KeyboardInterrupt:
+        servo.pi.stop()
+        sys.exit(0)
 
 
 
