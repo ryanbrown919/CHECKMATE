@@ -68,7 +68,7 @@ class gantryControl:
 
             self.jog_step = 4
             self.overshoot = 4
-            self.magnet_state =  "MAG OFF"
+            self.magnet_state =  "MOVE MODE"
             self.step = 1
             self.simulate = False
             self.serial_lock = threading.Lock()
