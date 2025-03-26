@@ -13,12 +13,17 @@ def open():
 def close():
     p.ChangeDutyCycle(11)
 
+def home():
+    p.ChangeDutyCycle(7)
+
 def main():
     cmd = input("Enter command (open/close): ").strip().lower()
     if cmd == "open":
         open()
     elif cmd == "close":
         close()
+    elif cmd == "home":
+        home()
     else:
         print("Invalid command")
     
