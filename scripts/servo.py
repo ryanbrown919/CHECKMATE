@@ -6,6 +6,8 @@ SERVO_GPIO_PIN = 17  # Change this to the GPIO pin you are using for the servo
 MIN_PULSEWIDTH = 500   # Minimum pulse width in microseconds (adjust for your servo)
 MAX_PULSEWIDTH = 2500  # Maximum pulse width in microseconds (adjust for your servo)
 
+pi = pigpio.pi()
+
 def duty_cycle_to_pulsewidth(duty_cycle, min_pw, max_pw):
     """
     Map a duty cycle (0-100%) to a pulse width between min_pw and max_pw.
@@ -14,16 +16,9 @@ def duty_cycle_to_pulsewidth(duty_cycle, min_pw, max_pw):
         raise ValueError("Duty cycle must be between 0 and 100.")
     # Linear mapping from duty cycle to pulse width
     return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
-
-def setup():
-    pi = pigpio.pi()
-    if not pi.connected:
-        print("Failed to connect to pigpio daemon. Make sure pigpiod is running.")
-        sys.exit(1)
-    return pi
+    
 
 def main():
-
     # Get user input for duty cycle
     user_input = input("Enter duty cycle (0 to 100%): ")
     try:
@@ -40,6 +35,5 @@ def main():
 
 
 if __name__ == "__main__":
-    setup()
     while(1):
         main()
