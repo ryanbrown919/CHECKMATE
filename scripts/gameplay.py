@@ -28,6 +28,7 @@ from .chessBoard import ChessBoard, MaterialBar, MovesHistory, CapturedPieces, P
 from .chessBackend import ChessBackend, clock_logic
 from .customWidgets import HorizontalLine, VerticalLine, IconButton, headerLayout
 from .gantryControl import gantryControl
+# from .servo import Servo
 
 class GameplayScreen(Screen):
     def __init__(self, gantry_control=None, preferred_color=None, elo=None, bot_mode=False, **kwargs):
@@ -37,6 +38,9 @@ class GameplayScreen(Screen):
         self.preferred_color = preferred_color
         self.bot_mode=bot_mode
         print(f"Elo: {self.elo}, Color: {self.preferred_color}, Bot Game: {self.bot_mode}")
+
+        # self.servo = Servo()
+        # self.servo.begin()
 
 
         self.gantry_control=gantry_control
@@ -75,7 +79,7 @@ class GameplayScreen(Screen):
             print("Received opponent move:", move)
             Clock.schedule_once(lambda dt: self.gameLogic_instance.notify_observers(), 0)
 
-        self.clock_logic = clock_logic(timer_enabled=False)
+        self.clock_logic = clock_logic(timer_enabled=False, gantry_control=self.gantry_control)
 
         # Start an instance of game logic, hard coded to bot play right now
         self.gameLogic_instance = ChessBackend(lichess_token=api_key, ui_move_callback=ui_callback, mode="offline",
