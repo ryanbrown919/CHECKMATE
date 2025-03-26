@@ -8,10 +8,10 @@ p = GPIO.PWM(11, 100)     # Sets up pin 11 as a PWM pin
 p.start(0)      
 
 def open():
-    p.ChangeDutyCycle(4)
+    p.ChangeDutyCycle(6)
 
 def close():
-    p.ChangeDutyCycle(11)
+    p.ChangeDutyCycle(10)
 
 def home():
     p.ChangeDutyCycle(8)
