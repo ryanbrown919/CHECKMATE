@@ -32,15 +32,23 @@ SQUARE_SIZE_MM = 50    # each square is 50mm
 STEP_MM = 25  # each step is 25mm
 try:
     from scripts.customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
+    from scripts.hall import SenseLayer
 except:
     from customWidgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
+    from hall import SenseLayer
 
 # Constant feedrate as in your original code
 FEEDRATE = 15000  # mm/min
 
 class gantryControl:
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.feed_rate = FEEDRATE
+            #self.hall = SenseLayer()
+
+            for key, value in kwargs.items():
+                self.capture_move = value
+                print(key, value)
+                setattr(self, key, value)
 
             # Internal state variables
             self.deadzone_origin = (0, 500)
@@ -271,16 +279,26 @@ class gantryControl:
             
             print(f"Interpreting move: {move_str}")
 
+            print(f"Capture state: {is_capture}")
+
             
             start_square = move_str[:2]
             end_square = move_str[2:4]
+
+            print(f"Move again: {start_square}, {end_square}")
             
             start_coord = self.square_to_coord(start_square)
             end_coord = self.square_to_coord(end_square)
 
+            start_coord = (start_coord[0]*STEP_MM, start_coord[1]*STEP_MM)
+            end_coord = (end_coord[0]*STEP_MM, end_coord[1]*STEP_MM)
+
             # Compute the difference in "steps"
             dx = end_coord[0] - start_coord[0]
             dy = end_coord[1] - start_coord[1]
+
+            print(dx)
+            print(dy)
 
             
 
@@ -288,7 +306,8 @@ class gantryControl:
 
             print(f"Start square: {start_coord}, end square: {end_coord}")
 
-            if start_square == 'e1' or 'e8':
+            if start_square == 'e1' or start_square == 'e8':
+                print("in castle")
                 if end_square == 'c1':
                     # Rook path
                     path = [(start_coord), (0, -6*offset)]
@@ -344,56 +363,67 @@ class gantryControl:
                 
     
                 
-                
-
+            
             else: 
+                print('Not a castle')
+
                 # Computational method for determineing if it is a knight.
-                if not min(dx, dy) == 0 or not abs(dx) == abs(dy):
-                    angled_movement = (self.sign(dx) * dx, self.sign(dy)*dy)
+                if min(dx, dy) == 0 or abs(dx) == abs(dy):
+                    print("Not a knight")
+
+                    path = [(start_coord[0], start_coord[1]), (dx, dy)]   
+                else:
+                    print("Probably a horse")
+                    angled_movement = (self.sign(dx) * offset, self.sign(dy)*offset)
 
                     # inital offset is (sign(dx) * dx, sing(dy)*dy)
                     if abs(dx) > abs(dy):
                         path = [start_coord, angled_movement, (2*self.sign(dx)*offset, 0), angled_movement]
                     else:
                         path = [start_coord, angled_movement, (0, 2*self.sign(dy)*offset), angled_movement]
-                else:
-                    path = [(start_coord[0], start_coord[1]), (dx, dy)]     
+                 
 
             
             if is_capture:
+                print('Is capture')
                 # Take away 25mm from last movement, so piece is on the edge
                 end_x, end_y = path[-1]
                 new_end_x =  end_x -self.sign(end_x)*offset if not end_x == 0 else 0
                 new_end_y = end_y -self.sign(end_y)*offset if not end_y == 0 else 0
                 path[-1] = (new_end_x, new_end_y)
-
-                movements = self.gantry_control.parse_path_to_movement(path)
-                commands = self.gantry_control.movement_to_gcode(movements)
+                print(f"Path for moving to piece to capture: {path}")
+                movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(movements)
                 print(f"Moving to capture piece: {commands}")
-                self.gantry_control.send_commands(commands)
+                self.send_commands(commands)
 
 
                 #move piece off center in opposite direction
-
                 captured_new_x = self.sign(end_x)*offset if not end_x== 0 else 0
                 captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
                 path = [end_coord, (captured_new_x, captured_new_y)]
 
-                movements = self.gantry_control.parse_path_to_movement(path)
-                commands = self.gantry_control.movement_to_gcode(movements)
+                print(f"Path for moving captured piece off square: {path}")
+
+
+                movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(movements)
                 print(f"Moving piece off center: : {commands}")
-                self.gantry_control.send_commands(commands)                        
+                self.send_commands(commands)      
+                print(f"moving piece off center: {path}")
+                  
 
 
                 #Move capturing piece back to center
 
                 path = [(end_coord[0] -self.sign(end_x)*offset, end_coord[1] -self.sign(end_y)*offset), (self.sign(end_x)*offset, self.sign(end_y)*offset)]
 
+                print(f"Path for moving piece back to center: {path}")
 
-                movements = self.gantry_control.parse_path_to_movement(path)
-                commands = self.gantry_control.movement_to_gcode(movements)
+                movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(movements)
                 print(f"Moving piece to center comamnds: {commands}")
-                self.gantry_control.send_commands(commands)
+                self.send_commands(commands)
 
 
                 dead_coordinates = (end_coord[0] + captured_new_x, end_coord[1] + captured_new_y)
@@ -405,10 +435,13 @@ class gantryControl:
 
                 path = [dead_coordinates, (0, dead_y), (dead_x, 0)]
 
-                movements = self.gantry_control.parse_path_to_movement(path)
-                commands = self.gantry_control.movement_to_gcode(movements)
+                print(f"moving to deadzone: {path}")
+
+
+                movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(movements)
                 print(f" moving to deadzone: {commands}")
-                self.gantry_control.send_commands(commands)
+                self.send_commands(commands)
 
 
 
@@ -419,15 +452,6 @@ class gantryControl:
                     dz_y = 450
 
                 self.deadzone_origin = (dz_x + 2*offset, dz_y)
-
-
-
-
-
-                pass
-
-
-                
 
 
             print(f"Interpreted move: {move_str} as dx={dx}, dy={dy} as {path}")
@@ -503,7 +527,7 @@ class gantryControl:
             Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
             Output: [(2,0), (0,2), (2,0)]
             """
-            step_size = STEP_MM
+            step_size = 1
             if not points or len(points) < 2:
                 return []
             
@@ -537,25 +561,30 @@ class gantryControl:
 
 
         def send_commands(self, cmd_list):
-            self.finished = False
-            for cmd in cmd_list:
-                full_cmd = cmd + "\n"
-                self.send_gcode(full_cmd)
-                # Wait for GRBL response ("ok")
-                response = self.ser.readline().decode().strip()
-                while response != "ok":
-                    # You might log the response or wait until "ok" arrives.
-                    response = self.ser.readline().decode().strip()
-                print(f"Sent: {cmd}, Response: {response}")
 
-                while not self.finished:
-                    self.ser.write(b'?')
-                    status = self.ser.readline().decode().strip()
-                    print(f"Status: {status}")
-                    if '<Idle' in status:
-                        self.finished = True
-                    time.sleep(0.5)
-                print("Finished Sending commands")
+            if self.simulate:
+                time.sleep(2)
+                print(f"Sent commands")
+            else:
+                self.finished = False
+                for cmd in cmd_list:
+                    full_cmd = cmd + "\n"
+                    self.send_gcode(full_cmd)
+                    # Wait for GRBL response ("ok")
+                    response = self.ser.readline().decode().strip()
+                    while response != "ok":
+                        # You might log the response or wait until "ok" arrives.
+                        response = self.ser.readline().decode().strip()
+                    print(f"Sent: {cmd}, Response: {response}")
+
+                    while not self.finished:
+                        self.ser.write(b'?')
+                        status = self.ser.readline().decode().strip()
+                        print(f"Status: {status}")
+                        if '<Idle' in status:
+                            self.finished = True
+                        time.sleep(0.5)
+                    print("Finished Sending commands")
 
             
 
@@ -629,8 +658,9 @@ class GantryTargetWidget(Widget):
       - a1 appears at the bottom right.
     Border labels are drawn in the outermost margin cells.
     """
-    def __init__(self, gantry_control, **kwargs):
+    def __init__(self, gantry_control, capture_move, **kwargs):
         super(GantryTargetWidget, self).__init__(**kwargs)
+        self.capture_move = capture_move
         self.gantry_control = gantry_control
         self.cols = 8
         self.rows = 10
@@ -836,17 +866,18 @@ class GantryTargetWidget(Widget):
             self.trail_points.append(new_center)
         self.update_canvas()
     
-    def process_chess_move(self, move_str):
+    def process_chess_move(self, move_str, is_capture):
         """
         Processes a chess move string (e.g., "e2e4").
         Moves the red dot first to the "from" square then (after 0.5 sec) to the "to" square.
         """
+
         if len(move_str) < 4:
             return
         from_sq = move_str[:2]
         to_sq = move_str[2:4]
         
-        self.path = (self.gantry_control.interpret_move(move_str))
+        self.path = (self.gantry_control.interpret_chess_move(move_str, is_capture))
         self.move_dot_to_chess_square(from_sq)
         Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)
 
@@ -893,6 +924,9 @@ class GantryControlWidget(Screen):
         super(GantryControlWidget, self).__init__(**kwargs)
         self.orientation = 'vertical'
         # The target board occupies most of the space.
+
+        self.capture_move = False
+
         self.root_layout = BoxLayout(orientation='vertical')
 
         self.header_layout = headerLayout(menu=False)
@@ -901,13 +935,13 @@ class GantryControlWidget(Screen):
         self.gantry_controls = BoxLayout(orientation='vertical')
 
         if gantry_control is None:
-            self.gantry_control = gantryControl()
+            self.gantry_control = gantryControl(capture_move = self.capture_move)
             self.gantry_control.connect_to_grbl()
         else: 
             self.gantry_control=gantry_control
 
 
-        self.target_board = GantryTargetWidget(gantry_control=self.gantry_control)
+        self.target_board = GantryTargetWidget(gantry_control=self.gantry_control, capture_move=self.capture_move)
         self.board_display.add_widget(self.target_board)
 
         # # Top row: file labels for the top border (rotated: top row shows h8, g8, ... a8)
@@ -975,9 +1009,11 @@ class GantryControlWidget(Screen):
         self.chess_move_input = ChessMoveInput(target_widget=self.target_board,
                                                path_button=self.pathButton,
                                                on_move_callback=self.on_move_entered,
-                                               size_hint=(1, 0.1))  
+                                               size_hint=(1, 1))  
         c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input)
         controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
+        self.move_input_block = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
+
 
         controls.add_widget(self.pathButton)
         controls.add_widget(c_clear)
@@ -999,7 +1035,16 @@ class GantryControlWidget(Screen):
               
         # self.move_input.bind(on_text_validate=self.target_board.process_chess_move)
         self.gantry_controls.add_widget(controls)
-        self.gantry_controls.add_widget(self.chess_move_input)
+
+        self.move_input_block.add_widget(self.chess_move_input)
+
+        capture_toggle = CaptureToggleButton(
+            text="Capture Move",
+            size_hint=(0.3, 1))
+        capture_toggle.bind(state=self.on_toggle_state)
+
+        self.move_input_block.add_widget(capture_toggle)
+        self.gantry_controls.add_widget(self.move_input_block)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
         self.magnet_control = MagnetControl(gantry_control=self.gantry_control, size_hint=(1, 0.1))
         #self.magnet_state = self.magnet_control.get_state()
@@ -1055,7 +1100,7 @@ class GantryControlWidget(Screen):
     def on_move_entered(self, move):
         # When a move is entered via the text input, force trail mode so the moves leave a trail.
         self.target_board.trail_enabled = True
-        self.target_board.process_chess_move(move)
+        self.target_board.process_chess_move(move, self.capture_move)
         # Disable the text input and update its display with the trail coordinates.
         self.chess_move_input.disabled = True
         if self.target_board.trail_points:
@@ -1064,7 +1109,14 @@ class GantryControlWidget(Screen):
 
 
     def send_command(self):
+
+
         pass
+
+    def on_toggle_state(self, instance, value):
+        # Update the app-level variable based on the button's state
+        self.capture_move = (value == "down")
+        print(f"App Variable: capture_move = {self.capture_move}")
 
 
 
@@ -1237,6 +1289,12 @@ class MagnetControl(BoxLayout):
             if btn.state == 'down':
                 return btn.text
         return None     
+    
+class CaptureToggleButton(ToggleButton):
+    def on_state(self, instance, value):
+        # Update a property on the widget itself (or notify the app)
+        self.is_capture = (value == "down")
+        print(f"Toggle Button: capture_move = {self.is_capture}")
 
 
 
