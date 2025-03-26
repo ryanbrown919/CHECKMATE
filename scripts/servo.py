@@ -24,6 +24,9 @@ def main():
         close()
     elif cmd == "home":
         home()
+    elif cmd == "m":
+        position = input("Enter position (0-100): ")
+        p.ChangeDutyCycle(int(position))
     else:
         print("Invalid command")
     
