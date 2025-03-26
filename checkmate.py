@@ -72,7 +72,7 @@ class MainMenuScreen(Screen):
         set_modes_button.bind(on_release=self.open_mode_popup)
         customplay_layout.add_widget(set_modes_button)
 
-        option_layout.add_widget(IconButton(source="assets/user.png", 
+        option_layout.add_widget(IconButton(source="assets/User.png", 
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True))
@@ -282,7 +282,7 @@ class ModePopup(Popup):
 class FullApp(App):
     def build(self):
         # Only add the main menu initially; other screens are added lazily.
-        sm = ScreenManager(transition=WipeTransition())
+        sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainMenuScreen(name="menu"))
         return sm
 

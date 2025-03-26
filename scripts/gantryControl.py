@@ -68,7 +68,7 @@ class gantryControl:
 
             self.jog_step = 4
             self.overshoot = 4
-            self.magnet_state =  "MAG OFF"
+            self.magnet_state =  "MOVE MODE"
             self.step = 1
             self.simulate = False
             self.serial_lock = threading.Lock()
@@ -1361,6 +1361,7 @@ class GoButton(Button):
         self.gantry_control = gantry_control
         self.target_board = target_board
         self.text = "Go"
+        self.font_size = 40
         self.background_color = [0, 0, 0, 1]
         self.bind(on_release=self.send_commands)
 
