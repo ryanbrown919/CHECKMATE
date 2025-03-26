@@ -12,12 +12,12 @@ def home():
 
 def open():
     p.ChangeDutyCycle(6)
-    time.sleep(1)
+    time.sleep(0.5)
     home()
 
 def close():
     p.ChangeDutyCycle(11)
-    time.sleep(1)
+    time.sleep(0.5)
     home()
 
 
