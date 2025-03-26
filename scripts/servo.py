@@ -9,7 +9,7 @@ p.start(0)
 
 def main():
     pwm = input("Enter PWM value ")
-        p.ChangeDutyCycle(int(pwm))
+    p.ChangeDutyCycle(int(pwm))
 
 if __name__ == "__main__":
     while True:
