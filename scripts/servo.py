@@ -4,7 +4,7 @@ GPIO.setmode(GPIO.BOARD) # Sets the pin numbering system to use the physical lay
 
 # Set up pin 11 for PWM
 GPIO.setup(11,GPIO.OUT)  # Sets up pin 11 to an output (instead of an input)
-p = GPIO.PWM(11, 50)     # Sets up pin 11 as a PWM pin
+p = GPIO.PWM(11, 100)     # Sets up pin 11 as a PWM pin
 p.start(0)      
 
 def open():
@@ -14,7 +14,7 @@ def close():
     p.ChangeDutyCycle(11)
 
 def home():
-    p.ChangeDutyCycle(7)
+    p.ChangeDutyCycle(8)
 
 def main():
     cmd = input("Enter command (open/close): ").strip().lower()
