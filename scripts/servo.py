@@ -1,42 +1,51 @@
-import RPi.GPIO as GPIO  # Imports the standard Raspberry Pi GPIO library
-import time # Imports sleep (aka wait or pause) into the program
-GPIO.setmode(GPIO.BOARD) # Sets the pin numbering system to use the physical layout
+import pigpio
+import sys
 
-# Set up pin 11 for PWM
-GPIO.setup(11,GPIO.OUT)  # Sets up pin 11 to an output (instead of an input)
-p = GPIO.PWM(11, 100)     # Sets up pin 11 as a PWM pin
-p.start(0)      
+# Configuration
+SERVO_GPIO_PIN = 17  # Change this to the GPIO pin you are using for the servo
+MIN_PULSEWIDTH = 500   # Minimum pulse width in microseconds (adjust for your servo)
+MAX_PULSEWIDTH = 2500  # Maximum pulse width in microseconds (adjust for your servo)
 
-def home():
-    p.ChangeDutyCycle(8)
-
-def open():
-    p.ChangeDutyCycle(6)
-    time.sleep(0.5)
-    home()
-
-def close():
-    p.ChangeDutyCycle(11)
-    time.sleep(0.5)
-    home()
-
-
+def duty_cycle_to_pulsewidth(duty_cycle, min_pw, max_pw):
+    """
+    Map a duty cycle (0-100%) to a pulse width between min_pw and max_pw.
+    """
+    if not (0 <= duty_cycle <= 100):
+        raise ValueError("Duty cycle must be between 0 and 100.")
+    # Linear mapping from duty cycle to pulse width
+    return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
 
 def main():
-    cmd = input("Enter command (open/close): ").strip().lower()
-    if cmd == "open":
-        open()
-    elif cmd == "close":
-        close()
-    elif cmd == "home":
-        home()
-    elif cmd == "m":
-        position = input("Enter position (0-100): ")
-        p.ChangeDutyCycle(int(position))
-    else:
-        print("Invalid command")
-    
+    try:
+        # Initialize pigpio
+        pi = pigpio.pi()
+        if not pi.connected:
+            print("Failed to connect to pigpio daemon. Make sure pigpiod is running.")
+            sys.exit(1)
+        
+        # Get user input for duty cycle
+        user_input = input("Enter duty cycle (0 to 100%): ")
+        try:
+            duty_cycle = float(user_input)
+        except ValueError:
+            print("Invalid input. Please enter a numeric value for the duty cycle.")
+            sys.exit(1)
+
+        # Convert the duty cycle to a pulse width in microseconds
+        pulse_width = duty_cycle_to_pulsewidth(duty_cycle, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+        print(f"Setting servo to a pulse width of {pulse_width:.2f} µs based on {duty_cycle}% duty cycle.")
+        
+        # Set the servo pulse width
+        pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+        
+        # Optionally, keep the program running until the user decides to exit
+        input("Press Enter to exit and turn off the servo signal...")
+        
+    finally:
+        # Stop servo pulses (set pulse width to 0) and clean up pigpio resources
+        if 'pi' in locals() and pi.connected:
+            pi.set_servo_pulsewidth(SERVO_GPIO_PIN, 0)
+            pi.stop()
 
 if __name__ == "__main__":
-    while True:
-        main()
+    main()
