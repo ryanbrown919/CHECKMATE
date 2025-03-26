@@ -22,11 +22,11 @@ def home():
     pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
 
 def open():
-    pulse_width = duty_cycle_to_pulsewidth(61, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+    pulse_width = duty_cycle_to_pulsewidth(62, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
     pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
 
 def close():
-    pulse_width = duty_cycle_to_pulsewidth(39, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+    pulse_width = duty_cycle_to_pulsewidth(38, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
     pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
 
 def main():
