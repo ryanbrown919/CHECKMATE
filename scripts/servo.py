@@ -17,23 +17,30 @@ def duty_cycle_to_pulsewidth(duty_cycle, min_pw, max_pw):
     # Linear mapping from duty cycle to pulse width
     return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
     
+def home():
+    pulse_width = duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+    pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+
+def open():
+    pulse_width = duty_cycle_to_pulsewidth(60, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+    pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+
+def close():
+    pulse_width = duty_cycle_to_pulsewidth(40, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
+    pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
 
 def main():
     # Get user input for duty cycle
-    user_input = input("Enter duty cycle (0 to 100%): ")
-    try:
-        duty_cycle = float(user_input)
-    except ValueError:
-        print("Invalid input. Please enter a numeric value for the duty cycle.")
-        sys.exit(1)
-    # Convert the duty cycle to a pulse width in microseconds
-    pulse_width = duty_cycle_to_pulsewidth(duty_cycle, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-    print(f"Setting servo to a pulse width of {pulse_width:.2f} µs based on {duty_cycle}% duty cycle.")
+    user_input = input("Enter home, open, or close: ").strip().lower()
+    if user_input == "home" or user_input == "h":
+        home()
+    elif user_input == "open" or user_input == "o":
+        open()
+    elif user_input == "close" or user_input == "c":
+        close()
+    else:
+        print("Invalid input. Please enter 'home', 'open', or 'close'.")
     
-    # Set the servo pulse width
-    pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
-
-
 if __name__ == "__main__":
     while(1):
         main()
