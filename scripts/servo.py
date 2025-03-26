@@ -59,6 +59,17 @@ class Servo():
             self.home()
             self.last_sate = "open"
 
+if __name__ == "__main__":
+    servo = Servo()
+    servo.begin()
+    try:
+        while True:
+            input("Press Enter to toggle the servo")
+            servo.toggle()
+    except KeyboardInterrupt:
+        servo.pi.stop()
+        sys.exit(0)
+
 
 
 
