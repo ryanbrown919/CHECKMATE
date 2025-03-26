@@ -49,13 +49,8 @@ class Gantry():
         self.grbl.send_immediately("G90 X-475 Y-486\n")
         self.grbl.send_immediately("G92 X0 Y0\n")
 
-    def move_to_square(self, square):
-        if square not in self.board_mapping:
-            return False
-        
-        x, y = self.board_mapping[square]
-        self.grbl.send_immediately(f"G0 X{x} Y{y}\n")
-        return True
+    def move_to_square(self, x, y):
+        self.grbl.send_immediately(f"G90 X{x} Y{y}\n")
 
 def setup():
     gantry = Gantry()
