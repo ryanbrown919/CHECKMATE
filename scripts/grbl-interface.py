@@ -69,6 +69,8 @@ while True:
         home_cmd = "$H\n"
         print("Sending home command:", repr(home_cmd))
         grbl.send_immediately(home_cmd)
+        grbl.send_immediately("G90X-475Y-486")
+        grbl.send_immediately("G92X0Y0Z0")
 
     elif mode == "c":
         # Clear alarms command
