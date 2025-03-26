@@ -7,9 +7,21 @@ GPIO.setup(11,GPIO.OUT)  # Sets up pin 11 to an output (instead of an input)
 p = GPIO.PWM(11, 50)     # Sets up pin 11 as a PWM pin
 p.start(0)      
 
+def open():
+    p.ChangeDutyCycle(4)
+
+def close():
+    p.ChangeDutyCycle(11)
+
 def main():
-    pwm = input("Enter PWM value ")
-    p.ChangeDutyCycle(int(pwm))
+    cmd = input("Enter command (open/close): ").strip().lower()
+    if cmd == "open":
+        open()
+    elif cmd == "close":
+        close()
+    else:
+        print("Invalid command")
+    
 
 if __name__ == "__main__":
     while True:
