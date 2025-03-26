@@ -28,6 +28,19 @@ from kivy.core.window import Window
 Window.fullscreen = True
 
 
+
+'''
+Gantry parameters from testing mar 25
+
+Max Y value: 430, 435 barely touching end ??
+440 (445 reachable)
+Home then move -y 11mm
+
+
+
+'''
+
+
 SQUARE_SIZE_MM = 50    # each square is 50mm
 STEP_MM = 25  # each step is 25mm
 try:
@@ -51,7 +64,7 @@ class gantryControl:
                 setattr(self, key, value)
 
             # Internal state variables
-            self.deadzone_origin = (0, 400)
+            self.deadzone_origin = (0, 425)
 
             self.jog_step = 4
             self.overshoot = 4
@@ -75,9 +88,10 @@ class gantryControl:
 
         def correct_position(self):
             self.home()
-            self.send_gcode("G92X0Y0Z0")
             self.send_gcode("$120=100") # X accl = 100
             self.send_gcode("$121=100") # Y accl = 100
+            self.send_gcode("G21G91G1Y-11F15000")
+            self.send_gcode("G92X0Y0Z0")
 
         def list_serial_ports(self):
             if sys.platform.startswith('darwin'):
@@ -300,7 +314,7 @@ class gantryControl:
             print(dx)
             print(dy)
 
-            
+            not_castle = True
 
             offset = STEP_MM
 
@@ -310,61 +324,82 @@ class gantryControl:
                 print("in castle")
                 if end_square == 'c1':
                     # Rook path
-                    path = [(start_coord), (0, -6*offset)]
-                    movements = self.gantry_control.parse_path_to_movement(path)
-                    commands = self.gantry_control.movement_to_gcode(movements)
+                    path = [(0, 14*offset), (0, -6*offset)]
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
-                    self.gantry_control.send_commands(commands)
+                    self.send_commands(commands)
 
                     # King_path
-                    path = [(start_coord), (offset, offset), ((0, offset), (0, offset), (-offset, offset))]
+                    path = [(start_coord), (offset, offset), (0, 2*offset), (-offset, offset)]
+
+
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"Rook comamnds: {commands}")
+                    self.send_commands(commands)
+                    not_castle = False
 
                     
                 elif end_square == 'g1':
 
                     # Rook path
-                    path = [(start_coord), (0, 4*offset)]
-                    movements = self.gantry_control.parse_path_to_movement(path)
-                    commands = self.gantry_control.movement_to_gcode(movements)
-                    print(f"Rook comamnds: {commands}")
-                    self.gantry_control.send_commands(commands)
+                    path = [(0, 0), (0, 4*offset)]
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"rook comamnds: {commands}")
+                    self.send_commands(commands)
 
                     # King_path
-                    path = [(start_coord), (offset, -offset), ((0, -offset), (0, -offset), (-offset, -offset))]
+                    path = [(start_coord), (offset, -offset), (0, -2*offset), (-offset, -offset)]
+
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"king comamnds: {commands}")
+                    self.send_commands(commands)
+                    not_castle = False
                     
 
                 if end_square == 'c8':
                     # Rook path
-                    path = [(start_coord), (0, 6*offset)]
-                    movements = self.gantry_control.parse_path_to_movement(path)
-                    commands = self.gantry_control.movement_to_gcode(movements)
+                    path = [(14*offset, 14*offset), (0, 6*offset)]
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
-                    self.gantry_control.send_commands(commands)
+                    self.send_commands(commands)
 
                     # King_path
-                    path = [(start_coord), (-offset, offset), ((0, offset), (0, offset), (offset, offset))]
+                    path = [(start_coord), (-offset, offset), (0, 2*offset), (offset, offset)]
+
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"king comamnds: {commands}")
+                    self.send_commands(commands)
+                    not_castle = False
 
                     
                 elif end_square == 'g8':
 
                     # Rook path
-                    path = [(start_coord), (0, -4*offset)]
-                    movements = self.gantry_control.parse_path_to_movement(path)
-                    commands = self.gantry_control.movement_to_gcode(movements)
+                    path = [(14*offset, 0), (0, -4*offset)]
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
-                    self.gantry_control.send_commands(commands)
+                    self.send_commands(commands)
 
                     # King_path
-                    path = [(start_coord), (-offset, -offset), ((0, -offset), (0, -offset), (offset, -offset))]
+                    path = [(start_coord), (-offset, -offset), (0, -2*offset), (offset, -offset)]
+                    not_castle = False
 
-                    
+                else:
+                    not_castle = True
                 # For castling, need to move rook to new position, then slide king around it vertically. 
                 # Need to know colour, , which rook is being moved
                 
     
                 
             
-            else: 
+            if not_castle: 
                 print('Not a castle')
 
                 # Computational method for determineing if it is a knight.
@@ -389,8 +424,8 @@ class gantryControl:
                 print('Is capture')
                 # Take away 25mm from last movement, so piece is on the edge
                 end_x, end_y = path[-1]
-                new_end_x =  end_x -self.sign(end_x)*offset if not end_x == 0 else 0
-                new_end_y = end_y -self.sign(end_y)*offset if not end_y == 0 else 0
+                new_end_x =  end_x - self.sign(end_x)*offset if not end_x == 0 else 0
+                new_end_y = end_y - self.sign(end_y)*offset if not end_y == 0 else 0
                 path[-1] = (new_end_x, new_end_y)
                 print(f"Path for moving to piece to capture: {path}")
                 movements = self.parse_path_to_movement(path)
@@ -400,15 +435,15 @@ class gantryControl:
 
 
                 #move piece off center in opposite direction
-                captured_new_x = self.sign(end_x)*offset if not end_x== 0 else 0
+                captured_new_x = self.sign(end_x)*offset if not end_x == 0 else 0
                 captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
                 path = [end_coord, (captured_new_x, captured_new_y)]
 
                 print(f"Path for moving captured piece off square: {path}")
 
 
-                movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(movements)
+                #movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(path)
                 print(f"Moving piece off center: : {commands}")
                 self.send_commands(commands)      
                 print(f"moving piece off center: {path}")
@@ -432,24 +467,24 @@ class gantryControl:
                 dead_x = self.deadzone_origin[0] - dead_coordinates[0]
                 dead_y = self.deadzone_origin[1] - dead_coordinates[1]
 
+                dz_x, dz_y = self.deadzone_origin
 
-
-                path = [dead_coordinates, (0, dead_y), (dead_x, 0)]
+                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*15)]
 
                 print(f"moving to deadzone: {path}")
 
 
-                movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(movements)
-                print(f" moving to deadzone: {commands}")
-                self.send_commands(commands)
+                # movements = self.parse_path_to_movement(path)
+                # commands = self.movement_to_gcode(movements)
+                # print(f" moving to deadzone: {commands}")
+                # self.send_commands(commands)
 
 
 
-                dz_x, dz_y = self.deadzone_origin
+                
 
                 if dz_x == 400:
-                    dz_x = -25
+                    dz_x = -50
                     dz_y = 400
 
                 self.deadzone_origin = (dz_x + 2*offset, dz_y)
@@ -510,7 +545,7 @@ class gantryControl:
             elif num < 0:
                 return -1
             else:
-                return 1
+                return 0
             
         def parse_path_to_movement(self, points):
             """
@@ -537,6 +572,8 @@ class gantryControl:
             
             if points[1][0] % 25 == 0 or points[1][1] % 25 ==0:
                 return points
+            else:
+                points = [(x * STEP_MM, y * STEP_MM) for (x, y) in points]
 
             # Save the absolute starting point.
             base = points[0]
@@ -676,7 +713,45 @@ class gantryControl:
 
             
 
+        def path_to_gcode(self, move_list):
+            """
+            Given a list of moves (e.g., ["e2e4", "g8h6"]), converts them to relative
+            displacement commands in G-code format.
+            """
 
+            print(f"move list: {move_list}")
+            if self.magnet_state == "MAG OFF":
+                self.send_gcode("M9") # off
+            elif self.magnet_state == "MAG ON":
+                self.send_gcode("M8") # on
+
+            gcode_commands = []
+            for i, move in enumerate(move_list):
+                if i == 0:
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    if self.magnet_state == "MOVE MODE":
+                        gcode_commands.append(f"M8") #Activate after initial movement
+                elif i == len(move_list) - 1:
+                    dx = self.sign(move_list[-1][0]) * self.overshoot
+                    dy = self.sign(move_list[-1][1]) * self.overshoot
+
+                    print(f"Overshoots: {dx, dy}")
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    # gcode_commands.append(f"M8") # deactivate after final movement
+                    # gcode_commands.append(f"M9") # deactivate after final movement
+
+                
+
+                    if self.magnet_state == "MOVE MODE":
+                        gcode_commands.append(f"M9") # deactivate after final movement
+                else:
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+
+
+            
+            return gcode_commands
 
 
 
@@ -1248,6 +1323,7 @@ class PathPlanToggleButton(Button):
             # Finish the path: disable trail mode and disable this button.
             self.target_widget.trail_enabled = False
             print("Path Plan finished. Trail path:", self.target_widget.path)
+
             self.text = "Path Plan Finished"
             self.background_color = [0.5, 0.5, 0.5, 1]
             self.disabled = True
