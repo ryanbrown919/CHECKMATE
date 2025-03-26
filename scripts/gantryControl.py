@@ -89,8 +89,8 @@ class gantryControl:
 
         def correct_position(self):
             self.home()
-            self.send_gcode("$120=500") # X accl = 100
-            self.send_gcode("$121=500") # Y accl = 100
+            self.send_gcode("$120=400") # X accl = 100
+            self.send_gcode("$121=400") # Y accl = 100
             self.send_gcode("G21G91G1Y-11F15000")
             self.send_gcode("G92X0Y0Z0")
             self.servo = Servo()
@@ -472,7 +472,7 @@ class gantryControl:
 
                 dz_x, dz_y = self.deadzone_origin
 
-                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*15)]
+                path = [dead_coordinates, (0, offset*16 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*16)]
 
                 print(f"moving to deadzone: {path}")
 
