@@ -128,7 +128,7 @@ class ChessBackend(threading.Thread):
                             else:
 
                                 #Insert g-code send and wait for completion
-                                path = self.gantry_control.interpret_chess_move(move, self.board.is_capture(move))
+                                path = self.gantry_control.interpret_chess_move(self.move_history[-1], self.board.is_capture(move))
                                 movements = self.gantry_control.parse_path_to_movement(path)
                                 commands = self.gantry_control.movement_to_gcode(movements)
                                 print(f"Moving a piece via commands: {commands}")
