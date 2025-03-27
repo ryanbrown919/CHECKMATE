@@ -125,9 +125,8 @@ def main():
         gantry.move_to_square(coord_to_chess_square(square))
         # piece = nfc.read()
         # print(f"Read piece: {piece}")
-
-    gantry.home()
-
+        time.sleep(1)
+        
 if __name__ == "__main__":
     setup()
     main()
