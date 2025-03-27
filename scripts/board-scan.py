@@ -79,7 +79,7 @@ def setup():
     gantry.grbl.cnect("/dev/ttyACM0", 115200)
     gantry.grbl.poll_start()
     nfc.begin()
-    input("Press Enter to initiate homing: ")
+    time.sleep(2)
     gantry.home()
 
 def coord_to_chess_square(coord):
