@@ -76,8 +76,6 @@ def nearest_neighbor(start, targets):
 
 
 def setup():
-    gantry.grbl.cnect("/dev/ttyACM0", 115200)
-    gantry.grbl.poll_start()
     nfc.begin()
     time.sleep(2)
     gantry.home()

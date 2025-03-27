@@ -48,7 +48,7 @@ class Gantry():
     def home(self):
         self.grbl.send_immediately("$H\n")
         self.grbl.send_immediately("G90 X-475 Y-486\n")
-        self.grbl.send_immediately("G92 X0 Y0\n")
+        self.grbl.send_immediately("G92 X0 Y0 Z0\n")
     
     def move(self, x, y):
         self.grbl.send_immediately(f"G0 X{x} Y{y}\n")
