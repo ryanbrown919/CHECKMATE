@@ -1,4 +1,5 @@
 import time
+import threading
 from grbl_streamer import GrblStreamer
 
 class Gantry():
@@ -37,6 +38,8 @@ class Gantry():
     }
     
     def __init__(self):
+        # Create an event that will be set when the move is complete.
+        self.move_complete = threading.Event()
         self.grbl = GrblStreamer(self.my_callback)
         self.grbl.cnect("/dev/ttyACM0", 115200)
         self.grbl.poll_start()
@@ -44,11 +47,18 @@ class Gantry():
     def my_callback(self, eventstring, *data):
         args = [str(d) for d in data]
         print("MY CALLBACK: event={} data={}".format(eventstring.ljust(30), ", ".join(args)))
+        # If the GRBL event indicates we are idle (i.e. move complete),
+        # then set the event flag.
+        if "Idle" in eventstring:
+            self.move_complete.set()
 
     def home(self):
+        self.move_complete.clear()
         self.grbl.send_immediately("$H\n")
         self.grbl.send_immediately("G90 X-475 Y-486\n")
         self.grbl.send_immediately("G92 X0 Y0 Z0\n")
+        # Wait up to 10 seconds for move completion.
+        self.move_complete.wait(timeout=10)
     
     def move(self, x, y):
         self.grbl.send_immediately(f"G0 X{x} Y{y}\n")
@@ -58,7 +68,10 @@ class Gantry():
             return False
         
         x, y = self.board_mapping[square]
+        self.move_complete.clear()
         self.grbl.send_immediately(f"G0 X{x} Y{y}\n")
+        # Block until the move is completed.
+        self.move_complete.wait(timeout=10)
         return True
 
 
