@@ -130,7 +130,7 @@ def main():
 if __name__ == "__main__":
     setup()
     while(True):
-        input
+        input("Press Enter to scan the board")
         main()
 
 
