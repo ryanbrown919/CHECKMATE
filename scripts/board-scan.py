@@ -1,10 +1,12 @@
 import math
-from grbl_streamer import GrblStreamer
+from gantry import Gantry
+from nfc import NFC
 import time
 
-# Set the y-offset (in mm); all y values will be increased by this value.
-NFC_OFFSET = 50  # Adjust this offset as needed
+gantry = Gantry()
+nfc = NFC()
 
+NFC_OFFSET = 50  
 BOARD_TO_PHYSICAL = {
     # Rank 1 (x = 0)
     "H1": (0, 0   + NFC_OFFSET), "G1": (0, 50  + NFC_OFFSET), "F1": (0, 100 + NFC_OFFSET), "E1": (0, 150 + NFC_OFFSET),
@@ -39,26 +41,6 @@ BOARD_TO_PHYSICAL = {
     "D8": (350, 200 + NFC_OFFSET), "C8": (350, 250 + NFC_OFFSET), "B8": (350, 300 + NFC_OFFSET), "A8": (350, 350 + NFC_OFFSET),
 }
 
-# Configuration parameters
-STEP_SIZE = 50       # Jog distance in mm
-FEED_RATE = 50000    # Feed rate in mm/min
-
-# Callback function to handle events from GRBL
-def my_callback(eventstring, *data):
-    args = [str(d) for d in data]
-    print("MY CALLBACK: event={} data={}".format(eventstring.ljust(30), ", ".join(args)))
-
-# Create GrblStreamer instance
-grbl = GrblStreamer(my_callback)
-grbl.setup_logging()
-
-# Connect to your GRBL controller (change the port if needed)
-grbl.cnect("/dev/ttyACM0", 115200)
-
-# Start polling GRBL state and clear alarms
-grbl.poll_start()
-time.sleep(2)
-
 def distance(x, y):
     """Calculate the Manhattan distance between two board coordinates."""
     return abs(x[0] - y[0]) + abs(x[1] - y[1])
@@ -91,6 +73,14 @@ def nearest_neighbor(start, targets):
         current = nearest
 
     return path
+
+
+def setup():
+    gantry.grbl.cnect("/dev/ttyACM0", 115200)
+    gantry.grbl.poll_start()
+    nfc.begin()
+    input("Press Enter to initiate homing: ")
+    gantry.home()
 
 def coord_to_chess_square(coord):
     """
@@ -135,19 +125,11 @@ if __name__ == "__main__":
     print("\nChess Squares to Physical Coordinates:")
     print(physical_mapping)
 
-    # Move the toolhead to the starting position
-    grbl.send_immediately("$X\n")  # Home the machine
-    grbl.send_immediately("$H\n")  # Home the machine
-    grbl.send_immediately("G21")  # Set units to mm
-    grbl.send_immediately("G92X0Y0Z0")  # Set zero
-
-    yep = input("Press Enter after homing is committed: ")
-
     for square in path:
-        # Get the physical coordinates for the current square
-        x, y = physical_mapping[coord_to_chess_square(square)]
-        print("Moving to: \n", x, y)
-        # Move the toolhead to the next square
-        cmd = f"G90 X{x} Y{y} F{FEED_RATE}\n"
-        print("Moving to:", cmd.strip())
-        grbl.send_immediately(cmd)
+        gantry.move_to_square(coord_to_chess_square(square))
+        # piece = nfc.read()
+        # print(f"Read piece: {piece}")
+        
+
+    
+        
