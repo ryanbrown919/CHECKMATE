@@ -90,8 +90,7 @@ def coord_to_chess_square(coord):
     rank = str(8 - y)
     return file + rank
 
-if __name__ == "__main__":
-    # Example 8x8 board: 1 indicates an occupied square (magnet); 0 indicates an empty square.
+def main():
     board = [
         [0, 0, 0, 0, 1, 0, 0, 0], # 8
         [0, 1, 0, 0, 0, 0, 1, 0], # 7
@@ -103,7 +102,6 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 0, 0, 0, 0]  # 1
        # A  B  C  D  E  F  G  H
     ]
-
     # Toolhead's starting position (board coordinate).
     start = (7, 0)
 
@@ -127,7 +125,12 @@ if __name__ == "__main__":
         gantry.move_to_square(coord_to_chess_square(square))
         # piece = nfc.read()
         # print(f"Read piece: {piece}")
-        
+
+    gantry.home()
+
+if __name__ == "__main__":
+    setup()
+    main()
 
     
         
