@@ -103,7 +103,7 @@ def main():
        # A  B  C  D  E  F  G  H
     ]
     # Toolhead's starting position (board coordinate).
-    start = (7, 0)
+    start = (0, 0)
 
     # Get the occupied squares and compute the nearest neighbor path.
     occupied_squares = get_occupied_squares(board)
@@ -111,21 +111,21 @@ def main():
 
     # Map board coordinates to chess square labels.
     chess_path = {coord: coord_to_chess_square(coord) for coord in path}
-    # Map chess square labels to physical (x, y) coordinates using the static mapping.
-    physical_mapping = {square: BOARD_TO_PHYSICAL[square] for square in chess_path.values()}
-
+    
+    # Use the BOARD_TO_PHYSICAL mapping to get physical coordinates.
     print("Nearest Neighbor Path (board coordinates):")
     print(path)
     print("\nMapping to Chess Squares:")
     print(chess_path)
-    print("\nChess Squares to Physical Coordinates:")
-    print(physical_mapping)
-
-    for square in path:
-        gantry.move_to_square(coord_to_chess_square(square))
+    
+    for coord in path:
+        chess_square = coord_to_chess_square(coord)
+        # Lookup physical coordinates from BOARD_TO_PHYSICAL.
+        physical = BOARD_TO_PHYSICAL[chess_square]
+        print(f"Moving to {chess_square} at physical coordinate {physical}")
+        gantry.move(physical[0], physical[1])
         piece = nfc.read()
         print(f"Read piece: {piece}")
-        time.sleep(1)
 
 if __name__ == "__main__":
     setup()
@@ -134,5 +134,5 @@ if __name__ == "__main__":
         main()
 
 
-    
-        
+
+
