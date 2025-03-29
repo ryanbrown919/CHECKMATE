@@ -368,10 +368,10 @@ class ChessControlSystem:
                 self.board.push(move)
             except Exception as e:
                 print("[Engine] Error computing engine move:", e)
-            finally:
-                print("[Engine] Shutting down engine...")
-                self.engine.quit()
-                self.engine = None
+            # finally:
+            #     print("[Engine] Shutting down engine...")
+            #     self.engine.quit()
+            #     self.engine = None
         else:
             legal_moves = list(self.board.legal_moves)
             if legal_moves:
