@@ -123,7 +123,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine_path = None
         
-        self.parameters = {'online': False, 'colour': 'white', 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "Bot V Bot", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1}  # Default parameters to be set by the user 
 
 
         
@@ -143,6 +143,8 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters.get["colour"] == "black",
                                     after=['on_engine_turn',  'init_game'])
+        "Bot V Bot"
+
 
         # Nested transitions inside gamescreen.
         # Note: When referring to nested states, use the full path: e.g. gamescreen_player_turn.

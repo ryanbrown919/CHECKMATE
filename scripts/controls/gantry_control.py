@@ -137,6 +137,7 @@ class GantryControl:
                 except Exception as e:
                     error_msg = f"Error writing command: {e}"
                     print(error_msg)
+                    sys.exit(1)
                     #self.handle_serial_error(e)
                     return
 
