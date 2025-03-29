@@ -47,9 +47,9 @@ class GantryControl:
 
         def correct_position(self):
             self.home()
-            self.send_gcode("$120=600") # X accl = 100
-            self.send_gcode("$121=600") # Y accl = 100
-            self.send_gcode("G21G90X-475Y-486")
+            self.send_gcode("$120=400") # X accl = 100
+            self.send_gcode("$121=400") # Y accl = 100
+            self.send_gcode("G21G91G1Y-11F15000")
             self.send_gcode("G92X0Y0Z0")
 
 
