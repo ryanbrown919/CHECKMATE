@@ -159,10 +159,10 @@ class ChessControlSystem:
         #self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn', after='on_player_turn')
 
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_engine_turn',
-                                    conditions='is_auto_engine_mode', after='on_board_turn')
+                                    conditions='is_auto_engine_mode', after=['on_board_turn', 'update_ui'])
         # Otherwise, transition to player_turn.
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn',
-                                    unless='is_auto_engine_mode', after='on_player_turn')
+                                    unless='is_auto_engine_mode', after=['on_player_turn', 'update_ui'])
 
 
         self.machine.add_transition(trigger='end_game', source='gamescreen', dest='gamescreen_end_game', after='on_end_game')
