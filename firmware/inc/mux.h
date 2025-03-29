@@ -11,7 +11,7 @@
 
 #define MUX_Y_1 21   
 #define MUX_Y_2 12   
-#define MUX_Y_3 26   
+#define MUX_Y_3 16   
 #define MUX_Y_4 20
 
 void mux_init(void);
