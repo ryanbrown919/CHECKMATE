@@ -387,6 +387,8 @@ class ChessControlSystem:
                 self.board.push(move)
         # Transition back to player's turn.
 
+        time.sleep(0.5)
+
         # self.notify_observers()
         self.engine_move_complete()
 
