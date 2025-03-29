@@ -278,14 +278,14 @@ class ChessControlSystem:
         # When entering player's turn, immediately begin hall effect polling.
         #wait until UI move 
         self.hall_thread_running = True  # Add a flag to control the thread
-        self.hall_thread = threading.Thread(target=self.sense.poll_board_for_change, daemon=True)
-        self.hall_thread.start()
+        # self.hall_thread = threading.Thread(target=self.sense.poll_board_for_change, daemon=True)
+        # self.hall_thread.start()
 
-        while self.sense.move is None:
-            time.sleep(0.5)
+        # while self.sense.move is None:
+        #     time.sleep(0.5)
 
-        self.stop_hall_thread()
-        self.go_to_player_move_confirmed
+        # self.stop_hall_thread()
+        # self.go_to_player_move_confirmed
         
 
     def stop_hall_thread(self):
@@ -301,14 +301,14 @@ class ChessControlSystem:
         # Process the player move.
         # For simplicity, here we pick the first legal move.
         legal_moves = list(self.board.legal_moves)
-        if self.sense.move in legal_moves:
+        # if self.sense.move in legal_moves:
         
-            print(f"[Game Engine] Processing player move: {self.sense.move}")
-            self.board.push(self.sense.move)
-        # Transition to engine turn.
-            self.process_move()
+        #     print(f"[Game Engine] Processing player move: {self.sense.move}")
+        #     self.board.push(self.sense.move)
+        # # Transition to engine turn.
+        #     self.process_move()
 
-            self.update_ui()
+        #     self.update_ui()
 
 
     # def on_hall_polling(self):
@@ -398,7 +398,7 @@ class ChessControlSystem:
         # Simulate some processing delay before gantry is ready.
         self.gantry = GantryControl()
         self.servo = Servo()
-        self.sense = Hall()
+        #self.sense = Hall()
         # self.servo.begin()
         #self.gantry_ready()
 
