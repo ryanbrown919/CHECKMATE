@@ -143,7 +143,10 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters.get["colour"] == "black",
                                     after=['on_engine_turn',  'init_game'])
-        "Bot V Bot"
+        
+        self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
+                                    conditions=lambda: self.parameters.get["colour"] == "Bot V Bot",
+                                    after=['on_engine_turn',  'init_game'])
 
 
         # Nested transitions inside gamescreen.
