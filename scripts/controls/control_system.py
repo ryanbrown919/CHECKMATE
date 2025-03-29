@@ -19,20 +19,35 @@ import random
 import logging
 logging.getLogger('transitions').setLevel(logging.WARNING)
 
+
+# from gantry_control import GantryControl, ClockLogic
+# #from game_control import ChessControlSystem
+# from servo_control import Servo
+
 try:
-    from gantry_control import GantryControl, ClockLogic
-    #from game_control import ChessControlSystem
-    from servo_control import Servo
-    from gamescreen import GameScreen
-    from initscreen import InitScreen
-    from loadingscreen import LoadingScreen
-    from mainscreen import MainScreen
-    from gantryscreen import GantryControlScreen
+    from controls.gantry_control import GantryControl, ClockLogic
+    from controls.servo_control import Servo
+
+    from screens.gamescreen import GameScreen
+    from screens.initscreen import InitScreen
+    from screens.loadingscreen import LoadingScreen
+    from screens.mainscreen import MainScreen
+    from screens.gantryscreen import GantryControlScreen
 
 except:
-    from backend_scripts.gantry_control import GantryControl, ClockLogic
-    #from backend_scripts.game_control import ChessControlSystem
-    from backend_scripts.servo_control import Servo
+    from scripts.controls.gantry_control import GantryControl, ClockLogic
+    from scripts.controls.servo_control import Servo
+
+    from scripts.screens.gamescreen import GameScreen
+    from scripts.screens.initscreen import InitScreen
+    from scripts.screens.loadingscreen import LoadingScreen
+    from scripts.screens.mainscreen import MainScreen
+    from scripts.screens.gantryscreen import GantryControlScreen
+
+# except:
+#     from gantry_control import GantryControl, ClockLogic
+#     #from backend_scripts.game_control import ChessControlSystem
+#     from servo_control import Servo
 
 
 
@@ -259,36 +274,51 @@ class ChessControlSystem:
         self.update_ui()
         # When entering player's turn, immediately begin hall effect polling.
         #wait until UI move 
+        self.hall_thread_running = True  # Add a flag to control the thread
+        self.hall_thread = threading.Thread(target=self.sense.poll_board_for_change, daemon=True)
+        self.hall_thread.start()
 
-        #self.begin_polling()
+        while self.sense.move is None:
+            time.sleep(0.5)
+
+        self.stop_hall_thread()
+        self.go_to_player_move_confirmed
+        
+
+    def stop_hall_thread(self):
+        self.hall_thread_running = False
+        if self.hall_thread and self.hall_thread.is_alive():
+            self.hall_thread.join()  # Wait for the thread to finish
+
+        pass
 
     def on_player_move_confirmed(self):
         print("[State] Player Move Confirmed")
         self.update_ui()
         # Process the player move.
         # For simplicity, here we pick the first legal move.
-        # legal_moves = list(self.board.legal_moves)
-        # if legal_moves:
-        #     move = legal_moves[0]
-        #     print(f"[Game Engine] Processing player move: {move}")
-        #     self.board.push(move)
+        legal_moves = list(self.board.legal_moves)
+        if self.sense.move in legal_moves:
+        
+            print(f"[Game Engine] Processing player move: {self.sense.move}")
+            self.board.push(self.sense.move)
         # Transition to engine turn.
-        #self.process_move()
+            self.process_move()
 
-        self.update_ui()
+            self.update_ui()
 
 
-    def on_hall_polling(self):
-        print("[State] Hall Polling Active")
-        self.update_ui()
-        # Start sensor polling asynchronously.
-        threading.Thread(target=self.simulate_hall_polling, daemon=True).start()
+    # def on_hall_polling(self):
+    #     print("[State] Hall Polling Active")
+    #     self.update_ui()
+    #     # Start sensor polling asynchronously.
+    #     threading.Thread(target=self.simulate_hall_polling, daemon=True).start()
 
-    def simulate_hall_polling(self):
-        # Simulate asynchronous hall effect sensor polling.
-        time.sleep(1)  # Delay simulating waiting for a player's move.
-        # In a real system, when the sensor detects a move, trigger:
-        self.move_detected()
+    # def simulate_hall_polling(self):
+    #     # Simulate asynchronous hall effect sensor polling.
+    #     time.sleep(1)  # Delay simulating waiting for a player's move.
+    #     # In a real system, when the sensor detects a move, trigger:
+    #     self.move_detected()
 
 
     def on_player_move_confirmed(self):
@@ -365,6 +395,7 @@ class ChessControlSystem:
         # Simulate some processing delay before gantry is ready.
         self.gantry = GantryControl()
         self.servo = Servo()
+        self.sense = Hall()
         # self.servo.begin()
         self.gantry_ready()
 
@@ -512,70 +543,70 @@ class ChessControlSystem:
 #         self.control_system.open_settings()
 #         self.manager.current = 'settings'
 
-# A simple ScreenManager that holds our GameScreen.
-class MainScreenManager(ScreenManager):
-    pass
+# # A simple ScreenManager that holds our GameScreen.
+# class MainScreenManager(ScreenManager):
+#     pass
 
-# --------------------------
-# Kivy App Integration
-# --------------------------
-class TestApp(App):
-    def build(self):
-        # Create an instance of our state machine.
-        self.control_system = ChessControlSystem(ui_update_callback=self.on_state_change)
-        # Set engine parameters at runtime.
-        self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
-        self.control_system.parameters["engine_time_limit"] = 0.1
-        self.control_system.parameters["elo"] = 1400
-        self.control_system.parameters["auto_engine"] = False  # Set to True for engine vs. engine.
+# # --------------------------
+# # Kivy App Integration
+# # --------------------------
+# class TestApp(App):
+#     def build(self):
+#         # Create an instance of our state machine.
+#         self.control_system = ChessControlSystem(ui_update_callback=self.on_state_change)
+#         # Set engine parameters at runtime.
+#         self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
+#         self.control_system.parameters["engine_time_limit"] = 0.1
+#         self.control_system.parameters["elo"] = 1400
+#         self.control_system.parameters["auto_engine"] = False  # Set to True for engine vs. engine.
 
-        self.sm = MainScreenManager(transition=FadeTransition())
-        gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
-        initscreen = InitScreen(control_system=self.control_system, name='initscreen')
-        loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
-        mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
-        gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
+#         self.sm = MainScreenManager(transition=FadeTransition())
+#         gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
+#         initscreen = InitScreen(control_system=self.control_system, name='initscreen')
+#         loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
+#         mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
+#         gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
 
-        self.sm.add_widget(gamescreen)
-        self.sm.add_widget(initscreen)
-        self.sm.add_widget(loadingscreen)
-        self.sm.add_widget(mainscreen)
-        self.sm.add_widget(gantryscreen)
+#         self.sm.add_widget(gamescreen)
+#         self.sm.add_widget(initscreen)
+#         self.sm.add_widget(loadingscreen)
+#         self.sm.add_widget(mainscreen)
+#         self.sm.add_widget(gantryscreen)
 
-        # Start in main menu.
-        self.sm.current = 'initscreen'
+#         # Start in main menu.
+#         self.sm.current = 'initscreen'
 
-        # Simulate UI flow.
-        Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 3)
-        #Clock.schedule_once(lambda dt: self.control_system.finish_init(), 2)
-        #Clock.schedule_once(lambda dt: self.control_system.start_game(), 10)
+#         # Simulate UI flow.
+#         Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 3)
+#         #Clock.schedule_once(lambda dt: self.control_system.finish_init(), 2)
+#         #Clock.schedule_once(lambda dt: self.control_system.start_game(), 10)
 
-        return self.sm
+#         return self.sm
     
-    def on_state_change(self, state):
-        print(f"[App] State changed: {state}")
-        # Schedule the screen update on the main thread.
-        Clock.schedule_once(lambda dt: self.update_screen(state))
+#     def on_state_change(self, state):
+#         print(f"[App] State changed: {state}")
+#         # Schedule the screen update on the main thread.
+#         Clock.schedule_once(lambda dt: self.update_screen(state))
     
-    def update_screen(self, state):
-        """
-        This callback is called whenever the state machine updates.
-        We map state machine states to screen names:
-          - If state is 'mainscreen', show the main menu.
-          - If state starts with 'gamescreen', show the game screen.
-        """
-        if state == 'mainscreen':
-            self.sm.current = 'mainscreen'
-        elif state.startswith('gamescreen'):
-            self.sm.current = 'gamescreen'
-        elif state == 'gantryscreen':
-            self.sm.current = 'gantryscreen'
+#     def update_screen(self, state):
+#         """
+#         This callback is called whenever the state machine updates.
+#         We map state machine states to screen names:
+#           - If state is 'mainscreen', show the main menu.
+#           - If state starts with 'gamescreen', show the game screen.
+#         """
+#         if state == 'mainscreen':
+#             self.sm.current = 'mainscreen'
+#         elif state.startswith('gamescreen'):
+#             self.sm.current = 'gamescreen'
+#         elif state == 'gantryscreen':
+#             self.sm.current = 'gantryscreen'
 
-        else:
-            print("[App] Unhandled state:", state)
+#         else:
+#             print("[App] Unhandled state:", state)
 
 
-if __name__ == '__main__':
-    TestApp().run()
+# if __name__ == '__main__':
+#     TestApp().run()
 
 
