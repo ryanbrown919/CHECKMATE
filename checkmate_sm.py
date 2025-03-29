@@ -25,7 +25,7 @@ class TestApp(App):
         self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
         self.control_system.parameters["engine_time_limit"] = 0.1
         self.control_system.parameters["elo"] = 1400
-        self.control_system.parameters["auto_engine"] = False  # Set to True for engine vs. engine.
+        self.control_system.parameters["bot_mode"] = True  # Set to True for engine vs. engine.
 
         self.sm = MainScreenManager(transition=FadeTransition())
         gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
