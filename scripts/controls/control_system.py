@@ -352,7 +352,7 @@ class ChessControlSystem:
                 move = result.move
                 print(f"[Engine] Engine move: {move}")
 
-                self.gantry.interpret_chess_move(move, self.board.is_capture(move))
+                self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move))
                 
                         # Check if the move is a capture before pushing it.
                 if self.board.is_capture(move):
