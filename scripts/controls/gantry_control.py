@@ -444,7 +444,7 @@ class GantryControl:
 
                 
 
-                if dz_x == 400:
+                if dz_x == 350:
                     dz_x = -50
                     dz_y = 400
 
@@ -452,6 +452,11 @@ class GantryControl:
 
 
             print(f"Interpreted move: {move_str} as dx={dx}, dy={dy} as {path}")
+
+            movements = self.parse_path_to_movement(path)
+            commands = self.movement_to_gcode(movements)
+            print(f"Last move: {commands}")
+            self.send_commands(commands)
 
             
             return (path)

@@ -351,6 +351,8 @@ class ChessControlSystem:
                 result = self.engine.play(self.board, chess.engine.Limit(time=self.parameters['engine_time_limit']))
                 move = result.move
                 print(f"[Engine] Engine move: {move}")
+
+                self.gantry.interpret_chess_move(move, self.board.is_capture(move))
                 
                         # Check if the move is a capture before pushing it.
                 if self.board.is_capture(move):
@@ -366,10 +368,10 @@ class ChessControlSystem:
                 self.board.push(move)
             except Exception as e:
                 print("[Engine] Error computing engine move:", e)
-            # finally:
-            #     print("[Engine] Shutting down engine...")
-            #     self.engine.quit()
-            #     self.engine = None
+            finally:
+                print("[Engine] Shutting down engine...")
+                self.engine.quit()
+                self.engine = None
         else:
             legal_moves = list(self.board.legal_moves)
             if legal_moves:
