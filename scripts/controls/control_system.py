@@ -123,7 +123,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine_path = None
         
-        self.parameters = {'online': False, 'colour': "BotVBot", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "black", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
 
 
         
@@ -144,9 +144,9 @@ class ChessControlSystem:
                                     conditions=lambda: self.parameters["colour"] == "black", before='init_game',
                                     after=['on_board_turn',  'update_ui'])
         
-        self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
-                                    conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
-                                    after=['on_board_turn', 'update_ui'])
+        # self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
+        #                             conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
+        #                             after=['on_board_turn', 'update_ui'])
 
         
 
@@ -209,7 +209,7 @@ class ChessControlSystem:
 
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
-        return self.auto_engine
+        return self.parameters['bot_mode']
     
     def register_observer(self, callback):
         """Register a callback that will be called when the board changes."""
@@ -426,21 +426,24 @@ class ChessControlSystem:
         elif not self.parameters['online']:
             #Configure offline game 
 
-            if self.parameters['colour'] == 'Random':
-                self.colour = random.choice(['White', 'Black'])
-                self.auto_engine = False
-            elif self.parameters['colour'] == "BotVBot":
-                time.sleep(2)
-                self.auto_engine = True
-                self.engine_colour = chess.WHITE
+            # if self.parameters['colour'] == 'Random':
+            #     self.colour = random.choice(['White', 'Black'])
+            #     self.auto_engine = False
+            # elif self.parameters['colour'] == "BotVBot":
+            #     time.sleep(2)
+            #     self.auto_engine = True
+            #     self.engine_colour = chess.WHITE
 
-            if self.parameters['colour'] == "Black":
+            # if self.parameters['colour'] == "Black":
+            #     time.sleep(2)
+            #     self.engine_colour = chess.WHITE
+            #     self.auto_engine = False
+            # else:
+            #     self.engine_colour = chess.BLACK
+            #     self.auto_engine = False
+
+            if self.parameters['bot_mode']:
                 time.sleep(2)
-                self.engine_colour = chess.WHITE
-                self.auto_engine = False
-            else:
-                self.engine_colour = chess.BLACK
-                self.auto_engine = False
 
             if self.engine_path:
                 try:
