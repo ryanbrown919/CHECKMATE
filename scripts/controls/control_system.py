@@ -142,11 +142,11 @@ class ChessControlSystem:
                                     after=['on_player_turn', 'init_game', 'update_ui'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"] == "black",
-                                    after=['on_engine_turn',  'init_game'])
+                                    after=['on_board_turn',  'init_game'])
         
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"] == "BotVBot",
-                                    after=['on_engine_turn',  'init_game'])
+                                    after=['on_board_turn',  'init_game'])
 
         
 
@@ -159,7 +159,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn', after='on_player_turn')
 
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_engine_turn',
-                                    conditions='is_auto_engine_mode', after='on_engine_turn')
+                                    conditions='is_auto_engine_mode', after='on_board_turn')
         # Otherwise, transition to player_turn.
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn',
                                     unless='is_auto_engine_mode', after='on_player_turn')
