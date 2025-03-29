@@ -123,7 +123,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine_path = None
         
-        self.parameters = {'online': False, 'colour': "Bot V Bot", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "BotVBot", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1}  # Default parameters to be set by the user 
 
 
         
@@ -145,8 +145,10 @@ class ChessControlSystem:
                                     after=['on_engine_turn',  'init_game'])
         
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
-                                    conditions=lambda: self.parameters.get["colour"] == "Bot V Bot",
+                                    conditions=lambda: self.parameters.get["colour"] == "BotVBot",
                                     after=['on_engine_turn',  'init_game'])
+
+        
 
 
         # Nested transitions inside gamescreen.
@@ -170,7 +172,7 @@ class ChessControlSystem:
         #self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
         self.game_progress = 0  # Just an example variable
 
-        self.auto_engine = False
+        self.auto_engine = True
 
         self.servo = None
         self.gantry = GantryControl()
@@ -427,7 +429,7 @@ class ChessControlSystem:
             if self.parameters['colour'] == 'Random':
                 self.colour = random.choice(['White', 'Black'])
                 self.auto_engine = False
-            elif self.parameters['colour'] == "Bot V Bot":
+            elif self.parameters['colour'] == "BotVBot":
                 self.auto_engine = True
                 self.engine_colour = chess.WHITE
 
