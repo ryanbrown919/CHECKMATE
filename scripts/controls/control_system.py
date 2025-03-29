@@ -141,12 +141,12 @@ class ChessControlSystem:
                                     conditions=lambda: self.parameters["colour"] == "white",
                                     after=['on_player_turn', 'init_game', 'update_ui'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
-                                    conditions=lambda: self.parameters["colour"] == "black",
-                                    after=['on_board_turn',  'init_game'])
+                                    conditions=lambda: self.parameters["colour"] == "black", before='init_game',
+                                    after=['on_board_turn',  'update_ui'])
         
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
-                                    after='on_board_turn')
+                                    after=['on_board_turn', 'update_ui'])
 
         
 
@@ -156,7 +156,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
         self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
         self.machine.add_transition(trigger='process_move', source=['gamescreen_player_turn', 'gamescreen_player_move_confirmed'], dest='gamescreen_engine_turn', after=['on_board_turn', 'notify_observers'])
-        self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn', after='on_player_turn')
+        #self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn', after='on_player_turn')
 
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_engine_turn',
                                     conditions='is_auto_engine_mode', after='on_board_turn')
@@ -430,10 +430,12 @@ class ChessControlSystem:
                 self.colour = random.choice(['White', 'Black'])
                 self.auto_engine = False
             elif self.parameters['colour'] == "BotVBot":
+                time.sleep(2)
                 self.auto_engine = True
                 self.engine_colour = chess.WHITE
 
             if self.parameters['colour'] == "Black":
+                time.sleep(2)
                 self.engine_colour = chess.WHITE
                 self.auto_engine = False
             else:
