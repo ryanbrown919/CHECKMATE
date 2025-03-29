@@ -400,7 +400,7 @@ class ChessControlSystem:
         self.servo = Servo()
         self.sense = Hall()
         # self.servo.begin()
-        self.gantry_ready()
+        #self.gantry_ready()
 
         #Clock.schedule_once(lambda dt: self.gantry_ready(), 2)
 
