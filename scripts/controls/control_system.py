@@ -27,6 +27,7 @@ logging.getLogger('transitions').setLevel(logging.WARNING)
 try:
     from controls.gantry_control import GantryControl, ClockLogic
     from controls.servo_control import Servo
+    from controls.hall_control import Hall
 
     from screens.gamescreen import GameScreen
     from screens.initscreen import InitScreen
@@ -37,6 +38,8 @@ try:
 except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.servo_control import Servo
+    from scripts.controls.hall_control import Hall
+
 
     from scripts.screens.gamescreen import GameScreen
     from scripts.screens.initscreen import InitScreen
@@ -132,7 +135,7 @@ class ChessControlSystem:
         #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
         # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
 
-        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after=['update_ui', 'init_gantry'])
         # Two transitions for starting the game based on who goes first.
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
                                     conditions=lambda: self.parameters["colour"] == "white",
