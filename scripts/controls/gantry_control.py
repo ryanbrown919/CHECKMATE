@@ -5,7 +5,7 @@ import time
 import threading
 import sys
 
-from transitions import Machine
+# from transitions import Machine
 from kivy.clock import Clock
 
 FEEDRATE=15000
@@ -49,10 +49,9 @@ class GantryControl:
             self.home()
             self.send_gcode("$120=600") # X accl = 100
             self.send_gcode("$121=600") # Y accl = 100
-            self.send_gcode("G21G91G1Y-11F15000")
+            self.send_gcode("G21G90X-475Y-486")
             self.send_gcode("G92X0Y0Z0")
-            # self.servo = Servo()
-            # self.servo.begin()
+
 
         def list_serial_ports(self):
             if sys.platform.startswith('darwin'):
@@ -588,68 +587,6 @@ class GantryControl:
             final_points = [base] + cumulative[1:]
             return final_points
 
-
-        # def parse_path_to_movement(self, points):
-
-        #     print(f"Points:{points}")
-        #     """
-        #     Given a list of points (x, y) representing the trajectory in half‑step units,
-        #     returns a list of (dx, dy) moves where consecutive moves in the same direction
-        #     are combined.
-            
-        #     NOTE: This function currently only returns differences between consecutive points.
-        #     If you want to include the absolute starting coordinate as the first "move",
-        #     you must add that explicitly.
-            
-        #     For example:
-        #     Input: [(0,0), (1,0), (2,0), (2,1), (2,2), (3,2), (4,2)]
-        #     Differences: (1,0), (1,0), (0,1), (0,1), (1,0), (1,0)
-        #     Output: [(2,0), (0,2), (2,0)]
-        #     """
-        #     step_size = 1
-        #     if not points or len(points) < 2:
-        #         return []
-            
-        #     start = points[0]
-
-        #     points[0] = (0,0)
-            
-        #     # Calculate differences between consecutive points.
-        #     diffs = []
-        #     for i in range(1, len(points)):
-        #         print(points[i])
-        #         print(points[i-1])
-        #         dx = points[i][0] - points[i-1][0]
-        #         dy = points[i][1] - points[i-1][1]
-        #         diffs.append((dx, dy))
-        #     print("diffs")
-        #     print(diffs)
-            
-        #     movements = []
-        #     # Initialize the current accumulated movement.
-        #     current_dx, current_dy = diffs[0]
-            
-        #     # Loop over the remaining differences.
-        #     for dx, dy in diffs[1:]:
-        #         if self.sign(dx) == self.sign(current_dx) and self.sign(dy) == self.sign(current_dy):
-        #             current_dx += dx
-        #             current_dy += dy
-        #             print(f'test: {current_dx, current_dy}')
-        #         else:
-        #             movements.append((current_dx * step_size, current_dy * step_size))
-        #             current_dx, current_dy = dx, dy
-        #             print(f'test2: {current_dx, current_dy}')
-        #     movements.append((current_dx * step_size, current_dy * step_size))
-            
-        #     # If you want the starting coordinate (the absolute position of the first point)
-        #     # to be included as the very first move, you could prepend it:
-        #     print(f"movements almost done: {movements}")
-        #     movements.insert(0, (start[0] * step_size, start[1] * step_size))
-
-            
-        #     return movements
-
-
         def send_commands(self, cmd_list):
 
             if self.simulate:
@@ -667,15 +604,16 @@ class GantryControl:
                         # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
                     print(f"Sent: {cmd}, Response: {response}")
+                time.sleep(0.1)
 
-                    while not self.finished:
-                        self.ser.write(b'?')
-                        status = self.ser.readline().decode().strip()
-                        print(f"Status: {status}")
-                        if '<Idle' in status:
-                            self.finished = True
-                        time.sleep(0.5)
-                    print("Finished Sending commands")
+                while not self.finished:
+                    self.ser.write(b'?')
+                    status = self.ser.readline().decode().strip()
+                    print(f"Status: {status}")
+                    if '<Idle' in status:
+                        self.finished = True
+                    time.sleep(0.5)
+                print("Finished Sending commands")
 
             
 

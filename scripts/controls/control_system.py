@@ -345,7 +345,7 @@ class ChessControlSystem:
         self.compute_engine_move()
 
     def compute_engine_move(self):
-        time.sleep(2)  # Simulate engine thinking time.
+        time.sleep(0.2)  # Simulate engine thinking time.
         if self.engine:
             try:
                 result = self.engine.play(self.board, chess.engine.Limit(time=self.parameters['engine_time_limit']))
