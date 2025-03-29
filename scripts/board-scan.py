@@ -6,9 +6,7 @@ import time
 gantry = Gantry()
 nfc = NFC()
 
- # Center to center dist from electromag and RFID 
-NFC_OFFSET = 43
-
+NFC_OFFSET = 50  
 BOARD_TO_PHYSICAL = {
     # Rank 1 (x = 0)
     "H1": (0, 0   + NFC_OFFSET), "G1": (0, 50  + NFC_OFFSET), "F1": (0, 100 + NFC_OFFSET), "E1": (0, 150 + NFC_OFFSET),
