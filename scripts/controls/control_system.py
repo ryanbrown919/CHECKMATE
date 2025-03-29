@@ -135,14 +135,14 @@ class ChessControlSystem:
         #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
         # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
 
-        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after=['update_ui', 'init_gantry'])
+        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', before='init_gantry', after=['update_ui'])
         # Two transitions for starting the game based on who goes first.
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
                                     conditions=lambda: self.parameters["colour"] == "white",
-                                    after=['on_player_turn', 'init_game', 'update_ui'])
+                                    after=['init_game', 'update_ui', 'on_player_turn'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"] == "black",
-                                    after=['on_board_turn', 'init_game', 'update_ui'])
+                                    after=['init_game', 'update_ui', 'on_board_turn',])
         
         # self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
         #                             conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
@@ -172,7 +172,7 @@ class ChessControlSystem:
         #self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
         self.game_progress = 0  # Just an example variable
 
-        self.auto_engine = True
+        self.engine = None
 
         self.servo = None
         self.gantry = GantryControl()
