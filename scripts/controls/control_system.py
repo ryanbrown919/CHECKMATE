@@ -141,8 +141,8 @@ class ChessControlSystem:
                                     conditions=lambda: self.parameters["colour"] == "white",
                                     after=['on_player_turn', 'init_game', 'update_ui'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
-                                    conditions=lambda: self.parameters["colour"] == "black", before='init_game',
-                                    after=['on_board_turn',  'update_ui'])
+                                    conditions=lambda: self.parameters["colour"] == "black",
+                                    after=['on_board_turn', 'init_game', 'update_ui'])
         
         # self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
         #                             conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
