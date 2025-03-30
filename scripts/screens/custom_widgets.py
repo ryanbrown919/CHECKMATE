@@ -891,3 +891,5 @@ class PlayerClock(Widget):
 
         # Refresh the background to reflect active state.
         self.update_background()
+
+        

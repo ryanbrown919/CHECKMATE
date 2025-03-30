@@ -53,7 +53,7 @@ class TestApp(App):
     def on_state_change(self, state):
         print(f"[App] State changed: {state}")
         # Schedule the screen update on the main thread.
-        Clock.schedule_once(lambda dt: self.update_screen(state))
+        Clock.schedule_once(lambda dt: self.update_screen(state), 0.1)
     
     def update_screen(self, state):
         """
