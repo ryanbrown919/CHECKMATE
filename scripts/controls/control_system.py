@@ -117,7 +117,7 @@ class ChessControlSystem:
         
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
 
-
+        self.timer_enabled = False
         
         # Create a hierarchical state machine.
         self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
