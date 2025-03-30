@@ -138,7 +138,7 @@ class GantryControl:
                     error_msg = f"Error writing command: {e}"
                     print(error_msg)
                     sys.exit(1)
-                    #self.handle_serial_error(e)
+                    self.handle_serial_error(e)
                     return
 
                 try:
@@ -156,7 +156,7 @@ class GantryControl:
                 except Exception as e:
                     error_msg = f"Error reading response: {e}"
                     print(error_msg)
-                    #self.handle_serial_error(e)
+                    self.handle_serial_error(e)
                     return
 
         def handle_serial_error(self, error):
@@ -203,8 +203,8 @@ class GantryControl:
             if y:
                 cmd += f"Y{y}"
             cmd += f"F{FEEDRATE}\n"
-            self.send_gcode("$X") 
-            self.send_gcode(cmd)
+            #self.send_gcode("$X") 
+            self.send_gcode(f"G21G90G1X{x}Y{y}F{FEEDRATE}")
 
 
         def on_step_change(self, instance, value):
