@@ -796,7 +796,9 @@ class PlayerClock(Widget):
         self.side = side.lower()
         self.control_system = control_system
         self.clock_logic = self.control_system.clock_logic
-        self.timer_enabled = self.clock_logic.timer_enabled
+        self.timer_enabled = self.control_system.timer_enabled
+
+        self.control_system.register_observer(self.update_clock)
 
         # Create a label for time display.
         self.label = Label(text=self.get_initial_text(), font_size="40sp",
@@ -862,7 +864,7 @@ class PlayerClock(Widget):
         """
         if not self.clock_logic:
             return False
-        if self.side == "white":
+        if self.control_system.board.turn == "white":
             return self.clock_logic.active_player == 1
         else:
             return self.clock_logic.active_player == 2
@@ -877,7 +879,7 @@ class PlayerClock(Widget):
         if self.timer_enabled:
             # When timer is enabled, display the formatted time and hide the arrow.
             self.arrow.opacity = 0
-            if self.side == "white":
+            if self.control_system.board.turn == "white":
                 time_remaining = self.clock_logic.white_time
             else:
                 time_remaining = self.clock_logic.black_time
