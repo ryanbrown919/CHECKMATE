@@ -25,15 +25,11 @@ logging.getLogger('transitions').setLevel(logging.WARNING)
 # from servo_control import Servo
 
 try:
-    from controls.gantry_control import GantryControl, ClockLogic
-    from controls.servo_control import Servo
-    from controls.hall_control import Hall
+    from gantry_control import GantryControl, ClockLogic
+    from servo_control import Servo
+    from hall_control import Hall
 
-    from screens.gamescreen import GameScreen
-    from screens.initscreen import InitScreen
-    from screens.loadingscreen import LoadingScreen
-    from screens.mainscreen import MainScreen
-    from screens.gantryscreen import GantryControlScreen
+    from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
 
 except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
@@ -47,10 +43,6 @@ except:
     from scripts.screens.mainscreen import MainScreen
     from scripts.screens.gantryscreen import GantryControlScreen
 
-# except:
-#     from gantry_control import GantryControl, ClockLogic
-#     #from backend_scripts.game_control import ChessControlSystem
-#     from servo_control import Servo
 
 
 
@@ -123,7 +115,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine_path = None
         
-        self.parameters = {'online': False, 'colour': "black", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
 
 
         
@@ -220,7 +212,8 @@ class ChessControlSystem:
     def notify_observers(self):
         """Call all registered observer callbacks with the updated board."""
         for callback in self.observers:
-            callback(self.board)
+            Clock.schedule_once(lambda dt, cb=callback: (self.board))
+            #callback(self.board)
 
     # def start_game(self):
     #     self.to_gamescreen()
@@ -587,69 +580,69 @@ class ChessControlSystem:
 #         self.manager.current = 'settings'
 
 # # A simple ScreenManager that holds our GameScreen.
-# class MainScreenManager(ScreenManager):
-#     pass
+class MainScreenManager(ScreenManager):
+    pass
 
-# # --------------------------
-# # Kivy App Integration
-# # --------------------------
-# class TestApp(App):
-#     def build(self):
-#         # Create an instance of our state machine.
-#         self.control_system = ChessControlSystem(ui_update_callback=self.on_state_change)
-#         # Set engine parameters at runtime.
-#         self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
-#         self.control_system.parameters["engine_time_limit"] = 0.1
-#         self.control_system.parameters["elo"] = 1400
-#         self.control_system.parameters["auto_engine"] = False  # Set to True for engine vs. engine.
+# --------------------------
+# Kivy App Integration
+# --------------------------
+class TestApp(App):
+    def build(self):
+        # Create an instance of our state machine.
+        self.control_system = ChessControlSystem(ui_update_callback=self.on_state_change)
+        # Set engine parameters at runtime.
+        self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
+        self.control_system.parameters["engine_time_limit"] = 0.1
+        self.control_system.parameters["elo"] = 1400
+        self.control_system.parameters["auto_engine"] = False  # Set to True for engine vs. engine.
 
-#         self.sm = MainScreenManager(transition=FadeTransition())
-#         gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
-#         initscreen = InitScreen(control_system=self.control_system, name='initscreen')
-#         loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
-#         mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
-#         gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
+        self.sm = MainScreenManager(transition=FadeTransition())
+        gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
+        initscreen = InitScreen(control_system=self.control_system, name='initscreen')
+        loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
+        mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
+        gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
 
-#         self.sm.add_widget(gamescreen)
-#         self.sm.add_widget(initscreen)
-#         self.sm.add_widget(loadingscreen)
-#         self.sm.add_widget(mainscreen)
-#         self.sm.add_widget(gantryscreen)
+        self.sm.add_widget(gamescreen)
+        self.sm.add_widget(initscreen)
+        self.sm.add_widget(loadingscreen)
+        self.sm.add_widget(mainscreen)
+        self.sm.add_widget(gantryscreen)
 
-#         # Start in main menu.
-#         self.sm.current = 'initscreen'
+        # Start in main menu.
+        self.sm.current = 'initscreen'
 
-#         # Simulate UI flow.
-#         Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 3)
-#         #Clock.schedule_once(lambda dt: self.control_system.finish_init(), 2)
-#         #Clock.schedule_once(lambda dt: self.control_system.start_game(), 10)
+        # Simulate UI flow.
+        Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 3)
+        #Clock.schedule_once(lambda dt: self.control_system.finish_init(), 2)
+        #Clock.schedule_once(lambda dt: self.control_system.start_game(), 10)
 
-#         return self.sm
+        return self.sm
     
-#     def on_state_change(self, state):
-#         print(f"[App] State changed: {state}")
-#         # Schedule the screen update on the main thread.
-#         Clock.schedule_once(lambda dt: self.update_screen(state))
+    def on_state_change(self, state):
+        print(f"[App] State changed: {state}")
+        # Schedule the screen update on the main thread.
+        Clock.schedule_once(lambda dt: self.update_screen(state))
     
-#     def update_screen(self, state):
-#         """
-#         This callback is called whenever the state machine updates.
-#         We map state machine states to screen names:
-#           - If state is 'mainscreen', show the main menu.
-#           - If state starts with 'gamescreen', show the game screen.
-#         """
-#         if state == 'mainscreen':
-#             self.sm.current = 'mainscreen'
-#         elif state.startswith('gamescreen'):
-#             self.sm.current = 'gamescreen'
-#         elif state == 'gantryscreen':
-#             self.sm.current = 'gantryscreen'
+    def update_screen(self, state):
+        """
+        This callback is called whenever the state machine updates.
+        We map state machine states to screen names:
+          - If state is 'mainscreen', show the main menu.
+          - If state starts with 'gamescreen', show the game screen.
+        """
+        if state == 'mainscreen':
+            self.sm.current = 'mainscreen'
+        elif state.startswith('gamescreen'):
+            self.sm.current = 'gamescreen'
+        elif state == 'gantryscreen':
+            self.sm.current = 'gantryscreen'
 
-#         else:
-#             print("[App] Unhandled state:", state)
+        else:
+            print("[App] Unhandled state:", state)
 
 
-# if __name__ == '__main__':
-#     TestApp().run()
+if __name__ == '__main__':
+    TestApp().run()
 
 
