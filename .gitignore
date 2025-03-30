@@ -6,3 +6,4 @@
 /venv   
 /archive
 /firmware/build
+/test/checkmate_stateMachine

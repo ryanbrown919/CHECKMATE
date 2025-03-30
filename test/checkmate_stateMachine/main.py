@@ -6,7 +6,7 @@ from test.checkmate_stateMachine.frontend_scripts.initscreen import InitScreen
 from test.checkmate_stateMachine.backend_scripts.main_screen import MainMenuScreen
 from test.checkmate_stateMachine.frontend_scripts.gamescreen import GameScreen
 from test.checkmate_stateMachine.frontend_scripts.gantryscreen import GantryControlScreen
-from frontend_scripts.settings_screen import SettingsScreen
+from test.checkmate_stateMachine.frontend_scripts.settingsscreen import SettingsScreen
 
 class ChessApp(App):
     def build(self):

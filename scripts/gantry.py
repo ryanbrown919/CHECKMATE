@@ -35,7 +35,7 @@ class Gantry():
                     self.serial.flushInput()
                     break
     
-    def jog(self, x, y, blocking_flag = False)
+    def jog(self, x, y, blocking_flag = False):
         ''' Relative positioning'''
         self.send(f"G91 X{x} Y{y}")
 
