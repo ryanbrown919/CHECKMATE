@@ -173,8 +173,9 @@ class ChessControlSystem:
         self.engine = None
 
         self.servo = None
-        self.gantry = GantryControl()
-        self.gantry.connect_to_grbl()
+        self.gantry = None
+        # self.gantry = GantryControl()
+        # self.gantry.connect_to_grbl()
         self.move_history = []
         self.captured_pieces = []
         self.SQUARES = chess.SQUARES
@@ -415,8 +416,8 @@ class ChessControlSystem:
         # Asynchronously initialize GRBL serial communication.
         print("Initializing gantry communication...")
         # Simulate some processing delay before gantry is ready.
-        # self.gantry = GantryControl()
-        # self.gantry.connect_to_grbl()
+        self.gantry = GantryControl()
+        self.gantry.connect_to_grbl()
         self.servo = Servo()
         #self.sense = Hall()
         # self.servo.begin()
