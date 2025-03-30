@@ -135,18 +135,20 @@ class ChessControlSystem:
         #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
         # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
 
-        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', before='init_gantry', after=['update_ui'])
+        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', on_enter='init_gantry', after=['update_ui'])
         # Two transitions for starting the game based on who goes first.
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
                                     conditions=lambda: self.parameters["colour"] == "white",
+                                    unless='is_auto_engine_mode',
                                     after=['init_game', 'update_ui', 'on_player_turn'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"] == "black",
-                                    after=['init_game', 'update_ui', 'on_board_turn',])
+                                    unless='is_auto_engine_mode',
+                                    after=['init_game', 'update_ui', 'on_board_turn'])
         
-        # self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
-        #                             conditions=lambda: self.parameters["colour"] == "BotVBot", before='init_game',
-        #                             after=['on_board_turn', 'update_ui'])
+        self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
+                                    conditions=lambda: self.parameters["bot_mode"] == True,
+                                    after=['init_game', 'update_ui', 'on_board_turn'])
 
         
 
@@ -259,14 +261,13 @@ class ChessControlSystem:
                 # Note: You might need special handling for en passant captures.
         
         self.move_history.append(move_uci)
+        self.notify_observers()
 
         # Apply the move.
         self.board.push(move)
-        print(f"[Game] Move applied: {move_uci}")
         
         print(f"[Game] Move applied: {move_uci}")
-        self.notify_observers()
-
+        
         #self.process_move()
         # self.notify_observers()
         Clock.schedule_once(lambda dt: self.process_move(), 0.1)
@@ -353,6 +354,8 @@ class ChessControlSystem:
 
     def compute_engine_move(self):
         time.sleep(0.2)  # Simulate engine thinking time.
+        self.update_ui()
+
         if self.engine:
             try:
                 result = self.engine.play(self.board, chess.engine.Limit(time=self.parameters['engine_time_limit']))
@@ -447,8 +450,8 @@ class ChessControlSystem:
             #     self.engine_colour = chess.BLACK
             #     self.auto_engine = False
 
-            if self.parameters['bot_mode']:
-                time.sleep(2)
+            # if self.parameters['bot_mode']:
+            #     time.sleep(2)
 
             if self.engine_path:
                 try:
