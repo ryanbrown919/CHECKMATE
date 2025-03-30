@@ -123,7 +123,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine_path = None
         
-        self.parameters = {'online': False, 'colour': "black", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "black", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
 
 
         
@@ -397,7 +397,7 @@ class ChessControlSystem:
 
         time.sleep(0.5)
 
-        # self.notify_observers()
+        self.notify_observers()
         self.update_ui()
         self.engine_move_complete()
 
