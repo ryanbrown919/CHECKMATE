@@ -399,7 +399,7 @@ class GantryControl:
                 print('Is capture')
                 # Need to make literal edge case
 
-                if end_square[1] == 8 or end_square[1] == 1 or end_square[0] == 'h':
+                if end_square[1] == '8' or end_square[1] == '1' or end_square[0] == 'h':
                     #edged
                     dx_sign = self.sign(dx)
                     dy_sign = self.sign(dy)
@@ -621,6 +621,7 @@ class GantryControl:
 
                     else:
                         if end_square[1] == '1':
+                            print("rank1")
                             if dx_sign == 0 and dy_sign == 1:
                                 #Straight left
 
