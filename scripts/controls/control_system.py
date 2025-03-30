@@ -99,6 +99,13 @@ class ChessControlSystem:
         'settingsscreen'
     ]
 
+    systems_enabled = {
+        "servo": False,
+        "gantry": True,
+        "hall": False,
+        "rfid": False
+    }
+
 
     def __init__(self, ui_update_callback=None):
         # Start in the start screen state.

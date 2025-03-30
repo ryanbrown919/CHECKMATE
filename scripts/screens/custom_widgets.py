@@ -781,36 +781,41 @@ from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 
-class PlayerClock(Widget):
-    def __init__(self, side="white", control_system=None, **kwargs):
+class PlayerClock(BoxLayout):
+    def __init__(self, side="white", control_system=None, timer_enabled=True, **kwargs):
         """
         :param side: "white" or "black" indicating which clock this is.
-        :param clock_instance: An instance of clock_logic that provides:
-                              - white_time (for white) and black_time (for black)
-                              - active_player (1 for white, 2 for black)
-                              - update(dt): updates the active player's time.
-                              - format_time(seconds): returns a string formatted as mm:ss.
-                              - timer_enabled: if True, display the timer countdown.
+        :param control_system: The control system managing the game state.
+        :param timer_enabled: If True, display the timer countdown; otherwise, show an arrow.
         """
         super(PlayerClock, self).__init__(**kwargs)
+        self.orientation = "horizontal" if side == "white" else "horizontal-reverse"
         self.side = side.lower()
         self.control_system = control_system
+        self.timer_enabled = timer_enabled
         self.clock_logic = self.control_system.clock_logic
-        self.timer_enabled = self.control_system.timer_enabled
 
         self.control_system.register_observer(self.update_clock)
 
         # Create a label for time display.
-        self.label = Label(text=self.get_initial_text(), font_size="40sp",
-                           halign="center", valign="middle")
+        self.label = Label(
+            text=self.get_initial_text(),
+            font_size="40sp",
+            halign="center",
+            valign="middle",
+            size_hint=(0.8, 1)
+        )
         self.add_widget(self.label)
 
         # Create an Image widget for the arrow.
-        # Use "left_arrow.png" for white clock, "right_arrow.png" for black clock.
         arrow_source = "assets/left_arrow.png" if self.side == "black" else "assets/right_arrow.png"
-        self.arrow = Image(source=arrow_source, allow_stretch=True, keep_ratio=True, size_hint=(1,1))
-        # Start with the arrow hidden.
-        self.arrow.opacity = 0
+        self.arrow = Image(
+            source=arrow_source,
+            allow_stretch=True,
+            keep_ratio=True,
+            size_hint=(0.2, 1),
+            opacity=0 if self.timer_enabled else 1
+        )
         self.add_widget(self.arrow)
 
         # Bind layout updates.
@@ -821,25 +826,15 @@ class PlayerClock(Widget):
 
     def get_initial_text(self):
         if self.timer_enabled and self.clock_logic:
-            if self.side == "white":
+            if self.control_system.board.turn:
                 return self.clock_logic.format_time(self.clock_logic.white_time)
             else:
                 return self.clock_logic.format_time(self.clock_logic.black_time)
-        # When timer is disabled, show no text initially.
         return ""
 
     def update_layout(self, *args):
-        # Make the label fill this widget.
-        self.label.size = self.size
-        self.label.pos = self.pos
+        # Update label text size and position.
         self.label.text_size = self.label.size
-        
-        # Position the arrow in the center of the widget.
-        # Adjust the size (50x50 here) as needed.
-        arrow_size = (50, 50)
-        self.arrow.size = arrow_size
-        self.arrow.pos = (self.center_x - arrow_size[0] / 2, self.center_y - arrow_size[1] / 2)
-        
         self.update_background()
 
     def update_background(self):
@@ -859,15 +854,11 @@ class PlayerClock(Widget):
     def is_active(self):
         """
         Returns True if this clock is the active clock.
-        For clock_logic, active_player==1 means white is active,
-        and active_player==2 means black is active.
         """
         if not self.clock_logic:
             return False
-        if self.control_system.board.turn == "white":
-            return self.clock_logic.active_player == 1
-        else:
-            return self.clock_logic.active_player == 2
+        return (self.side == "white" and self.control_system.board.turn) or \
+               (self.side == "black" and not self.control_system.board.turn)
 
     def update_clock(self, dt):
         if not self.clock_logic:
