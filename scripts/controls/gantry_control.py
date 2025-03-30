@@ -283,6 +283,10 @@ class GantryControl:
 
             if start_square == 'e1' or start_square == 'e8':
                 print("in castle")
+
+                #All notes in perspective of white
+
+                # White king to the left
                 if end_square == 'c1':
                     # Rook path
                     path = [(0, 14*offset), (0, -6*offset)]
@@ -301,7 +305,8 @@ class GantryControl:
                     self.send_commands(commands)
                     not_castle = False
 
-                    
+                
+                # White king to the right
                 elif end_square == 'g1':
 
                     # Rook path
@@ -320,10 +325,10 @@ class GantryControl:
                     self.send_commands(commands)
                     not_castle = False
                     
-
+                 # black king to the left
                 if end_square == 'c8':
                     # Rook path
-                    path = [(14*offset, 14*offset), (0, 6*offset)]
+                    path = [(14*offset, 14*offset), (0, -6*offset)]
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
@@ -338,11 +343,11 @@ class GantryControl:
                     self.send_commands(commands)
                     not_castle = False
 
-                    
+                # White king to the right
                 elif end_square == 'g8':
 
                     # Rook path
-                    path = [(14*offset, 0), (0, -4*offset)]
+                    path = [(14*offset, 0), (0, 4*offset)]
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
@@ -383,47 +388,659 @@ class GantryControl:
             
             if is_capture:
                 print('Is capture')
-                # Take away 25mm from last movement, so piece is on the edge
-                end_x, end_y = path[-1]
-                new_end_x =  end_x - self.sign(end_x)*offset if not end_x == 0 else 0
-                new_end_y = end_y - self.sign(end_y)*offset if not end_y == 0 else 0
-                path[-1] = (new_end_x, new_end_y)
-                print(f"Path for moving to piece to capture: {path}")
-                movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(movements)
-                print(f"Moving to capture piece: {commands}")
-                self.send_commands(commands)
+                # Need to make literal edge case
+
+                if end_square[1] == 8 or end_square[1] == 1 or end_square[0] == 'h':
+                    #edged
+                    dx_sign = self.sign(dx)
+                    dy_sign = self.sign(dy)
+
+                    # if dx_sign == 1 and dy_sign == 1:
+                    #     #angled far left
+
+                    # elif dx_sign == -1 and dy_sign == 1:
+                    #     # angled close left
+                    # elif dx_sign == 1 and dy_sign == -1:
+                    #     #angled far right
+                    # elif dx_sign == -1 and dy_sign == -1:
+                    #     #angled close right 
+
+                    # elif dx_sign == 0 and dy_sign == -1:
+                    #     #straight right
+                    # elif dx_sign == 0 and dy_sign == 1:
+                    #     #straight left
+                    # elif dx_sign == -1 and dy_sign == 0:
+                    #     #straight in
+                    # elif dx_sign == 1 and dy_sign == 0:
+                    #     #straight out
+                    # else:
+                    #     pass
+                    # bro how tf you even end up here
+                    
+                    if end_square == 'h1':
+
+                        if dx_sign == 0 and dy_sign == -1:
+                            #straight right
+
+                            # Take away 25mm from last movement, so piece is on the edge
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*offset
+                            new_end_y = end_y - self.sign(end_y)*offset
+                            path[-1] = (new_end_x, new_end_y)
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in +x direction 
+                            path = [end_coord, (offset, 0)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
 
 
-                #move piece off center in opposite direction
-                captured_new_x = self.sign(end_x)*offset if not end_x == 0 else 0
-                captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
-                path = [end_coord, (captured_new_x, captured_new_y)]
-
-                print(f"Path for moving captured piece off square: {path}")
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] + offset, end_coord[1])
 
 
-                #movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(path)
-                print(f"Moving piece off center: : {commands}")
-                self.send_commands(commands)      
-                print(f"moving piece off center: {path}")
-                  
+
+                        elif dx_sign == -1 and dy_sign == 0:
+                            #straight in
+                            # Take away 50mm, then angle and dive in
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*2*offset
+                            new_end_y = end_y - self.sign(end_y)*2*offset
+                            path[-1] = (new_end_x, new_end_y)
+                            path.append((-offset, offset))
+                            path.append((-offset, 0))
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in +x direction 
+                            path = [end_coord, (offset, 0)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] + offset, end_coord[1])
 
 
-                #Move capturing piece back to center
-
-                path = [(end_coord[0] -self.sign(end_x)*offset, end_coord[1] -self.sign(end_y)*offset), (self.sign(end_x)*offset, self.sign(end_y)*offset)]
-
-                print(f"Path for moving piece back to center: {path}")
-
-                movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(movements)
-                print(f"Moving piece to center comamnds: {commands}")
-                self.send_commands(commands)
 
 
-                dead_coordinates = (end_coord[0] + captured_new_x, end_coord[1] + captured_new_y)
+
+
+
+                        elif dx_sign == -1 and dy_sign == -1:
+                            #angled close right 
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*offset
+                            new_end_y = end_y - self.sign(end_y)*offset
+                            path[-1] = (new_end_x, new_end_y)
+                            path.append((-offset, 0))
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in +x direction 
+                            path = [end_coord, (offset, 0)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] + offset, end_coord[1])
+
+                        
+
+                    elif end_square == 'h8':
+
+                        if dx_sign == 1 and dy_sign == -1:
+                            #angled far right
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*offset
+                            new_end_y = end_y - self.sign(end_y)*offset
+                            path[-1] = (new_end_x, new_end_y)
+                            path.append((offset, 0))
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in -x direction 
+                            path = [end_coord, (-offset, 0)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] - offset, end_coord[1])
+
+                        elif dx_sign == 0 and dy_sign == -1:
+                            # Take away 25mm from last movement, so piece is on the edge
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*offset
+                            new_end_y = end_y - self.sign(end_y)*offset
+                            path[-1] = (new_end_x, new_end_y)
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in -x direction 
+                            path = [end_coord, (-offset, 0)]
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] - offset, end_coord[1])
+                        
+                        elif dx_sign == 1 and dy_sign == 0:
+                             # Take away 50mm, then angle and dive in
+                            end_x, end_y = path[-1]
+                            new_end_x =  end_x - self.sign(end_x)*2*offset
+                            new_end_y = end_y - self.sign(end_y)*2*offset
+                            path[-1] = (new_end_x, new_end_y)
+                            path.append((offset, offset))
+                            path.append((offset, 0))
+
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            #move piece off center in +x direction 
+                            path = [end_coord, (offset, 0)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # put capturing piece in square
+                            path = [(new_end_x, new_end_y), (0, -offset)]
+                            commands = self.movement_to_gcode(path)
+                            self.send_commands(commands)
+
+                            # take capturing piece to deadzone
+                            dead_coordinates = (end_coord[0] - offset, end_coord[1])
+
+
+
+                        # commands = self.movement_to_gcode(path)
+                        # self.send_commands(commands)
+
+
+                        # #move piece off center in opposite direction
+                        # captured_new_x = self.sign(end_x)*offset if not end_x == 0 else 0
+                        # captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
+                        # path = [end_coord, (captured_new_x, captured_new_y)]
+
+                        # print(f"Path for moving captured piece off square: {path}")
+
+
+                        # commands = self.movement_to_gcode(path)
+                        # print(f"Moving piece off center: : {commands}")
+                        # self.send_commands(commands)      
+                        # print(f"moving piece off center: {path}")
+                        
+
+
+                        # #Move capturing piece back to center
+                        # path = [(end_coord[0] -self.sign(end_x)*offset, end_coord[1] -self.sign(end_y)*offset), (self.sign(end_x)*offset, self.sign(end_y)*offset)]
+                        # commands = self.movement_to_gcode(path)
+                        # self.send_commands(commands)
+
+
+                    
+
+                    else:
+                        if end_square[1] == '1':
+                            if dx_sign == 0 and dy_sign == 1:
+                                #Straight left
+
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (0, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1])
+
+                            elif dx_sign == -1 and dy_sign == 1:
+                            #     # angled close left
+                                
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (-offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1] + offset)
+
+                            elif dx_sign == -1 and dy_sign == 0:
+                                #straight in
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*2*offset
+                                new_end_y = end_y - self.sign(end_y)*2*offset
+                                path[-1] = (new_end_x, new_end_y)
+                                path.append((-offset, -offset))
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (-offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1]+offset)
+
+                            elif dx_sign == -1 and dy_sign == -1:
+                                #angled close right
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                #move piece off center in
+                                path = [end_coord, (offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (-offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
+
+                            elif dx_sign == 0 and dy_sign == -1:
+                                # straight right
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (0, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1])
+
+
+                        
+                        elif end_square[1] == '8':
+                            if dx_sign == 0 and dy_sign == 1:
+                                #Straight left
+
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (-offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (0, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1])
+
+                            elif dx_sign == -1 and dy_sign == 1:
+                            #     # angled far left
+                                
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (-offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1] + offset)
+
+                            elif dx_sign == -1 and dy_sign == 0:
+                                #straight in
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*2*offset
+                                new_end_y = end_y - self.sign(end_y)*2*offset
+                                path[-1] = (new_end_x, new_end_y)
+                                path.append((offset, -offset))
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (-offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1]+offset)
+
+                            elif dx_sign == -1 and dy_sign == -1:
+                                #angled far right
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                #move piece off center in
+                                path = [end_coord, (-offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
+
+                            elif dx_sign == 0 and dy_sign == -1:
+                                # straight right
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (-offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (0, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1])
+                        
+                        elif end_square[0] == 'h':
+
+                            if dx_sign == 0 and dy_sign == -1:
+                                #Straight right
+
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*2*offset
+                                new_end_y = end_y - self.sign(end_y)*2*offset
+                                path[-1] = (new_end_x, new_end_y)
+                                if end_coord[0] > 180: # send to outside if on black side
+                                    path.append((offset, -offset))
+                                else: # send to white side
+                                    path.append(-offset, -offset)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                if end_coord[0] > 180:
+                                    path = [end_coord, (-offset, offset)]
+                                else:
+                                #move piece off center in
+                                    path = [end_coord, (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+
+                                # capturing piece in square
+                                if end_coord[0] > 180:
+                                    path = [(new_end_x, new_end_y), (-offset, -offset)]
+                                else:
+                                    path = [(new_end_x, new_end_y), (offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                if end_coord[0] > 180:
+                                    dead_coordinates = (end_coord[0] - offset, end_coord[1]+offset)
+                                else:
+                                    dead_coordinates = (end_coord[0] + offset, end_coord[1]+offset)
+
+                            elif dx_sign == -1 and dy_sign == -1:
+                            #     # angled close right
+                                
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (-offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (-offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
+
+                            elif dx_sign == -1 and dy_sign == 0:
+                                #straight in
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+                                # path.append((offset, -offset))
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (0, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (-offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0], end_coord[1]+offset)
+
+                            elif dx_sign == 1 and dy_sign == -1:
+                                #angled far right
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                #move piece off center in
+                                path = [end_coord, (offset, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (offset, -offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1] + offset)
+
+                            elif dx_sign == 1 and dy_sign == 0:
+                                # straight out
+                                end_x, end_y = path[-1]
+                                new_end_x =  end_x - self.sign(end_x)*offset
+                                new_end_y = end_y - self.sign(end_y)*offset
+                                path[-1] = (new_end_x, new_end_y)
+
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+                                
+                                #move piece off center in
+                                path = [end_coord, (0, offset)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # put capturing piece in square
+                                path = [(new_end_x, new_end_y), (offset, 0)]
+                                commands = self.movement_to_gcode(path)
+                                self.send_commands(commands)
+
+                                # take capturing piece to deadzone
+                                dead_coordinates = (end_coord[0], end_coord[1]+offset)
+
+
+                else:
+                    # Take away 25mm from last movement, so piece is on the edge
+                    end_x, end_y = path[-1]
+                    new_end_x =  end_x - self.sign(end_x)*offset if not end_x == 0 else 0
+                    new_end_y = end_y - self.sign(end_y)*offset if not end_y == 0 else 0
+                    path[-1] = (new_end_x, new_end_y)
+                    print(f"Path for moving to piece to capture: {path}")
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"Moving to capture piece: {commands}")
+                    self.send_commands(commands)
+
+                    
+                    if self.sign(dx) == 0:
+                        # case where straight off would impede other piece
+
+                        if end_coord[0] > 180: # send towards white
+                            captured_new_x = -offset
+                            captured_new_y = 0
+
+                        else: # send towards black
+                            captured_new_x = offset
+                            captured_new_y = 0
+
+                    else:
+
+                        #move piece off center in opposite direction
+                        captured_new_x = self.sign(end_x)*offset if not end_x == 0 else 0
+                        captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
+                    path = [end_coord, (captured_new_x, captured_new_y)]
+
+                    print(f"Path for moving captured piece off square: {path}")
+
+
+                    #movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(path)
+                    print(f"Moving piece off center: : {commands}")
+                    self.send_commands(commands)      
+                    print(f"moving piece off center: {path}")
+                    
+
+
+                    #Move capturing piece back to center
+
+                    path = [(end_coord[0] -self.sign(end_x)*offset, end_coord[1] -self.sign(end_y)*offset), (self.sign(end_x)*offset, self.sign(end_y)*offset)]
+
+                    print(f"Path for moving piece back to center: {path}")
+
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"Moving piece to center comamnds: {commands}")
+                    self.send_commands(commands)
+
+
+                    dead_coordinates = (end_coord[0] + captured_new_x, end_coord[1] + captured_new_y)
 
                 dead_x = self.deadzone_origin[0] - dead_coordinates[0]
                 dead_y = self.deadzone_origin[1] - dead_coordinates[1]
@@ -435,10 +1052,10 @@ class GantryControl:
                 print(f"moving to deadzone: {path}")
 
 
-                # movements = self.parse_path_to_movement(path)
-                # commands = self.movement_to_gcode(movements)
-                # print(f" moving to deadzone: {commands}")
-                # self.send_commands(commands)
+                    # movements = self.parse_path_to_movement(path)
+                    # commands = self.movement_to_gcode(movements)
+                    # print(f" moving to deadzone: {commands}")
+                    # self.send_commands(commands)
 
 
 
