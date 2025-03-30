@@ -88,6 +88,7 @@ if __name__ == "__main__":
             board = get_chessboard_occupancy()
             for row in board:
                 print(row)
+                print("/n")
             time.sleep(1)  # Update every second
     except KeyboardInterrupt:
         print("Exiting...")
