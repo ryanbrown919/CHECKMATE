@@ -349,8 +349,8 @@ class ChessControlSystem:
         print("[State] Engine Turn")
         self.update_ui()
         # Process the engine move asynchronously.
-        #threading.Thread(target=self.compute_engine_move, daemon=True).start()
-        self.compute_engine_move()
+        threading.Thread(target=self.compute_engine_move, daemon=True).start()
+        #self.compute_engine_move()
 
     def compute_engine_move(self):
         time.sleep(0.2)  # Simulate engine thinking time.
