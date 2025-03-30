@@ -687,7 +687,7 @@ class GantryControl:
                                 self.send_commands(commands)
 
                                 # put capturing piece in square
-                                path = [(new_end_x, new_end_y), (-offset, offset)]
+                                path = [(end_coord[0]+offset, end_coord[1]-offset), (-offset, offset)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
@@ -942,7 +942,7 @@ class GantryControl:
                                 self.send_commands(commands)
 
                                 # put capturing piece in square
-                                path = [(new_end_x, new_end_y), (-offset, 0)]
+                                path = [(end_coord[0]+offset, end_coord[1]), (-offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
