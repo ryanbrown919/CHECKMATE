@@ -16,6 +16,26 @@ MUX_OUTPUTS = [16, 12, 21, 20]    # GPIO pins for the outputs of the 4 multiplex
 #define MUX_Y_3 21   
 #define MUX_Y_4 20
 
+    #/* q1    q2     q3     q4*/
+hall_map_felipe =  {
+    7: [(2, 7),  (2, 3),  (5, 0),  (5, 4)], 
+   3:  [(3, 7),  (3, 3),  (4, 0),  (4, 4)], 
+    2: [(3, 6),  (3, 2),  (4, 1),  (4, 5)], 
+    6:[(2, 6),  (2, 2),  (5, 1),  (5, 5)], 
+    0:[(3, 4),  (3, 0),  (4, 3),  (4, 7)], 
+    4:[(2, 4),  (2, 0),  (5, 3),  (5, 7)], 
+    5:[(2, 5),  (2, 1),  (5, 2),  (5, 6)], 
+    1:[(3, 5),  (3, 1),  (4, 2),  (4, 6)], 
+    10:[(1, 6),  (1, 2),  (6, 1),  (6, 5)], 
+    11:[(1, 7),  (1, 3),  (6, 0),  (6, 4)], 
+    15:[(0, 7),  (0, 3),  (7, 0),  (7, 4)], 
+    14:[(0, 6),  (0, 2),  (7, 1),  (7, 5)], 
+    8: [(1, 4),  (1, 0),  (6, 3),  (6, 7)], 
+    9: [(1, 5),  (1, 1),  (6, 2),  (6, 6)], 
+    13: [(0, 5),  (0, 1),  (7, 2),  (7, 6)],
+    12: [(0, 4),  (0, 0),  (7, 3),  (7, 7)] }
+
+
 hall_map = {
     1: [(4, 0), (4, 4), (3, 7), (3, 3)],
     2: [(4, 1), (4, 5), (3, 6), (3, 2)],
@@ -72,7 +92,7 @@ def read_mux_outputs():
 def get_chessboard_occupancy():
     """Retrieve an 8x8 array representing the chessboard occupancy using the encoded table."""
     occupancy = [[0 for _ in range(8)] for _ in range(8)]
-    for select, positions in hall_map.items():
+    for select, positions in hall_map_felipe.items():
         set_select_pins(select)
         time.sleep(0.001)  # Small delay to allow signals to stabilize
         mux_values = read_mux_outputs()
