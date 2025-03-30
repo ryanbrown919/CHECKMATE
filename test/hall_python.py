@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 
 # GPIO pin configuration
 SELECT_PINS = [6, 13, 19, 26]  # GPIO pins for the 4-bit select signal
-MUX_OUTPUTS = [16, 12, 21, 20].reverse()    # GPIO pins for the outputs of the 4 multiplexers
+MUX_OUTPUTS = [12, 21, 20, 16]    # GPIO pins for the outputs of the 4 multiplexers
 
 #define MUX_S0 6
 #define MUX_S1 13
@@ -16,7 +16,7 @@ MUX_OUTPUTS = [16, 12, 21, 20].reverse()    # GPIO pins for the outputs of the 4
 #define MUX_Y_3 21   
 #define MUX_Y_4 20
 
-    #/* q1    q2     q3     q4*/
+        #/* q1    q2     q3     q4*/
 hall_map_felipe =  {
     7: [(2, 7),  (2, 3),  (5, 0),  (5, 4)], 
    3:  [(3, 7),  (3, 3),  (4, 0),  (4, 4)], 
