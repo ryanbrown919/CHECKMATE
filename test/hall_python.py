@@ -72,7 +72,7 @@ def read_mux_outputs():
 def get_chessboard_occupancy():
     """Retrieve an 8x8 array representing the chessboard occupancy using the encoded table."""
     occupancy = [[0 for _ in range(8)] for _ in range(8)]
-    for select, positions in hall_map_encoded.items():
+    for select, positions in hall_map.items():
         set_select_pins(select)
         time.sleep(0.001)  # Small delay to allow signals to stabilize
         mux_values = read_mux_outputs()
