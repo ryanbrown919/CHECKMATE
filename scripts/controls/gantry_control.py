@@ -577,8 +577,8 @@ class GantryControl:
                             commands = self.movement_to_gcode(path)
                             self.send_commands(commands)
 
-                            #move piece off center in +x direction 
-                            path = [end_coord, (offset, 0)]
+                            #move piece off center in -x direction 
+                            path = [end_coord, (-offset, 0)]
                             commands = self.movement_to_gcode(path)
                             self.send_commands(commands)
 
@@ -715,7 +715,7 @@ class GantryControl:
                                 self.send_commands(commands)
 
                                 # take capturing piece to deadzone
-                                dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
+                                dead_coordinates = (end_coord[0] + offset, end_coord[1] - offset)
 
                             elif dx_sign == 0 and dy_sign == -1:
                                 # straight right
@@ -733,7 +733,7 @@ class GantryControl:
                                 self.send_commands(commands)
 
                                 # put capturing piece in square
-                                path = [(new_end_x, new_end_y), (0, -offset)]
+                                path = [(end_coord[0], end_coord[1])+offset, (0, -offset)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
