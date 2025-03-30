@@ -875,7 +875,7 @@ class GantryControl:
                                 if end_coord[0] > 180: # send to outside if on black side
                                     path.append((offset, -offset))
                                 else: # send to white side
-                                    path.append(-offset, -offset)
+                                    path.append((-offset, -offset))
 
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
