@@ -925,7 +925,7 @@ class GantryControl:
                                 self.send_commands(commands)
 
                                 # take capturing piece to deadzone
-                                dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
+                                dead_coordinates = (end_coord[0] - offset, end_coord[1] + offset)
 
                             elif dx_sign == -1 and dy_sign == 0:
                                 #straight in
