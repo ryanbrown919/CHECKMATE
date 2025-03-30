@@ -130,7 +130,7 @@ class ChessControlSystem:
         # Create a hierarchical state machine.
         self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
 
-        # Top-level transitions.
+        # Top-level transitions. dj
         #self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after='update_ui')
         #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
         # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
