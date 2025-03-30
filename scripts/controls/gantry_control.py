@@ -791,7 +791,7 @@ class GantryControl:
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1] + offset)
 
-                            elif dx_sign == -1 and dy_sign == 0:
+                            elif dx_sign == 1 and dy_sign == 0:
                                 #straight in
                                 end_x, end_y = path[-1]
                                 new_end_x =  end_x - self.sign(end_x)*2*offset
@@ -860,6 +860,8 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1])
+
+                            
                         
                         elif end_square[0] == 'h':
 
