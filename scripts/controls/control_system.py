@@ -190,7 +190,7 @@ class ChessControlSystem:
         # self.game_logic = ChessBackend(lichess_token=api_key, ui_move_callback=None, mode="offline",
         #                    engine_time_limit=0.1, difficulty_level=5, elo=self.elo, colour=self.colour, clock_logic = self.clock_logic, bot_mode=self.bot_mode, gantry_control=self.gantry_control)
         #self.clock_logic = None
-        self.clock_logic = ClockLogic(timer_enabled=False)
+        self.clock_logic = None
 
                 # Run the state machine’s background loop in its own thread.
         self.sm_thread = threading.Thread(target=self.run, daemon=True)
@@ -439,25 +439,6 @@ class ChessControlSystem:
         elif not self.parameters['online']:
             #Configure offline game 
 
-            # if self.parameters['colour'] == 'Random':
-            #     self.colour = random.choice(['White', 'Black'])
-            #     self.auto_engine = False
-            # elif self.parameters['colour'] == "BotVBot":
-            #     time.sleep(2)
-            #     self.auto_engine = True
-            #     self.engine_colour = chess.WHITE
-
-            # if self.parameters['colour'] == "Black":
-            #     time.sleep(2)
-            #     self.engine_colour = chess.WHITE
-            #     self.auto_engine = False
-            # else:
-            #     self.engine_colour = chess.BLACK
-            #     self.auto_engine = False
-
-            # if self.parameters['bot_mode']:
-            #     time.sleep(2)
-
             if self.engine_path:
                 try:
                     self.engine = chess.engine.SimpleEngine.popen_uci(self.engine_path)
@@ -474,11 +455,8 @@ class ChessControlSystem:
 
 
             pass
+        self.clock_logic = ClockLogic(timer_enabled=False)
 
-        # look to adjust this as needed
-        self.game_logic=None
-        self.clock_logic = None
-        #self.game_logic = ChessBackend(self.parameters)
 
         # Initialize engine or API for given game parameters 
         self.game_progress = 0  # Reset progress
@@ -506,14 +484,7 @@ class ChessControlSystem:
         self.to_gameplay()
 
     def toggle_clock(self):
-        if self.board.turn:
-            print("It's White's turn.")
-            self.clock_logic.active_player=1
-            #self.servo.white()
-        else:
-            self.clock_logic.active_player=2
-            #self.servo.black()
-            print("It's Black's turn.")
+        self.clock_logic.toggle_active_player()
 
         self.notify_observers()
 
