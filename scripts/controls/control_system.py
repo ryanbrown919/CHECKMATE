@@ -390,6 +390,7 @@ class ChessControlSystem:
         time.sleep(0.5)
 
         # self.notify_observers()
+        self.update_ui()
         self.engine_move_complete()
 
     def on_game_over(self):
@@ -418,6 +419,8 @@ class ChessControlSystem:
 
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
+
+        self.update_ui()
 
 
         if self.parameters['online']:
