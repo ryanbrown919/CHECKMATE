@@ -299,10 +299,10 @@ class GantryControl:
                     path = [(start_coord), (offset, offset), (0, 2*offset), (-offset, offset)]
 
 
-                    # movements = self.parse_path_to_movement(path)
-                    # commands = self.movement_to_gcode(movements)
-                    # print(f"Rook comamnds: {commands}")
-                    # self.send_commands(commands)
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"Rook comamnds: {commands}")
+                    self.send_commands(commands)
                     not_castle = False
 
                 
@@ -319,11 +319,12 @@ class GantryControl:
                     # King_path
                     path = [(start_coord), (offset, -offset), (0, -2*offset), (-offset, -offset)]
 
-                    # movements = self.parse_path_to_movement(path)
-                    # commands = self.movement_to_gcode(movements)
-                    # print(f"king comamnds: {commands}")
-                    # self.send_commands(commands)
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"king comamnds: {commands}")
+                    self.send_commands(commands)
                     not_castle = False
+                    return path
                     
                  # black king to the left
                 if end_square == 'c8':
@@ -337,11 +338,12 @@ class GantryControl:
                     # King_path
                     path = [(start_coord), (-offset, offset), (0, 2*offset), (offset, offset)]
 
-                    # movements = self.parse_path_to_movement(path)
-                    # commands = self.movement_to_gcode(movements)
-                    # print(f"king comamnds: {commands}")
-                    # self.send_commands(commands)
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"king comamnds: {commands}")
+                    self.send_commands(commands)
                     not_castle = False
+                    return path
 
                 # White king to the right
                 elif end_square == 'g8':
@@ -355,7 +357,12 @@ class GantryControl:
 
                     # King_path
                     path = [(start_coord), (-offset, -offset), (0, -2*offset), (offset, -offset)]
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    print(f"king comamnds: {commands}")
+                    self.send_commands(commands)
                     not_castle = False
+                    return path
 
                 else:
                     not_castle = True
