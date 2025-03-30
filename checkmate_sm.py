@@ -2,7 +2,7 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition, WipeTransition, FadeTransition
 from kivy.clock import Clock
 
-from scripts.controls.control_system_simple import ChessControlSystem
+from scripts.controls.control_system import ChessControlSystem
 
 from scripts.screens.gamescreen import GameScreen
 from scripts.screens.initscreen import InitScreen

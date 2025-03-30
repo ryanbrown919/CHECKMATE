@@ -130,10 +130,7 @@ class ChessControlSystem:
         self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
 
         # Top-level transitions. dj
-        #self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after='update_ui')
-        #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
-        # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
-
+        
         self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', after=['update_ui', 'init_gantry'])
         # Two transitions for starting the game based on who goes first.
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
@@ -206,7 +203,7 @@ class ChessControlSystem:
         state = self.state
         print(f"UI updated to state: {state}")
         if self.ui_update_callback:
-            self.ui_update_callback(state)
+            Clock.schedule_once(lambda dt: self.ui_update_callback(state), 0)
 
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
