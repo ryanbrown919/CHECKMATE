@@ -135,7 +135,7 @@ class ChessControlSystem:
         #self.machine.add_transition(trigger='launch_game', source='mainscreen', dest='gamescreen_player_turn', after='on_player_turn')
         # self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='gamescreen_engine_turn', after=['init_game', 'on_board_turn'], conditions=['board_turn'])
 
-        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', on_enter='init_gantry', after=['update_ui'])
+        self.machine.add_transition(trigger='finish_loading', source='initscreen', dest='mainscreen', before='init_gantry', after=['update_ui'])
         # Two transitions for starting the game based on who goes first.
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
                                     conditions=lambda: self.parameters["colour"] == "white",
