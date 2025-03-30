@@ -291,6 +291,7 @@ class GantryTargetWidget(Widget):
         from_sq = move_str[:2]
         to_sq = move_str[2:4]
         
+        
         self.path = (self.gantry.interpret_chess_move(move_str, is_capture))
         self.move_dot_to_chess_square(from_sq)
         Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)

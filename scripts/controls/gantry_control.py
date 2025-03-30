@@ -304,6 +304,8 @@ class GantryControl:
                     print(f"Rook comamnds: {commands}")
                     self.send_commands(commands)
                     not_castle = False
+                    return path
+                    
 
                 
                 # White king to the right
