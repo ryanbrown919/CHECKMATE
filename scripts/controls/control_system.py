@@ -212,7 +212,7 @@ class ChessControlSystem:
     def notify_observers(self):
         """Call all registered observer callbacks with the updated board."""
         for callback in self.observers:
-            Clock.schedule_once(lambda dt, cb=callback: (self.board))
+            Clock.schedule_once(lambda dt, cb=callback: cb(self.board, self.game_state))
             #callback(self.board)
 
     # def start_game(self):
