@@ -374,6 +374,8 @@ class ChessControlSystem:
                 
                 self.move_history.append(move.uci())
 
+                self.notify_observers()
+
 
                 self.board.push(move)
             except Exception as e:
