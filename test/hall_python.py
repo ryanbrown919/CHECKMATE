@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 
 # GPIO pin configuration
 SELECT_PINS = [6, 13, 19, 26]  # GPIO pins for the 4-bit select signal
-MUX_OUTPUTS = [16, 12, 21, 20]    # GPIO pins for the outputs of the 4 multiplexers
+MUX_OUTPUTS = [16, 12, 21, 20].reverse()    # GPIO pins for the outputs of the 4 multiplexers
 
 #define MUX_S0 6
 #define MUX_S1 13
