@@ -299,10 +299,10 @@ class GantryControl:
                     path = [(start_coord), (offset, offset), (0, 2*offset), (-offset, offset)]
 
 
-                    movements = self.parse_path_to_movement(path)
-                    commands = self.movement_to_gcode(movements)
-                    print(f"Rook comamnds: {commands}")
-                    self.send_commands(commands)
+                    # movements = self.parse_path_to_movement(path)
+                    # commands = self.movement_to_gcode(movements)
+                    # print(f"Rook comamnds: {commands}")
+                    # self.send_commands(commands)
                     not_castle = False
 
                 
@@ -319,10 +319,10 @@ class GantryControl:
                     # King_path
                     path = [(start_coord), (offset, -offset), (0, -2*offset), (-offset, -offset)]
 
-                    movements = self.parse_path_to_movement(path)
-                    commands = self.movement_to_gcode(movements)
-                    print(f"king comamnds: {commands}")
-                    self.send_commands(commands)
+                    # movements = self.parse_path_to_movement(path)
+                    # commands = self.movement_to_gcode(movements)
+                    # print(f"king comamnds: {commands}")
+                    # self.send_commands(commands)
                     not_castle = False
                     
                  # black king to the left
@@ -337,10 +337,10 @@ class GantryControl:
                     # King_path
                     path = [(start_coord), (-offset, offset), (0, 2*offset), (offset, offset)]
 
-                    movements = self.parse_path_to_movement(path)
-                    commands = self.movement_to_gcode(movements)
-                    print(f"king comamnds: {commands}")
-                    self.send_commands(commands)
+                    # movements = self.parse_path_to_movement(path)
+                    # commands = self.movement_to_gcode(movements)
+                    # print(f"king comamnds: {commands}")
+                    # self.send_commands(commands)
                     not_castle = False
 
                 # White king to the right
