@@ -157,14 +157,14 @@ class ChessControlSystem:
         # Note: When referring to nested states, use the full path: e.g. gamescreen_player_turn.
         self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
         self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
-        self.machine.add_transition(trigger='process_move', source=['gamescreen_player_turn', 'gamescreen_player_move_confirmed'], dest='gamescreen_engine_turn', after=['on_board_turn', 'notify_observers'])
+        self.machine.add_transition(trigger='process_move', source=['gamescreen_player_turn', 'gamescreen_player_move_confirmed'], dest='gamescreen_engine_turn', after=['on_board_turn', 'toggle_clock', 'notify_observers'])
         #self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn', after='on_player_turn')
 
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_engine_turn',
-                                    conditions='is_auto_engine_mode', after=['on_board_turn', 'update_ui'])
+                                    conditions='is_auto_engine_mode', after=['on_board_turn', 'toggle_clock'])
         # Otherwise, transition to player_turn.
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn',
-                                    unless='is_auto_engine_mode', after=['on_player_turn', 'update_ui'])
+                                    unless='is_auto_engine_mode', after=['on_player_turn', 'toggle_clock'])
 
 
         self.machine.add_transition(trigger='end_game', source='gamescreen', dest='gamescreen_end_game', after='on_end_game')
@@ -501,6 +501,18 @@ class ChessControlSystem:
         print("Resetting board...")
         # Reset board logic here.
         self.to_gameplay()
+
+    def toggle_clock(self):
+        if self.board.turn:
+            print("It's White's turn.")
+            self.clock_logic.active_player=1
+            #self.servo.white()
+        else:
+            self.clock_logic.active_player=2
+            #self.servo.black()
+            print("It's Black's turn.")
+
+        self.notify_observers()
 
 
     #################################################################################################################
