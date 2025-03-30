@@ -53,6 +53,7 @@ class ChessControlSystem:
         self.auto_engine = self.parameters.get("bot_mode", False)
         self.engine_path = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust as needed.
         self.engine = None
+        self.clock_logic = None
 
         # Initialize our simple state machine with an initial state.
         # We'll use these states: "initscreen", "mainscreen", and then a composite "gamescreen" with substates.
