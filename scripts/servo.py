@@ -4,8 +4,8 @@ import time
 
 class Rocker():
     def __init__(self):
-        self.servo_pin = 17
-        self.switch_pin = None # Placeholder for switch pin
+        self.servo_pin = 18
+        self.switch_pin = 23
         self.handle = lgpio.gpiochip_open(0)
         lpgio.gpio_claim_output(self.handle, self.servo_pin)
         self.state = None
