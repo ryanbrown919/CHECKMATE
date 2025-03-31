@@ -17,6 +17,9 @@ class Rocker():
         self.CLOSE_DUTY = 6
         self.MAX_WAIT_TIME = 2.0
 
+        self.home()
+        self.current_state = get_switch_state()
+
     def get_switch_state(self):
         return lgpio.gpio_read(self.handle, self.switch_pin)
 
