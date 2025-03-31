@@ -26,7 +26,7 @@ class Rocker():
 
         if current_state:
             self.to_black()
-        else
+        else:
             self.home()
 
     def get_switch_state(self):
