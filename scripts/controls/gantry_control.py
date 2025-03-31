@@ -398,14 +398,36 @@ class GantryControl:
                  
 
             
-            if is_capture and not is_en_passant:
+            if is_capture:
                 print('Is capture')
+
+                dx_sign = self.sign(dx)
+                dy_sign = self.sign(dy)
+
+
+                if is_en_passant:
+                    print("Is en passant")
+
+                    commands = self.movement_to_gcode(path)
+                    self.send_commands(commands)
+
+
+                    # moved captured piece off square
+                    path = [(end_coord[0]- 2*offset*dx_sign, end_coord[1]), (offset*dx_sign, offset)]
+
+                    commands = self.movement_to_gcode(path)
+                    self.send_commands(commands)
+
+                    dead_coordinates = (end_coord[0]-offset*dx_sign, end_coord[1]+offset)
+
+
                 # Need to make literal edge case
 
-                if end_square[1] == '8' or end_square[1] == '1' or end_square[0] == 'h':
+                elif end_square[1] == '8' or end_square[1] == '1' or end_square[0] == 'h':
+                    print("Is edge")
                     #edged
-                    dx_sign = self.sign(dx)
-                    dy_sign = self.sign(dy)
+                    # dx_sign = self.sign(dx)
+                    # dy_sign = self.sign(dy)
 
                     # if dx_sign == 1 and dy_sign == 1:
                     #     #angled far left
@@ -1082,7 +1104,7 @@ class GantryControl:
                     dz_y = 400
 
                 self.deadzone_origin = (dz_x + 2*offset, dz_y)
-                
+
 
 
             print(f"Interpreted move: {move_str} as dx={dx}, dy={dy} as {path}")
