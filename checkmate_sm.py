@@ -22,7 +22,6 @@ class TestApp(App):
         # Create an instance of our state machine.
         self.control_system = ChessControlSystem(ui_update_callback=self.on_state_change)
         # Set engine parameters at runtime.
-        self.control_system.parameters["engine_path"] = "./bin/stockfish-macos-m1-apple-silicon"  # Adjust this path.
         self.control_system.parameters["engine_time_limit"] = 0.1
         self.control_system.parameters["elo"] = 1400
         self.control_system.parameters["bot_mode"] = True  # Set to True for engine vs. engine.
