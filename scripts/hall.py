@@ -123,7 +123,6 @@ def main():
     """Test function that continuously monitors the chess board"""
     try:
         layer = SenseLayer()
-        layer.begin()
         print("Chess board monitoring - Press Ctrl+C to exit")
         
         while True:

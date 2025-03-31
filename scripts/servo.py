@@ -8,13 +8,10 @@ class Rocker():
         self.switch_pin = None # Placeholder for switch pin
         self.handle = lgpio.gpiochip_open(0)
         lpgio.gpio_claim_output(self.handle, self.servo_pin)
-        self.state = "home"
-        self.last_state = "home"  
+        self.state = None
 
     def begin(self):
         self.open()
-        time.sleep(0.5)
-        self.home()
         self.state = get_switch_state()
 
     def get_switch_state(self):
@@ -22,7 +19,6 @@ class Rocker():
 
     def home(self):
         lgpio.tx_pwm(self.handle, self.servo_pin, 10000, 50)
-        self.state = "home"
     
     def open(self):
         initial_state = self.get_switch_state()
