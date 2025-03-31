@@ -80,13 +80,6 @@ class Rocker():
         """Helper method to move servo and stop PWM to prevent jitter"""
         # Set PWM to move the servo
         lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, duty_cycle)
-        
-        # Give the servo time to reach position
-        time.sleep(0.5)
-        
-        # Option 1: Stop PWM (servo will hold position mechanically)
-        # Uncomment this line if you want the servo to relax after moving
-        # lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
     
     def toggle(self):
         current_state = self.get_switch_state()
