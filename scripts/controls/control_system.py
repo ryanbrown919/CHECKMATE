@@ -115,7 +115,9 @@ class ChessControlSystem:
         self.board = chess.Board()  # Integrated chess board.
         self.running = True
         if running_on_pi:
-            self.engine_path = "./bin/stockfish-android-armv8"
+            self.engine_path = "./bin/stockfish"
+            #self.engine_path = "./bin/stockfish-android-armv8"
+
         elif running_on_mac:
             self.engine_path = "./bin/stockfish-macos-m1-apple-silicon"
         else:
