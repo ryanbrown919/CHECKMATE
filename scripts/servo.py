@@ -37,40 +37,58 @@ class Rocker():
         self.current_position = "home"
     
     def open(self):
-        """Open the mechanism"""
+        """Open the mechanism and return to home only if switch is activated"""
         print("Opening...")
         self._move_servo(self.OPEN_DUTY)
         
-        # Wait for switch state to change or timeout
+        # Record initial switch state
         initial_state = self.get_switch_state()
         start_time = time.time()
+        switch_activated = False
         
-        while not (self.get_switch_state() ^ initial_state):
-            if time.time() - start_time > self.MAX_WAIT_TIME:
-                print("Timeout waiting for switch state to change")
+        # Wait for switch state to change or timeout
+        while time.time() - start_time <= self.MAX_WAIT_TIME:
+            current_state = self.get_switch_state()
+            if current_state != initial_state:  # Switch changed state
+                print("Switch activated!")
+                switch_activated = True
                 break
             time.sleep(0.05)
         
-        # Return to home position
-        self.home()
+        if not switch_activated:
+            print("Timeout waiting for switch activation")
+            # Don't return to home if switch wasn't activated
+        else:
+            # Return to home position only if switch was activated
+            print("Returning to home position")
+            self.home()
     
     def close(self):
-        """Close the mechanism"""
+        """Close the mechanism and return to home only if switch is activated"""
         print("Closing...")
         self._move_servo(self.CLOSE_DUTY)
         
-        # Wait for switch state to change or timeout
+        # Record initial switch state
         initial_state = self.get_switch_state()
         start_time = time.time()
+        switch_activated = False
         
-        while not (self.get_switch_state() ^ initial_state):
-            if time.time() - start_time > self.MAX_WAIT_TIME:
-                print("Timeout waiting for switch state to change")
+        # Wait for switch state to change or timeout
+        while time.time() - start_time <= self.MAX_WAIT_TIME:
+            current_state = self.get_switch_state()
+            if current_state != initial_state:  # Switch changed state
+                print("Switch activated!")
+                switch_activated = True
                 break
             time.sleep(0.05)
         
-        # Return to home position
-        self.home()
+        if not switch_activated:
+            print("Timeout waiting for switch activation")
+            # Don't return to home
+        else:
+            # Return to home position only if switch was activated
+            print("Returning to home position")
+            self.home()
     
     def _move_servo(self, duty_cycle):
         """Helper method to move servo and stop PWM to prevent jitter"""
