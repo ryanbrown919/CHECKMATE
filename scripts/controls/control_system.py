@@ -441,6 +441,7 @@ class ChessControlSystem:
 
             if self.engine_path:
                 try:
+                    print(f"Trying to use engine: {self.engine}")
                     self.engine = chess.engine.SimpleEngine.popen_uci(self.engine_path)
                     self.engine.configure({"UCI_LimitStrength": True, "UCI_Elo": self.parameters['elo']})
                     print(f"[Engine] Initialized engine at Elo {self.parameters['elo']}")
