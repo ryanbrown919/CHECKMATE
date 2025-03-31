@@ -13,7 +13,7 @@ class Rocker():
 
     def begin(self):
         self.open()
-        self.state = get_switch_state()
+        self.state = self.get_switch_state()
 
     def get_switch_state(self):
         return lgpio.gpio_read(self.handle, self.switch_pin)
