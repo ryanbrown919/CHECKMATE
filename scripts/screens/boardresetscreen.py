@@ -6,8 +6,11 @@ from kivy.core.window import Window
 Window.fullscreen = True
 
 FONT_SIZE=40
+try:
+    from custom_widgets import RoundedButton
 
-from custom_widgets import RoundedButton
+except:
+    from scripts.screens.custom_widgets import RoundedButton
 class BoardResetScreen(Screen):
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)

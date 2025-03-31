@@ -72,7 +72,7 @@ class MainScreen(Screen):
         quickplay_layout.add_widget(custom4)
 
 
-        play_btn = IconButton(source="assets/Play.png", size_hint=(None, None), size=(200, 200))
+        play_btn = IconButton(source="assets/Play.png", size_hint=(None, None), size=(250, 250))
         play_btn.bind(on_release=lambda instance: self.start_custom_game())
         customplay_layout.add_widget(play_btn)
 
@@ -81,15 +81,16 @@ class MainScreen(Screen):
         set_modes_button.bind(on_release=self.open_mode_popup)
         customplay_layout.add_widget(set_modes_button)
 
-        option_layout.add_widget(IconButton(source="assets/User.png", 
+        user_btn = IconButton(source="assets/User.png", 
+                                            size_hint=(1, 0.3),
+                                            allow_stretch=True,
+                                            keep_ratio=True)
+        
+        settings_btn = (IconButton(source="assets/settings.png", 
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True))
-        option_layout.add_widget(IconButton(source="assets/settings.png", 
-                                            size_hint=(1, 0.3),
-                                            allow_stretch=True,
-                                            keep_ratio=True))
-        option_layout.add_widget(IconButton(source="assets/reset.png", 
+        reset_btn = (IconButton(source="assets/reset.png", 
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True))
@@ -98,8 +99,14 @@ class MainScreen(Screen):
                                             allow_stretch=True,
                                             keep_ratio=True)
         gantry_btn.bind(on_release=lambda instance: self.control_system.go_to_gantry())
+        
+
+        option_layout.add_widget(user_btn)
+        option_layout.add_widget(settings_btn)
+        option_layout.add_widget(reset_btn)
         option_layout.add_widget(gantry_btn)
         
+
         self.add_widget(root_layout)
 
     def start_custom_game(self):
@@ -109,26 +116,26 @@ class MainScreen(Screen):
 
         self.control_system.start_game()
 
-    def change_screen(self, screen_name):
-        # For lazy loading, create and add screens on demand.
-        if screen_name == "loading":
-            # Remove any previous loading screen if it exists.
-            if self.manager.has_screen("loading"):
-                self.manager.remove_widget(self.manager.get_screen("loading"))
-            loading_screen = LoadingScreen(name="loading", gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.chess_elo)
-            self.manager.add_widget(loading_screen)
-            self.manager.transition.direction = 'right'
-            self.manager.current = "loading"
-        elif screen_name == "gantry_control":
-            if self.manager.has_screen("gantry_control"):
-                self.manager.remove_widget(self.manager.get_screen("gantry_control"))
-            new_screen = GantryControlScreen(name="gantry_control", gantry_control=self.gantry_control)
-            self.manager.add_widget(new_screen)
-            self.manager.transition.direction = 'right'
-            self.manager.current = "gantry_control"
-        else:
-            self.manager.transition.direction = 'right'
-            self.manager.current = screen_name
+    # def change_screen(self, screen_name):
+    #     # For lazy loading, create and add screens on demand.
+    #     if screen_name == "loading":
+    #         # Remove any previous loading screen if it exists.
+    #         if self.manager.has_screen("loading"):
+    #             self.manager.remove_widget(self.manager.get_screen("loading"))
+    #         loading_screen = LoadingScreen(name="loading", gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.chess_elo)
+    #         self.manager.add_widget(loading_screen)
+    #         self.manager.transition.direction = 'right'
+    #         self.manager.current = "loading"
+    #     elif screen_name == "gantry_control":
+    #         if self.manager.has_screen("gantry_control"):
+    #             self.manager.remove_widget(self.manager.get_screen("gantry_control"))
+    #         new_screen = GantryControlScreen(name="gantry_control", gantry_control=self.gantry_control)
+    #         self.manager.add_widget(new_screen)
+    #         self.manager.transition.direction = 'right'
+    #         self.manager.current = "gantry_control"
+    #     else:
+    #         self.manager.transition.direction = 'right'
+    #         self.manager.current = screen_name
 
     def open_mode_popup(self, instance):
         popup = ModePopup(current_color=getattr(self, "preferred_color", "Random"),
@@ -170,39 +177,39 @@ class MainScreen(Screen):
         self.control_system.start_game()
 
 
-class LoadingScreen(Screen):
-    def __init__(self, gantry_control=None, elo=None, preferred_color=None, **kwargs):
-        super(LoadingScreen, self).__init__(**kwargs)
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
-        self.info_label = Label(text="Loading... Please wait.", font_size=FONT_SIZE)
-        layout.add_widget(self.info_label)
-        self.add_widget(layout)
-        self.gantry_control = gantry_control
-        self.elo = elo
-        self.preferred_color=preferred_color
+# class LoadingScreen(Screen):
+#     def __init__(self, gantry_control=None, elo=None, preferred_color=None, **kwargs):
+#         super(LoadingScreen, self).__init__(**kwargs)
+#         layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+#         self.info_label = Label(text="Loading... Please wait.", font_size=FONT_SIZE)
+#         layout.add_widget(self.info_label)
+#         self.add_widget(layout)
+#         self.gantry_control = gantry_control
+#         self.elo = elo
+#         self.preferred_color=preferred_color
 
-    def on_enter(self):
-        # Start the heavy loading process on a separate thread so the UI stays responsive.
-        Thread(target=self.load_game_background).start()
+#     def on_enter(self):
+#         # Start the heavy loading process on a separate thread so the UI stays responsive.
+#         Thread(target=self.load_game_background).start()
 
-    def load_game_background(self):
-        # Insert your background tasks here.
-        # For demonstration, we'll simulate a heavy process with a sleep.
-        import time
-        time.sleep(3)  # Simulating background loading (replace with your actual tasks)
+#     def load_game_background(self):
+#         # Insert your background tasks here.
+#         # For demonstration, we'll simulate a heavy process with a sleep.
+#         import time
+#         time.sleep(3)  # Simulating background loading (replace with your actual tasks)
 
-        # When done, schedule the finish on the main thread.
-        Clock.schedule_once(self.finish_loading, 0)
+#         # When done, schedule the finish on the main thread.
+#         Clock.schedule_once(self.finish_loading, 0)
 
-    def finish_loading(self, dt):
-        # Create a fresh ChessGameScreen instance and switch to it.
-        if self.manager.has_screen("chess"):
-            self.manager.remove_widget(self.manager.get_screen("chess"))
-        new_game = ChessGameScreen(name="chess", gantry_control=self.gantry_control, elo=self.elo, preferred_color=self.preferred_color)
-        self.manager.add_widget(new_game)
-        self.manager.current = "chess"
-        # Remove the loading screen.
-        self.manager.remove_widget(self)
+#     def finish_loading(self, dt):
+#         # Create a fresh ChessGameScreen instance and switch to it.
+#         if self.manager.has_screen("chess"):
+#             self.manager.remove_widget(self.manager.get_screen("chess"))
+#         new_game = ChessGameScreen(name="chess", gantry_control=self.gantry_control, elo=self.elo, preferred_color=self.preferred_color)
+#         self.manager.add_widget(new_game)
+#         self.manager.current = "chess"
+#         # Remove the loading screen.
+#         self.manager.remove_widget(self)
 
 
 class BaseScreen(Screen):
@@ -222,27 +229,27 @@ class BaseScreen(Screen):
         self.manager.remove_widget(self)
 
 
-class ChessGameScreen(BaseScreen):
-    def __init__(self, gantry_control=None, preferred_color=None, elo=None, **kwargs):
-        super(ChessGameScreen, self).__init__(**kwargs)
-        self.preferred_color=preferred_color
-        self.elo=elo
-        root = BoxLayout(orientation='vertical')
-        self.gantry_control = gantry_control
-        self.add_back_button(root)
-        # Add your gameplay widget (loaded from scripts.gameplay) to fill the screen.
-        root.add_widget(GameplayScreen(gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.elo))
-        self.add_widget(root)
+# class ChessGameScreen(BaseScreen):
+#     def __init__(self, gantry_control=None, preferred_color=None, elo=None, **kwargs):
+#         super(ChessGameScreen, self).__init__(**kwargs)
+#         self.preferred_color=preferred_color
+#         self.elo=elo
+#         root = BoxLayout(orientation='vertical')
+#         self.gantry_control = gantry_control
+#         self.add_back_button(root)
+#         # Add your gameplay widget (loaded from scripts.gameplay) to fill the screen.
+#         root.add_widget(GameplayScreen(gantry_control=self.gantry_control, preferred_color=self.preferred_color, elo=self.elo))
+#         self.add_widget(root)
 
 
-class GantryControlScreen(BaseScreen):
-    def __init__(self, gantry_control, **kwargs):
-        super(GantryControlScreen, self).__init__(**kwargs)
-        self.gantry_control=gantry_control
-        root = BoxLayout(orientation='vertical')
-        root.add_widget(GantryControlWidget(gantry_control = self.gantry_control))
-        self.add_back_button(root)
-        self.add_widget(root)
+# class GantryControlScreen(BaseScreen):
+#     def __init__(self, gantry_control, **kwargs):
+#         super(GantryControlScreen, self).__init__(**kwargs)
+#         self.gantry_control=gantry_control
+#         root = BoxLayout(orientation='vertical')
+#         root.add_widget(GantryControlWidget(gantry_control = self.gantry_control))
+#         self.add_back_button(root)
+#         self.add_widget(root)
 
 
 class ModePopup(Popup):
