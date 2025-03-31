@@ -164,30 +164,26 @@ def main():
             # Read the board
             board = layer.get_squares()
             
-            # Organize occupied squares by rank
-            ranks = {str(r): [] for r in range(1, 9)}
+            # Print the board with coordinate labels
+            print("  a b c d e f g h")
+            print(" +-----------------+")
             
-            # Find occupied squares
-            for y in range(8):
+            # Print the board rows in reverse order (8 to 1)
+            for y in range(7, -1, -1):
+                row_str = f"{y+1}|"
                 for x in range(8):
-                    if board[y][x] == 1:  # If piece present
-                        file = chr(ord('a') + x)
-                        rank = str(y + 1)
-                        ranks[rank].append(file + rank)
+                    if board[y][x] == 1:  # Piece present
+                        row_str += "■ "  # Filled square for occupied
+                    else:
+                        row_str += "□ "  # Hollow square for empty
+                print(row_str + f"|{y+1}")
             
-            # Print occupied squares by rank
-            print("Occupied squares:")
-            for rank in "87654321":  # Print ranks in descending order
-                squares = ranks[rank]
-                if squares:
-                    print(f"Rank {rank}: {', '.join(squares)}")
+            print(" +-----------------+")
+            print("  a b c d e f g h")
             
-            # Print a summary count
-            total = sum(len(squares) for squares in ranks.values())
-            if total == 0:
-                print("No pieces detected")
-            else:
-                print(f"Total pieces: {total}")
+            # Count total pieces
+            total = sum(sum(row) for row in board)
+            print(f"Total pieces: {total}")
             
     except KeyboardInterrupt:
         print("\nMonitoring stopped")
