@@ -14,11 +14,14 @@ class Rocker():
         # Servo PWM configuration based on 0.5-2.5ms pulse width
         self.PWM_FREQ = 50  # 50Hz standard servo frequency
         self.CENTER_DUTY = 7.5  # ~1.5ms pulse (center)
-        self.OPEN_DUTY = 12.5   # ~2.5ms pulse (maximum)
-        self.CLOSE_DUTY = 2.5   # ~0.5ms pulse (minimum)
+        self.OPEN_DUTY = 9   # ~2.5ms pulse (maximum)
+        self.CLOSE_DUTY = 6   # ~0.5ms pulse (minimum)
         
         # Configure timeout to prevent infinite loops
         self.MAX_WAIT_TIME = 2.0  # seconds
+        
+        # Track current position
+        self.current_position = "home"
 
     def begin(self):
         self.home()
@@ -28,42 +31,58 @@ class Rocker():
         return lgpio.gpio_read(self.handle, self.switch_pin)
 
     def home(self):
-        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, self.CENTER_DUTY)
+        """Move servo to home position and stop PWM after movement completes"""
+        print("Moving to home position...")
+        self._move_servo(self.CENTER_DUTY)
+        self.current_position = "home"
     
-    def set_duty_cycle(self, duty_cycle):
-        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, duty_cycle)
-        
     def open(self):
+        """Open the mechanism"""
         print("Opening...")
+        self._move_servo(self.OPEN_DUTY)
+        
+        # Wait for switch state to change or timeout
         initial_state = self.get_switch_state()
         start_time = time.time()
         
-        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, self.OPEN_DUTY)
-        
-        # Wait for switch state to change or timeout
-        while not (self.get_switch_state() ^ initial_state):
-            if time.time() - start_time > self.MAX_WAIT_TIME:
-                print("Timeout waiting for switch state to change")
-                break
-            time.sleep(0.05)  # Less aggressive polling
-        
-        self.home()
-    
-    def close(self):
-        print("Closing...")
-        initial_state = self.get_switch_state()
-        start_time = time.time()
-        
-        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, self.CLOSE_DUTY)
-        
-        # Wait for switch state to change or timeout
         while not (self.get_switch_state() ^ initial_state):
             if time.time() - start_time > self.MAX_WAIT_TIME:
                 print("Timeout waiting for switch state to change")
                 break
             time.sleep(0.05)
         
+        # Return to home position
         self.home()
+    
+    def close(self):
+        """Close the mechanism"""
+        print("Closing...")
+        self._move_servo(self.CLOSE_DUTY)
+        
+        # Wait for switch state to change or timeout
+        initial_state = self.get_switch_state()
+        start_time = time.time()
+        
+        while not (self.get_switch_state() ^ initial_state):
+            if time.time() - start_time > self.MAX_WAIT_TIME:
+                print("Timeout waiting for switch state to change")
+                break
+            time.sleep(0.05)
+        
+        # Return to home position
+        self.home()
+    
+    def _move_servo(self, duty_cycle):
+        """Helper method to move servo and stop PWM to prevent jitter"""
+        # Set PWM to move the servo
+        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, duty_cycle)
+        
+        # Give the servo time to reach position
+        time.sleep(0.5)
+        
+        # Option 1: Stop PWM (servo will hold position mechanically)
+        # Uncomment this line if you want the servo to relax after moving
+        # lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
     
     def toggle(self):
         current_state = self.get_switch_state()
@@ -76,34 +95,18 @@ class Rocker():
 if __name__ == "__main__":
     rocker = Rocker()
     try:
-        print("Starting servo duty cycle sweep. Press Ctrl+C to exit.")
+        rocker.begin()
+        print("\nToggle Test - Press Enter to toggle, Ctrl+C to exit\n")
         
-        # Define sweep parameters - adjusted for 0.5ms to 2.5ms pulse width
-        min_duty = 2.5   # 0.5ms
-        max_duty = 12.5  # 2.5ms
-        step = 0.5
-        delay = 1.0  # seconds to hold at each position
-        
-        # First, center the servo
-        print(f"Centering servo at {rocker.CENTER_DUTY}%")
-        rocker.home()
-        time.sleep(1)
-        
-        # Continuously sweep back and forth
         while True:
-            input("Press Enter to toggle the servo or Ctrl+C to exit...")
+            input("Press Enter to toggle...")
             rocker.toggle()
-            time.sleep(1)
             
     except KeyboardInterrupt:
         print("\nExiting...")
     finally:
-        # Return to center position before exit
-        rocker.home()
-        time.sleep(0.5)
-        
-        # Proper cleanup
-        lgpio.tx_pwm(rocker.handle, rocker.servo_pin, 0, 0)  # Stop PWM
+        # Clean up
+        lgpio.tx_pwm(rocker.handle, rocker.servo_pin, 0, 0)
         lgpio.gpiochip_close(rocker.handle)
 
 
