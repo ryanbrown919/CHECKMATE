@@ -170,7 +170,7 @@ class ChessControlSystem:
                                     unless='is_auto_engine_mode', after=['on_player_turn', 'notify_observers'])
 
 
-        self.machine.add_transition(trigger='end_game', source=['gamescreen_engine_turn','gamescreen_player_turn'] dest='gamescreen_end_game', after='on_end_game')
+        self.machine.add_transition(trigger='end_game', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='gamescreen_end_game', after='on_end_game')
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
 
@@ -370,7 +370,7 @@ class ChessControlSystem:
                 move = result.move
                 print(f"[Engine] Engine move: {move}")
 
-                self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move))
+                self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move))
                 
                         # Check if the move is a capture before pushing it.
                 if self.board.is_capture(move):

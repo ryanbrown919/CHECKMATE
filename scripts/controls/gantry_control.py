@@ -252,7 +252,7 @@ class GantryControl:
             y = (ord('h') - ord(file)) * 2
             return (x, y)
         
-        def interpret_chess_move(self, move_str, is_capture):
+        def interpret_chess_move(self, move_str, is_capture, is_castling, is_en_passant):
             """
             Given a move string (e.g. "e2e4") and a step_value (in mm),
             returns the relative displacement as a tuple (dx_mm, dy_mm).
@@ -288,8 +288,8 @@ class GantryControl:
             offset = STEP_MM
 
             print(f"Start square: {start_coord}, end square: {end_coord}")
-
-            if start_square == 'e1' or start_square == 'e8':
+            ###### Need to check if king ##### otherwise this will always trigger 
+            if is_castling:
                 print("in castle")
 
                 #All notes in perspective of white
@@ -311,7 +311,6 @@ class GantryControl:
                     commands = self.movement_to_gcode(movements)
                     print(f"Rook comamnds: {commands}")
                     self.send_commands(commands)
-                    not_castle = False
                     return path
                     
 
@@ -333,7 +332,6 @@ class GantryControl:
                     commands = self.movement_to_gcode(movements)
                     print(f"king comamnds: {commands}")
                     self.send_commands(commands)
-                    not_castle = False
                     return path
                     
                  # black king to the left
@@ -352,7 +350,6 @@ class GantryControl:
                     commands = self.movement_to_gcode(movements)
                     print(f"king comamnds: {commands}")
                     self.send_commands(commands)
-                    not_castle = False
                     return path
 
                 # White king to the right
@@ -371,18 +368,16 @@ class GantryControl:
                     commands = self.movement_to_gcode(movements)
                     print(f"king comamnds: {commands}")
                     self.send_commands(commands)
-                    not_castle = False
                     return path
 
-                else:
-                    not_castle = True
+
                 # For castling, need to move rook to new position, then slide king around it vertically. 
                 # Need to know colour, , which rook is being moved
                 
     
                 
             
-            if not_castle: 
+            else: 
                 print('Not a castle')
 
                 # Computational method for determineing if it is a knight.
@@ -403,7 +398,7 @@ class GantryControl:
                  
 
             
-            if is_capture:
+            if is_capture and not is_en_passant:
                 print('Is capture')
                 # Need to make literal edge case
 
@@ -1035,6 +1030,7 @@ class GantryControl:
                         #move piece off center in opposite direction
                         captured_new_x = self.sign(end_x)*offset if not end_x == 0 else 0
                         captured_new_y = self.sign(end_y)*offset if not end_y == 0 else 0
+                    
                     path = [end_coord, (captured_new_x, captured_new_y)]
 
                     print(f"Path for moving captured piece off square: {path}")
