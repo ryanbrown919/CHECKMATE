@@ -9,6 +9,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.core.window import Window
 from kivy.clock import Clock
 from threading import Thread
+import random
 
 # Import your custom widgets and screens
 try:
@@ -52,23 +53,27 @@ class MainScreen(Screen):
         play_layout.add_widget(customplay_layout)
 
         # When "Play Game" is pressed, go to the loading screen
-        custom1 = RoundedButton(text="Play Game", font_size=FONT_SIZE, size_hint=(1, 1))
-        custom1.bind(on_release=lambda instance: self.start_game())
+        custom1 = RoundedButton(text="[size=70][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom1.bind(on_release=lambda instance: self.start_custom1())
 
-        custom2 = RoundedButton(text="Control Gantry", font_size=FONT_SIZE, size_hint=(1, 1))
-        custom2.bind(on_release=lambda instance: self.control_system.go_to_gantry())
+        custom2 = RoundedButton(text="[size=70][b]Play Online?[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom2.bind(on_release=lambda instance: self.start_custom2())
 
-        custom3 = RoundedButton(text="BOT v BOT", font_size=FONT_SIZE, size_hint=(1, 1))
-        custom3.bind(on_release=lambda instance: self.change_screen("loading"))
+        custom3 = RoundedButton(text="[size=70][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom3.bind(on_release=lambda instance: self.start_custom3())
+
+        custom4 = RoundedButton(text="[size=70][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom4.bind(on_release=lambda instance: self.start_custom4())
 
 
         quickplay_layout.add_widget(custom1)
         quickplay_layout.add_widget(custom2)
         quickplay_layout.add_widget(custom3)
-        quickplay_layout.add_widget(RoundedButton(text="Load Game", size_hint=(1, 1), font_size=FONT_SIZE))
+        quickplay_layout.add_widget(custom4)
+
 
         play_btn = IconButton(source="assets/Play.png", size_hint=(None, None), size=(200, 200))
-        play_btn.bind(on_release=lambda instance: self.change_screen("loading"))
+        play_btn.bind(on_release=lambda instance: self.start_custom_game())
         customplay_layout.add_widget(play_btn)
 
 
@@ -88,12 +93,20 @@ class MainScreen(Screen):
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True))
+        gantry_btn = IconButton(source="assets/Power.png", 
+                                            size_hint=(1, 0.3),
+                                            allow_stretch=True,
+                                            keep_ratio=True)
+        gantry_btn.bind(on_release=lambda instance: self.control_system.go_to_gantry())
+        option_layout.add_widget(gantry_btn)
         
         self.add_widget(root_layout)
 
-    def start_game(self):
-        print("Start Game button pressed.")
-        # Call the trigger in the control system to start the game.
+    def start_custom_game(self):
+        #Start game from bottom bar
+
+        self.control_parameters = {'online': False, 'colour': self.preferred_color, 'elo': self.chess_elo, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+
         self.control_system.start_game()
 
     def change_screen(self, screen_name):
@@ -128,6 +141,33 @@ class MainScreen(Screen):
         self.preferred_color = color
         self.chess_elo = elo
         print(f"Selected mode: {color}, ELO: {elo}")
+
+        if color == 'Bot V Bot':
+            self.bot_mode=True
+            self.preferred_color == 'white'
+        elif color == 'Random':
+            self.preferred_color = random.choice('white', 'black')
+            self.bot_mode = False
+        else:
+            self.bot_mode = False
+
+
+    def start_custom1(self):
+
+        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.control_system.start_game()
+    
+    def start_custom2(self):
+        #self.parameters = {'online': True, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        # If time
+        pass
+    def start_custom3(self):
+        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
+        self.control_system.start_game()
+
+    def start_custom4(self):
+        self.parameters = {'online': False, 'colour': "white", 'elo': 3000, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.control_system.start_game()
 
 
 class LoadingScreen(Screen):
