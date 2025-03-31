@@ -95,7 +95,7 @@ class SenseLayer:
             # Convert i to Gray code for more reliable multiplexing
             current_gray = i ^ (i >> 1)
             self.mux.set_pins(current_gray)
-            time.sleep(0.005)  # Short delay for multiplexer settling
+            time.sleep(0.0005)  # Short delay for multiplexer settling
 
             # Read the outputs
             outputs = self.mux.get_output()
@@ -155,30 +155,42 @@ def main():
     try:
         layer = SenseLayer()
         layer.begin()
-        print("Starting continuous board monitoring. Press Ctrl+C to exit.")
+        print("Chess board monitoring - Press Ctrl+C to exit")
         
         while True:
-            # Clear the screen
+            # Clear the screen for better readability
             print("\033[H\033[J", end="")
             
             # Read the board
             board = layer.get_squares()
             
-            # Find and print only occupied squares
-            occupied = []
+            # Organize occupied squares by rank
+            ranks = {str(r): [] for r in range(1, 9)}
+            
+            # Find occupied squares
             for y in range(8):
                 for x in range(8):
-                    if board[y][x] == 1:  # If a piece is present
-                        # Convert coordinates to algebraic notation
+                    if board[y][x] == 1:  # If piece present
                         file = chr(ord('a') + x)
                         rank = str(y + 1)
-                        occupied.append(file + rank)
+                        ranks[rank].append(file + rank)
             
-            # Print the occupied squares
-            print("Occupied squares:", ", ".join(occupied) if occupied else "None")
+            # Print occupied squares by rank
+            print("Occupied squares:")
+            for rank in "87654321":  # Print ranks in descending order
+                squares = ranks[rank]
+                if squares:
+                    print(f"Rank {rank}: {', '.join(squares)}")
+            
+            # Print a summary count
+            total = sum(len(squares) for squares in ranks.values())
+            if total == 0:
+                print("No pieces detected")
+            else:
+                print(f"Total pieces: {total}")
             
     except KeyboardInterrupt:
-        print("\nMonitoring stopped by user")
+        print("\nMonitoring stopped")
     finally:
         layer.cleanup()
 
