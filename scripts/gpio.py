@@ -125,7 +125,7 @@ class SenseLayer:
                     # Set the multiplexer
                     current_gray = i ^ (i >> 1)
                     self.mux.set_pins(current_gray)
-                    time.sleep(0.005)
+                    time.sleep(0.0005)
                     
                     # Read the specific output
                     outputs = self.mux.get_output()
@@ -158,37 +158,28 @@ def main():
         print("Starting continuous board monitoring. Press Ctrl+C to exit.")
         
         while True:
-            # Clear the screen (optional)
-            print("\033[H\033[J", end="")  # ANSI escape sequence to clear screen
+            # Clear the screen
+            print("\033[H\033[J", end="")
             
-            # Read and display the full board
-            print("Current Board State:")
+            # Read the board
             board = layer.get_squares()
             
-            # Print column headers
-            print("  a b c d e f g h")
-            print(" +-----------------+")
-            
-            # Print board with row numbers
-            for y in range(7, -1, -1):
-                row_str = f"{y+1}|"
+            # Find and print only occupied squares
+            occupied = []
+            for y in range(8):
                 for x in range(8):
-                    if board[y][x] == 1:
-                        row_str += "■ "  # Unicode filled square for pieces
-                    else:
-                        row_str += "· "  # Unicode middle dot for empty squares
-                print(row_str + "|")
+                    if board[y][x] == 1:  # If a piece is present
+                        # Convert coordinates to algebraic notation
+                        file = chr(ord('a') + x)
+                        rank = str(y + 1)
+                        occupied.append(file + rank)
             
-            print(" +-----------------+")
-            print("  a b c d e f g h")
-            
-            # Add a delay to make the output readable
-            time.sleep(0.5)
+            # Print the occupied squares
+            print("Occupied squares:", ", ".join(occupied) if occupied else "None")
             
     except KeyboardInterrupt:
         print("\nMonitoring stopped by user")
     finally:
-        # Always clean up GPIO resources on exit
         layer.cleanup()
 
 if __name__ == "__main__":
