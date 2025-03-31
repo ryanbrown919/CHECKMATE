@@ -17,12 +17,17 @@ class Rocker():
         self.CLOSE_DUTY = 6
         self.MAX_WAIT_TIME = 2.0
 
+        print(f"Initialized servo on pin {self.servo_pin} with switch on pin {self.switch_pin}")
+        print(f"PWM settings: frequency={self.PWM_FREQ}Hz, center={self.CENTER_DUTY}, open={self.OPEN_DUTY}, close={self.CLOSE_DUTY}")
+
     def begin(self):
         current_state = self.get_switch_state()
+        print(f"Initial switch state: {'HIGH' if current_state else 'LOW'}")
 
         if current_state:
             self.to_black()
-        self.home()
+        else
+            self.home()
 
     def get_switch_state(self):
         return lgpio.gpio_read(self.handle, self.switch_pin)
@@ -31,11 +36,13 @@ class Rocker():
         self._move_servo(self.CENTER_DUTY)
     
     def to_white(self):
+        print("Moving to white position")
         self._move_servo(self.OPEN_DUTY)
         self._wait_for_switch_change()
         self.home()
     
     def to_black(self):
+        print("Moving to black position")
         self._move_servo(self.CLOSE_DUTY)
         self._wait_for_switch_change()
         self.home()
