@@ -1,4 +1,4 @@
-import pigpio
+import lgpio
 import sys
 import time
 
@@ -8,21 +8,14 @@ import time
 
 # Configuration
 SERVO_GPIO_PIN = 17    # Change this to the GPIO pin you are using for the servo
-MIN_PULSEWIDTH = 500   # Minimum pulse width in microseconds (adjust for your servo)
-MAX_PULSEWIDTH = 2500  # Maximum pulse width in microseconds (adjust for your servo)
+DUTY_CYCLE = 50        # Duty cycle for the servo (0-100)
 
 class Servo():
     def __init__(self):
-        self.pi = pigpio.pi()
-        self.pi.set_mode(SERVO_GPIO_PIN, pigpio.OUTPUT)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, 0)
+        self.handle = lgpio.gpiochip_open(0)
+        lpgio.gpio_claim_output(self.handle, SERVO_GPIO_PIN)
         self.state = "home"
-        self.last_state = "home"  # corrected attribute name
-    
-    def duty_cycle_to_pulsewidth(self, duty_cycle, min_pw, max_pw):
-        if not (0 <= duty_cycle <= 100):
-            raise ValueError("Duty cycle must be between 0 and 100.")
-        return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
+        self.last_state = "home"  
 
     def begin(self):
         self.open()
@@ -32,18 +25,15 @@ class Servo():
         self.last_state = "open"
 
     def home(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+        lgpio.tx_pwm(self.handle, SERVO_GPIO_PIN, 10000, 50)
         self.state = "home"
     
     def open(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(62, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+        lgpio.tx_pwm(self.handle, SERVO_GPIO_PIN, 10000, 62)
         self.state = "open"
     
     def close(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(38, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+        lgpio.tx_pwm(self.handle, SERVO_GPIO_PIN, 10000, 38)
         self.state = "close"
     
     def toggle(self):

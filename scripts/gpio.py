@@ -2,50 +2,47 @@ import lgpio
 import time
 
 class Multiplexer:
-    # Multiplexer control pins
     MUX_S0 = 6
     MUX_S1 = 13
     MUX_S2 = 19
     MUX_S3 = 26
 
-    # Multiplexer output pins
     MUX_Y_1 = 16
     MUX_Y_2 = 12
     MUX_Y_3 = 21
     MUX_Y_4 = 20
 
     def __init__(self):
-        self.h = lgpio.gpiochip_open(0)
+        self.handle = lgpio.gpiochip_open(0)
         self.init()
 
     def init(self):
         # Set up control pins as outputs
         for pin in [self.MUX_S0, self.MUX_S1, self.MUX_S2, self.MUX_S3]:
-            lgpio.gpio_claim_output(self.h, pin)
-            lgpio.gpio_write(self.h, pin, 0)
+            lgpio.gpio_claim_output(self.handle, pin)
+            lgpio.gpio_write(self.handle, pin, 0)
         
-        # Set up output pins as inputs with pull-up resistors
+        # Set up output pins as inputs with pull-down resistors
         for pin in [self.MUX_Y_1, self.MUX_Y_2, self.MUX_Y_3, self.MUX_Y_4]:
-            lgpio.gpio_claim_input(self.h, pin, lgpio.SET_PULL_UP)
+            lgpio.gpio_claim_input(self.handle, pin, lgpio.SET_PULL_DOWN)
 
     def set_pins(self, nibble):
-        # Set the control pins based on the 4-bit nibble
-        lgpio.gpio_write(self.h, self.MUX_S0, nibble & 0x1)
-        lgpio.gpio_write(self.h, self.MUX_S1, (nibble >> 1) & 0x1)
-        lgpio.gpio_write(self.h, self.MUX_S2, (nibble >> 2) & 0x1)
-        lgpio.gpio_write(self.h, self.MUX_S3, (nibble >> 3) & 0x1)
+ 
+        lgpio.gpio_write(self.handle, self.MUX_S0, (nibble >> 0) & 0x1)
+        lgpio.gpio_write(self.handle, self.MUX_S1, (nibble >> 1) & 0x1)
+        lgpio.gpio_write(self.handle, self.MUX_S2, (nibble >> 2) & 0x1)
+        lgpio.gpio_write(self.handle, self.MUX_S3, (nibble >> 3) & 0x1)
 
     def get_output(self):
-        # Read the output pins and combine them into a byte
         output = 0
-        if lgpio.gpio_read(self.h, self.MUX_Y_1): output |= (1 << 0)
-        if lgpio.gpio_read(self.h, self.MUX_Y_2): output |= (1 << 1)
-        if lgpio.gpio_read(self.h, self.MUX_Y_3): output |= (1 << 2)
-        if lgpio.gpio_read(self.h, self.MUX_Y_4): output |= (1 << 3)
+        if lgpio.gpio_read(self.handle, self.MUX_Y_1): output |= (1 << 0)
+        if lgpio.gpio_read(self.handle, self.MUX_Y_2): output |= (1 << 1)
+        if lgpio.gpio_read(self.handle, self.MUX_Y_3): output |= (1 << 2)
+        if lgpio.gpio_read(self.handle, self.MUX_Y_4): output |= (1 << 3)
         return output
 
     def cleanup(self):
-        lgpio.gpiochip_close(self.h)
+        lgpio.gpiochip_close(self.handle)
 
 class SenseLayer:
     # Mapping from hall effect sensors to board coordinates
@@ -78,10 +75,6 @@ class SenseLayer:
         self.cols = 8
         self.mux = Multiplexer()
 
-    def begin(self):
-        # Nothing additional needed here as mux is initialized in __init__
-        pass
-
     def get_squares(self):
         """
         Scan the entire board and return a 2D array of sensor values.
@@ -109,30 +102,6 @@ class SenseLayer:
                 board[row][col] = 0 if ((outputs >> j) & 1) else 1
 
         return board
-
-    def get_square_cartesian(self, x, y):
-        """
-        Read the sensor state at board coordinates (x, y).
-        Returns 1 if piece detected, 0 if no piece.
-        """
-        # Scan through all multiplexer combinations
-        for i in range(16):
-            for j in range(4):
-                # Check if this multiplexer setting reads the desired square
-                if (self.hall_to_board_mapping[i][j][0] == x and 
-                    self.hall_to_board_mapping[i][j][1] == y):
-                    
-                    # Set the multiplexer
-                    current_gray = i ^ (i >> 1)
-                    self.mux.set_pins(current_gray)
-                    time.sleep(0.0005)
-                    
-                    # Read the specific output
-                    outputs = self.mux.get_output()
-                    return 0 if ((outputs >> j) & 1) else 1
-
-        # If coordinates weren't found in the mapping
-        return 0
 
     def get_square_from_notation(self, square):
         """
