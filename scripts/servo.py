@@ -88,9 +88,9 @@ class Rocker():
         current_state = self.get_switch_state()
         print(f"Current switch state: {current_state}")
         if current_state:
-            self.close()
-        else:
             self.open()
+        else:
+            self.close()
 
 if __name__ == "__main__":
     rocker = Rocker()
