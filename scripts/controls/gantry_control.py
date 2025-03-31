@@ -206,6 +206,14 @@ class GantryControl:
             #self.send_gcode("$X") 
             self.send_gcode(f"G21G90G1X{x}Y{y}F{FEEDRATE}")
 
+            while True:
+                self.ser.write(b'?')
+                status = self.ser.readline().decode().strip()
+                print(f"Status: {status}")
+                if '<Idle' in status:
+                    break
+                time.sleep(0.5)
+
 
         def on_step_change(self, instance, value):
             """

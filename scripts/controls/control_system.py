@@ -28,6 +28,8 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from servo_control import Servo
     from hall_control import Hall
+    from reset_control import BoardReset
+    from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
 
@@ -35,6 +37,8 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.servo_control import Servo
     from scripts.controls.hall_control import Hall
+    from scripts.controls.reset_control import BoardReset
+    from scripts.controls.nfc_control import NFC
 
 
     from scripts.screens.gamescreen import GameScreen
@@ -111,6 +115,7 @@ class ChessControlSystem:
         # Start in the start screen state.
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
+        self.endgame_message = "Jobs not finished"
 
         self.board = chess.Board()  # Integrated chess board.
         self.running = True
@@ -165,7 +170,7 @@ class ChessControlSystem:
                                     unless='is_auto_engine_mode', after=['on_player_turn', 'notify_observers'])
 
 
-        self.machine.add_transition(trigger='end_game', source='gamescreen', dest='gamescreen_end_game', after='on_end_game')
+        self.machine.add_transition(trigger='end_game', source=['gamescreen_engine_turn','gamescreen_player_turn'] dest='gamescreen_end_game', after='on_end_game')
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
 

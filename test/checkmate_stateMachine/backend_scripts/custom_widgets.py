@@ -8,6 +8,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.clock import Clock
 from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.popup import Popup
 
 import chess
 
@@ -889,3 +890,37 @@ class PlayerClock(Widget):
 
         # Refresh the background to reflect active state.
         self.update_background()
+
+
+
+class EndGame(Popup):
+        def __init__(self, control_system):
+            self.contorl_system = control_system
+
+            self.message = self.control_system.endgame_message
+
+
+            self.control_system.register_observer(self.check_state())
+            self.title="Game Over"
+            layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+            layout.add_widget(Label(text=self.message, font_size=60, halign='center', valign='middle', size_hint=(1, 0.8)))
+
+            # Add the button
+            button = Button(text="Reset Board and Return to Main Menu", size_hint=(1, 0.2))
+            button.bind(on_release=self.reset_and_return)
+            layout.add_widget(button)
+
+
+
+
+            self.content=layout
+            self.size_hint=(0.8, 0.5)
+            self.auto_dismiss=False
+
+
+
+        def check_state(self):
+            if self.control_system.game_state == 'FINISHED':
+            # Schedule the timer to auto-trigger the button
+
+            Clock.schedule_once(self.reset_and_return, 10)
