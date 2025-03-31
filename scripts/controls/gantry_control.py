@@ -1082,6 +1082,7 @@ class GantryControl:
                     dz_y = 400
 
                 self.deadzone_origin = (dz_x + 2*offset, dz_y)
+                
 
 
             print(f"Interpreted move: {move_str} as dx={dx}, dy={dy} as {path}")

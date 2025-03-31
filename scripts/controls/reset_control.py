@@ -1,8 +1,8 @@
 
 
 import math
-from gantry import Gantry
-from nfc import NFC
+# from gantry import Gantry
+# from nfc import NFC
 import time
 
 # gantry = Gantry()
