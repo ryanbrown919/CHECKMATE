@@ -23,9 +23,9 @@ class Rocker():
     def begin(self):
         current_state = self.get_switch_state()
         print(f"Initial switch state: {'HIGH' if current_state else 'LOW'}")
-s
-        if not current_state:
-            self.to_black()
+        
+        if current_state:
+            self.to_white()
         else:
             self.home()
 
