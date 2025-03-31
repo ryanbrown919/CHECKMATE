@@ -9,102 +9,61 @@ class Rocker():
         self.handle = lgpio.gpiochip_open(0)
         lgpio.gpio_claim_output(self.handle, self.servo_pin)
         lgpio.gpio_claim_input(self.handle, self.switch_pin, lgpio.SET_PULL_UP)
-        self.state = None
         
-        # Servo PWM configuration based on 0.5-2.5ms pulse width
-        self.PWM_FREQ = 50  # 50Hz standard servo frequency
-        self.CENTER_DUTY = 7.5  # ~1.5ms pulse (center)
-        self.OPEN_DUTY = 9   # ~2.5ms pulse (maximum)
-        self.CLOSE_DUTY = 6   # ~0.5ms pulse (minimum)
-        
-        # Configure timeout to prevent infinite loops
-        self.MAX_WAIT_TIME = 2.0  # seconds
-        
-        # Track current position
-        self.current_position = "home"
-
-    def begin(self):
-        self.home()
-        self.state = self.get_switch_state()
+        # Servo PWM configuration
+        self.PWM_FREQ = 50
+        self.CENTER_DUTY = 7.5
+        self.OPEN_DUTY = 9
+        self.CLOSE_DUTY = 6
+        self.MAX_WAIT_TIME = 2.0
 
     def get_switch_state(self):
         return lgpio.gpio_read(self.handle, self.switch_pin)
 
     def home(self):
-        """Move servo to home position and stop PWM after movement completes"""
-        print("Moving to home position...")
         self._move_servo(self.CENTER_DUTY)
-        self.current_position = "home"
     
-    def open(self):
-        """Open the mechanism and return to home only if switch is activated"""
-        print("Opening...")
+    def to_white(self):
         self._move_servo(self.OPEN_DUTY)
-        
-        # Record initial switch state
-        initial_state = self.get_switch_state()
-        start_time = time.time()
-        switch_activated = False
-        
-        # Wait for switch state to change or timeout
-        while time.time() - start_time <= self.MAX_WAIT_TIME:
-            current_state = self.get_switch_state()
-            if current_state != initial_state:  # Switch changed state
-                print("Switch activated!")
-                switch_activated = True
-                break
-
+        self._wait_for_switch_change()
         self.home()
     
-    def close(self):
-        """Close the mechanism and return to home only if switch is activated"""
-        print("Closing...")
+    def to_black(self):
         self._move_servo(self.CLOSE_DUTY)
-        
-        # Record initial switch state
-        initial_state = self.get_switch_state()
-        start_time = time.time()
-        switch_activated = False
-        
-        # Wait for switch state to change or timeout
-        while time.time() - start_time <= self.MAX_WAIT_TIME:
-            current_state = self.get_switch_state()
-            if current_state != initial_state:  # Switch changed state
-                print("Switch activated!")
-                switch_activated = True
-                break
-
+        self._wait_for_switch_change()
         self.home()
     
     def _move_servo(self, duty_cycle):
-        """Helper method to move servo and stop PWM to prevent jitter"""
-        # Set PWM to move the servo
         lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, duty_cycle)
     
+    def _wait_for_switch_change(self):
+        initial_state = self.get_switch_state()
+        start_time = time.time()
+        while time.time() - start_time <= self.MAX_WAIT_TIME:
+            if self.get_switch_state() != initial_state:
+                break
+    
     def toggle(self):
-        current_state = self.get_switch_state()
-        print(f"Current switch state: {current_state}")
-        if current_state:
-            self.open()
+        if self.get_switch_state():
+            self.to_white()
         else:
-            self.close()
+            self.to_black()
+
+    def cleanup(self):
+        lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
+        lgpio.gpiochip_close(self.handle)
 
 if __name__ == "__main__":
     rocker = Rocker()
     try:
-        rocker.begin()
-        print("\nToggle Test - Press Enter to toggle, Ctrl+C to exit\n")
-        
+        rocker.home()
         while True:
             input("Press Enter to toggle...")
             rocker.toggle()
-            
     except KeyboardInterrupt:
-        print("\nExiting...")
+        pass
     finally:
-        # Clean up
-        lgpio.tx_pwm(rocker.handle, rocker.servo_pin, 0, 0)
-        lgpio.gpiochip_close(rocker.handle)
+        rocker.cleanup()
 
 
 
