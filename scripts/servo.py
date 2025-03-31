@@ -8,6 +8,7 @@ class Rocker():
         self.switch_pin = 23
         self.handle = lgpio.gpiochip_open(0)
         lgpio.gpio_claim_output(self.handle, self.servo_pin)
+        lgpio.gpio_claim_input(self.handle, self.switch_pin, lgpio.SET_PULL_UP)
         self.state = None
 
     def begin(self):
@@ -35,11 +36,10 @@ class Rocker():
         self.home()
     
     def toggle(self):
-        if self.last_state == "open":
-            if self.get_switch_state():
-                self.close()
-            else:
-                self.open()
+        if self.get_switch_state():
+            self.close()
+        else:
+            self.open()
 
 if __name__ == "__main__":
     rocker = Rocker()
