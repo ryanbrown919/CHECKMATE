@@ -53,15 +53,8 @@ class Rocker():
                 print("Switch activated!")
                 switch_activated = True
                 break
-            time.sleep(0.05)
-        
-        if not switch_activated:
-            print("Timeout waiting for switch activation")
-            # Don't return to home if switch wasn't activated
-        else:
-            # Return to home position only if switch was activated
-            print("Returning to home position")
-            self.home()
+
+        self.home()
     
     def close(self):
         """Close the mechanism and return to home only if switch is activated"""
@@ -80,15 +73,8 @@ class Rocker():
                 print("Switch activated!")
                 switch_activated = True
                 break
-            time.sleep(0.05)
-        
-        if not switch_activated:
-            print("Timeout waiting for switch activation")
-            # Don't return to home
-        else:
-            # Return to home position only if switch was activated
-            print("Returning to home position")
-            self.home()
+
+        self.home()
     
     def _move_servo(self, duty_cycle):
         """Helper method to move servo and stop PWM to prevent jitter"""
