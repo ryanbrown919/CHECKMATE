@@ -1,72 +1,60 @@
-import pigpio
+import lgpio
 import sys
 import time
 
-'''
-@ryan: install pigpio (pip install pigpio) and run the daemon "sudo pigpiod" in the terminal whenever power cycling the pi so that this can work"
-'''
-
-# Configuration
-SERVO_GPIO_PIN = 17    # Change this to the GPIO pin you are using for the servo
-MIN_PULSEWIDTH = 500   # Minimum pulse width in microseconds (adjust for your servo)
-MAX_PULSEWIDTH = 2500  # Maximum pulse width in microseconds (adjust for your servo)
-
-class Servo():
+class Rocker():
     def __init__(self):
-        self.pi = pigpio.pi()
-        self.pi.set_mode(SERVO_GPIO_PIN, pigpio.OUTPUT)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, 0)
+        self.servo_pin = 17
+        self.switch_pin = None # Placeholder for switch pin
+        self.handle = lgpio.gpiochip_open(0)
+        lpgio.gpio_claim_output(self.handle, self.servo_pin)
         self.state = "home"
-        self.last_state = "home"  # corrected attribute name
-    
-    def duty_cycle_to_pulsewidth(self, duty_cycle, min_pw, max_pw):
-        if not (0 <= duty_cycle <= 100):
-            raise ValueError("Duty cycle must be between 0 and 100.")
-        return min_pw + (duty_cycle / 100.0) * (max_pw - min_pw)
+        self.last_state = "home"  
 
     def begin(self):
         self.open()
         time.sleep(0.5)
         self.home()
-        self.state = "home"
-        self.last_state = "open"
+        self.state = get_switch_state()
+
+    def get_switch_state(self):
+        return lgpio.gpio_read(self.handle, self.switch_pin)
 
     def home(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(50, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
+        lgpio.tx_pwm(self.handle, self.servo_pin, 10000, 50)
         self.state = "home"
     
     def open(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(62, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
-        self.state = "open"
+        initial_state = self.get_switch_state()
+        while not (self.get_switch_state() ^ initial_state):
+            lgpio.tx_pwm(self.handle, self.servo_pin, 10000, 62)
+            time.sleep(0.005)
+        self.home()
     
     def close(self):
-        pulse_width = self.duty_cycle_to_pulsewidth(38, MIN_PULSEWIDTH, MAX_PULSEWIDTH)
-        self.pi.set_servo_pulsewidth(SERVO_GPIO_PIN, pulse_width)
-        self.state = "close"
+        initial_state = self.get_switch_state()
+        while not (self.get_switch_state() ^ initial_state):
+            lgpio.tx_pwm(self.handle, self.servo_pin, 10000, 38)
+            time.sleep(0.005)
+        self.home()
     
     def toggle(self):
         if self.last_state == "open":
-            self.close()
-            time.sleep(0.5)
-            self.home()
-            self.last_state = "close"
-        elif self.last_state == "close":
-            self.open()
-            time.sleep(0.5)
-            self.home()
-            self.last_state = "open"
+            if self.get_switch_state():
+                self.close()
+            else:
+                self.open()
 
 if __name__ == "__main__":
-    servo = Servo()
-    servo.begin()
+    rocker = Rocker()
+    rocker.begin()
     try:
         while True:
             input("Press Enter to toggle the servo")
-            servo.toggle()
+            rocker.toggle()
     except KeyboardInterrupt:
-        servo.pi.stop()
+        rocker.home()
+        rocker.handle.cleanup()
         sys.exit(0)
 
 

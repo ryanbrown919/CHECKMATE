@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -O3 -fPIC -Wall -Wextra -Werror -std=c11 -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -shared
-LIBS = -lpigpio
+LIBS = -lpigpio # only compatible with pi 4B+
 
 SRCDIR = src
 BUILDDIR = build
