@@ -22,7 +22,6 @@ class Rocker():
 
     def begin(self):
         self.home()
-        time.sleep(0.5)
         self.state = self.get_switch_state()
 
     def get_switch_state(self):
@@ -30,8 +29,10 @@ class Rocker():
 
     def home(self):
         lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, self.CENTER_DUTY)
-        time.sleep(0.5)  # Give servo time to move
     
+    def set_duty_cycle(self, duty_cycle):
+        lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, duty_cycle)
+        
     def open(self):
         print("Opening...")
         initial_state = self.get_switch_state()
@@ -75,16 +76,54 @@ class Rocker():
 if __name__ == "__main__":
     rocker = Rocker()
     try:
-        rocker.begin()
-        print("Setup complete. Press Enter to toggle, Ctrl+C to exit.")
+        print("Starting servo duty cycle sweep. Press Ctrl+C to exit.")
+        
+        # Define sweep parameters
+        min_duty = 2.0
+        max_duty = 12.0
+        step = 0.5
+        delay = 1.0  # seconds to hold at each position
+        
+        # First, center the servo
+        print(f"Centering servo at {rocker.CENTER_DUTY}%")
+        rocker.home()
+        time.sleep(1)
+        
+        # Continuously sweep back and forth
         while True:
-            input("Press Enter to toggle the servo")
-            rocker.toggle()
+            # Sweep up
+            print("\nSweeping up...")
+            for duty in [min_duty + i*step for i in range(int((max_duty-min_duty)/step) + 1)]:
+                print(f"Setting duty cycle: {duty:.1f}%")
+                rocker.set_duty_cycle(duty)
+                switch_state = rocker.get_switch_state()
+                print(f"  Switch state: {switch_state}")
+                time.sleep(delay)
+            
+            # Brief pause at max
+            time.sleep(1)
+            
+            # Sweep down
+            print("\nSweeping down...")
+            for duty in [max_duty - i*step for i in range(int((max_duty-min_duty)/step) + 1)]:
+                print(f"Setting duty cycle: {duty:.1f}%")
+                rocker.set_duty_cycle(duty)
+                switch_state = rocker.get_switch_state()
+                print(f"  Switch state: {switch_state}")
+                time.sleep(delay)
+            
+            # Brief pause at min
+            time.sleep(1)
+            
     except KeyboardInterrupt:
         print("\nExiting...")
     finally:
+        # Return to center position before exit
+        rocker.home()
+        time.sleep(0.5)
+        
         # Proper cleanup
-        lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)  # Stop PWM
+        lgpio.tx_pwm(rocker.handle, rocker.servo_pin, 0, 0)  # Stop PWM
         lgpio.gpiochip_close(rocker.handle)
 
 
