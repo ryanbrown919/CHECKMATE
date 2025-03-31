@@ -11,11 +11,11 @@ class Rocker():
         lgpio.gpio_claim_input(self.handle, self.switch_pin, lgpio.SET_PULL_UP)
         self.state = None
         
-        # Servo PWM configuration
+        # Servo PWM configuration based on 0.5-2.5ms pulse width
         self.PWM_FREQ = 50  # 50Hz standard servo frequency
         self.CENTER_DUTY = 7.5  # ~1.5ms pulse (center)
-        self.OPEN_DUTY = 10.0   # ~2.0ms pulse
-        self.CLOSE_DUTY = 5.0   # ~1.0ms pulse
+        self.OPEN_DUTY = 12.5   # ~2.5ms pulse (maximum)
+        self.CLOSE_DUTY = 2.5   # ~0.5ms pulse (minimum)
         
         # Configure timeout to prevent infinite loops
         self.MAX_WAIT_TIME = 2.0  # seconds
@@ -78,9 +78,9 @@ if __name__ == "__main__":
     try:
         print("Starting servo duty cycle sweep. Press Ctrl+C to exit.")
         
-        # Define sweep parameters
-        min_duty = 2.0
-        max_duty = 12.0
+        # Define sweep parameters - adjusted for 0.5ms to 2.5ms pulse width
+        min_duty = 2.5   # 0.5ms
+        max_duty = 12.5  # 2.5ms
         step = 0.5
         delay = 1.0  # seconds to hold at each position
         
@@ -91,28 +91,8 @@ if __name__ == "__main__":
         
         # Continuously sweep back and forth
         while True:
-            # Sweep up
-            print("\nSweeping up...")
-            for duty in [min_duty + i*step for i in range(int((max_duty-min_duty)/step) + 1)]:
-                print(f"Setting duty cycle: {duty:.1f}%")
-                rocker.set_duty_cycle(duty)
-                switch_state = rocker.get_switch_state()
-                print(f"  Switch state: {switch_state}")
-                time.sleep(delay)
-            
-            # Brief pause at max
-            time.sleep(1)
-            
-            # Sweep down
-            print("\nSweeping down...")
-            for duty in [max_duty - i*step for i in range(int((max_duty-min_duty)/step) + 1)]:
-                print(f"Setting duty cycle: {duty:.1f}%")
-                rocker.set_duty_cycle(duty)
-                switch_state = rocker.get_switch_state()
-                print(f"  Switch state: {switch_state}")
-                time.sleep(delay)
-            
-            # Brief pause at min
+            input("Press Enter to toggle the servo or Ctrl+C to exit...")
+            rocker.toggle()
             time.sleep(1)
             
     except KeyboardInterrupt:
