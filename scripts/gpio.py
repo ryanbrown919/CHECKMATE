@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+import lgpio
 import time
 
 class Multiplexer:
@@ -15,36 +15,37 @@ class Multiplexer:
     MUX_Y_4 = 20
 
     def __init__(self):
+        self.h = lgpio.gpiochip_open(0)
         self.init()
 
     def init(self):
-        # Set up GPIO mode
-        GPIO.setmode(GPIO.BCM)
-        
         # Set up control pins as outputs
         for pin in [self.MUX_S0, self.MUX_S1, self.MUX_S2, self.MUX_S3]:
-            GPIO.setup(pin, GPIO.OUT)
-            GPIO.output(pin, GPIO.LOW)
+            lgpio.gpio_claim_output(self.h, pin)
+            lgpio.gpio_write(self.h, pin, 0)
         
         # Set up output pins as inputs with pull-up resistors
         for pin in [self.MUX_Y_1, self.MUX_Y_2, self.MUX_Y_3, self.MUX_Y_4]:
-            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            lgpio.gpio_claim_input(self.h, pin, lgpio.SET_PULL_UP)
 
     def set_pins(self, nibble):
         # Set the control pins based on the 4-bit nibble
-        GPIO.output(self.MUX_S0, nibble & 0x1)
-        GPIO.output(self.MUX_S1, (nibble >> 1) & 0x1)
-        GPIO.output(self.MUX_S2, (nibble >> 2) & 0x1)
-        GPIO.output(self.MUX_S3, (nibble >> 3) & 0x1)
+        lgpio.gpio_write(self.h, self.MUX_S0, nibble & 0x1)
+        lgpio.gpio_write(self.h, self.MUX_S1, (nibble >> 1) & 0x1)
+        lgpio.gpio_write(self.h, self.MUX_S2, (nibble >> 2) & 0x1)
+        lgpio.gpio_write(self.h, self.MUX_S3, (nibble >> 3) & 0x1)
 
     def get_output(self):
         # Read the output pins and combine them into a byte
         output = 0
-        if GPIO.input(self.MUX_Y_1): output |= (1 << 0)
-        if GPIO.input(self.MUX_Y_2): output |= (1 << 1)
-        if GPIO.input(self.MUX_Y_3): output |= (1 << 2)
-        if GPIO.input(self.MUX_Y_4): output |= (1 << 3)
+        if lgpio.gpio_read(self.h, self.MUX_Y_1): output |= (1 << 0)
+        if lgpio.gpio_read(self.h, self.MUX_Y_2): output |= (1 << 1)
+        if lgpio.gpio_read(self.h, self.MUX_Y_3): output |= (1 << 2)
+        if lgpio.gpio_read(self.h, self.MUX_Y_4): output |= (1 << 3)
         return output
+
+    def cleanup(self):
+        lgpio.gpiochip_close(self.h)
 
 class SenseLayer:
     # Mapping from hall effect sensors to board coordinates
@@ -147,7 +148,7 @@ class SenseLayer:
         
     def cleanup(self):
         """Clean up GPIO resources"""
-        GPIO.cleanup()
+        self.mux.cleanup()
 
 def main():
     """Test function that continuously monitors the chess board"""
@@ -188,7 +189,7 @@ def main():
         print("\nMonitoring stopped by user")
     finally:
         # Always clean up GPIO resources on exit
-        GPIO.cleanup()
+        layer.cleanup()
 
 if __name__ == "__main__":
     main()
