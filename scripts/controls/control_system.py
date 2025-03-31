@@ -418,7 +418,7 @@ class ChessControlSystem:
         # Simulate some processing delay before gantry is ready.
         #self.gantry = GantryControl()
         self.gantry.connect_to_grbl()
-        self.servo = Servo()
+        #self.servo = Servo()
         #self.sense = Hall()
         # self.servo.begin()
         #self.gantry_ready()
