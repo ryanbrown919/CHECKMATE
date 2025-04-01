@@ -202,7 +202,7 @@ class Hall:
         self.move = None
 
     def board_to_chess_notation(self, row, col):
-        return f"{chr(97 + col)}{8 - row}"
+        return f"{chr(97 + row)}{8 - col}"
 
     def compare_boards(self, board, reference_board):
         # if self.initial_board is None:
@@ -215,7 +215,7 @@ class Hall:
             for col in range(8):
                 if reference_board[row][col] != board[row][col]:
                     
-                    change = self.board_to_chess_notation(8-row, col)
+                    change = self.board_to_chess_notation(row, col)
                     return change  # Update reference board after first change
 
         return None
@@ -285,6 +285,7 @@ class Hall:
         while self.first_change is None:
 
             new_board = self.sense_layer.get_squares_game()
+            time.sleep(0.5)
             print("New board")
             #print(new_board)
             self.first_change = self.compare_boards(initial_board, new_board)
@@ -301,6 +302,8 @@ class Hall:
         while self.second_change is None:
 
             new_board = self.sense_layer.get_squares_game()
+            time.sleep(0.5)
+
             self.second_change = self.compare_boards(initial_board, new_board)
 
         result_event.set()
@@ -334,6 +337,8 @@ class Hall:
         while True:
             # Obtain the current board state.
             new_board = self.sense_layer.get_squares_game()
+            time.sleep(0.5)
+
             print("Polling new board state:", new_board)
 
             for y in range(7, -1, -1):
@@ -374,6 +379,8 @@ class Hall:
         while True:
             # Obtain the current board state.
             new_board = self.sense_layer.get_squares_game()
+            time.sleep(0.5)
+
             print("Polling new board state:", new_board)
 
             # Compare the boards using your custom function.
