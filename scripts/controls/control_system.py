@@ -219,7 +219,7 @@ class ChessControlSystem:
         self.rocker.begin()
         print("Rocker initialized")
         self.gantry = GantryControl()
-        self.gantry.home()
+        #self.gantry.home()
         print("Gantry initialized: homing")
         self.move_history = []
         self.captured_pieces = []
