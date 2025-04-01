@@ -108,17 +108,17 @@ class SenseLayer:
     def get_squares_gantry(self):
         board = self.get_squares()
 
-        transposed_np = board.T
+        # transposed_np = board.T
         # print("Transposed Matrix (NumPy):")
         # print(transposed_np)
 
-        # Rotate the original matrix 90° counterclockwise using np.rot90
-        final_board = np.rot90(transposed_np, k=1)  # k=1 rotates by 90° CCW
-        # print("\nRotated 90° Counterclockwise (NumPy):")
+        # # Rotate the original matrix 90° counterclockwise using np.rot90
+        # rotated_ccw_np = np.rot90(board, k=1)  # k=1 rotates by 90° CCW
+        # # print("\nRotated 90° Counterclockwise (NumPy):")
         # print(rotated_ccw_np)
 
-        # transposed_board = list(map(list, zip(*board)))
-        # rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
+        transposed_board = list(map(list, zip(*board)))
+        final_board = [[transposed_board[j][i] for j in range(len(transposed_board))] for i in range(len(transposed_board[0])-1,-1,-1)]
 
         return final_board
 
