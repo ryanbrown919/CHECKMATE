@@ -117,9 +117,10 @@ class SenseLayer:
         # # print("\nRotated 90° Counterclockwise (NumPy):")
         # print(rotated_ccw_np)
 
-        # transposed_board = list(map(list, zip(*board)))
-        transposed_board = board
-        final_board = [[transposed_board[j][i] for j in range(len(transposed_board))] for i in range(len(transposed_board[0])-1,-1,-1)]
+        transposed_board = list(map(list, zip(*board)))
+        # transposed_board = board
+        board_t = [[transposed_board[j][i] for j in range(len(transposed_board))] for i in range(len(transposed_board[0])-1,-1,-1)]
+        final_board = list(map(list, zip(*board_t)))
 
         return final_board
 
