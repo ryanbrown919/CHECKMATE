@@ -150,7 +150,7 @@ class GantryTargetWidget(Widget):
                     # - Files (columns) are labeled from 'a' to 'h' (left to right).
                     # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
                     
-                    square_occupancy = self.board_occupancy[row-2][col]
+                    square_occupancy = self.board_occupancy[col][row-2]
 
                     # print(f"Square {square_label} is {square_occupancy}")
 
