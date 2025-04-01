@@ -56,24 +56,24 @@ class GantryControl:
                 self.ser.write(str.encode(command + "\n"))
         
         def get_position(self, max_attempts=10, delay=0.1):
-        for _ in range(max_attempts):
-            self.send("?")
-            response = self.serial.readline().decode().strip()
-            
-            if 'MPos:' in response:
-                pos_part = response.split('MPos:')[1].split('|')[0]
-                coords = pos_part.split(',')
-            elif 'WPos:' in response:
-                pos_part = response.split('WPos:')[1].split('|')[0]
-                coords = pos_part.split(',')
-            else:
-                continue 
+            for _ in range(max_attempts):
+                self.send("?")
+                response = self.serial.readline().decode().strip()
                 
-            x = int(float(coords[0]) + 475)
-            y = int(float(coords[1]) + 486)
-            
-            return x, y   
-        return None, None  
+                if 'MPos:' in response:
+                    pos_part = response.split('MPos:')[1].split('|')[0]
+                    coords = pos_part.split(',')
+                elif 'WPos:' in response:
+                    pos_part = response.split('WPos:')[1].split('|')[0]
+                    coords = pos_part.split(',')
+                else:
+                    continue 
+                    
+                x = int(float(coords[0]) + 475)
+                y = int(float(coords[1]) + 486)
+                
+                return x, y   
+            return None, None  
     
         def send_jog_command(self, dx, dy):
             """
@@ -112,24 +112,6 @@ class GantryControl:
                     break
                 time.sleep(0.5)
 
-
-        def on_step_change(self, instance, value):
-            """
-            Update the jog step size when the user modifies the TextInput.
-            """
-            try:
-                self.jog_step = int(value)
-            except ValueError:
-                self.jog_step = 1
-
-        def on_reconnect(self, instance):
-            """
-            Manually trigger a reconnect to the GRBL device.
-            This can be useful if a flag is raised (e.g., a limit switch is triggered)
-            and you need to reinitialize the connection.
-            """
-            # Attempt to reconnect immediately.
-            self.connect_to_grbl()
 
         def square_to_coord(self, square):
             """
