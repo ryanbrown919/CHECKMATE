@@ -480,26 +480,41 @@ class ChessControlSystem:
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
-        result_event.wait()
+
+        def check_for_result(dt):
+            if result_event.is_set():
+                print("scan_for_first_move returned:", self.hall.first_change)
+                scanner_thread.join()  # Clean up the thread
+                self.selected_piece = self.hall.first_change
+                self.select_piece(self.selected_piece)
+                self.notify_observers()
+                # Optionally trigger a subsequent state transition here
+            else:
+                # Schedule another check after a short delay
+                Clock.schedule_once(check_for_result, 0.1)
+
+        # Start checking without blocking
+        Clock.schedule_once(check_for_result, 0.1)
+        # result_event.wait()
 
         print("test_function returned:", self.hall.first_change)
-        scanner_thread.join()  # Optionally join the thread to clean up
+        # scanner_thread.join()  # Optionally join the thread to clean up
         
 
 
-        # self.initial_board = self.hall.sense_layer.get_squares_game()
+        # # self.initial_board = self.hall.sense_layer.get_squares_game()
 
-        # print("Trying to find first peice")
-        # self.selected_piece = None
-        # while self.selected_piece is None:
+        # # print("Trying to find first peice")
+        # # self.selected_piece = None
+        # # while self.selected_piece is None:
 
-        #     self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-        #     time.sleep(0.5)
+        # #     self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+        # #     time.sleep(0.5)
 
-        # print("Detected_first_piece")
-        self.selected_piece = self.hall.first_change
-        self.select_piece(self.selected_piece)
-        self.notify_observers()
+        # # print("Detected_first_piece")
+        # self.selected_piece = self.hall.first_change
+        # self.select_piece(self.selected_piece)
+        # self.notify_observers()
 
         #get second change
     def second_piece_detection_poll(self):
@@ -513,11 +528,25 @@ class ChessControlSystem:
         scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_second_move(result_event))
         scanner_thread.start()
 
-        # Wait until the event is signaled by test_function
-        result_event.wait()
+        # # Wait until the event is signaled by test_function
+        # result_event.wait()
 
-        print("test_function returned:", self.hall.second_change)
-        scanner_thread.join()  # Optionally join the thread to clean up
+        # print("test_function returned:", self.hall.second_change)
+        # scanner_thread.join()  # Optionally join the thread to clean up
+
+        def check_for_result(dt):
+            if result_event.is_set():
+                print("scan_for_second_move returned:", self.hall.first_change)
+                scanner_thread.join()  # Clean up the thread
+                self.selected_move = self.hall.second_change
+                # self.notify_observers()
+                # Optionally trigger a subsequent state transition here
+            else:
+                # Schedule another check after a short delay
+                Clock.schedule_once(check_for_result, 0.1)
+
+        # Start checking without blocking
+        Clock.schedule_once(check_for_result, 0.1)
         
         # self.initial_board = self.hall.sense_layer.get_squares_game()
 
