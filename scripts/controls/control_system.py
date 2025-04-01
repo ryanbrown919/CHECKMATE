@@ -35,7 +35,7 @@ try:
 
 except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
-    from scripts.controls.servo_control import Servo
+    from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
     from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
@@ -105,7 +105,7 @@ class ChessControlSystem:
     ]
 
     systems_enabled = {
-        "servo": False,
+        "rocker": True,
         "gantry": True,
         "hall": False,
         "rfid": False
@@ -183,8 +183,13 @@ class ChessControlSystem:
 
         self.engine = None
         self.servo = None
+
+        self.rocker = Rocker()
+        self.rocker.begin()
+        print("Rocker initialized")
         self.gantry = GantryControl()
-        # self.gantry.connect_to_grbl()
+        self.gantry.home()
+        print("Gantry initialized: homing")
         self.move_history = []
         self.captured_pieces = []
         self.SQUARES = chess.SQUARES
@@ -422,8 +427,7 @@ class ChessControlSystem:
                 self.board.push(move)
         # Transition back to player's turn.
 
-        time.sleep(0.5)
-
+        self.rocker.toggle()
         self.notify_observers()
         self.update_ui()
         self.engine_move_complete()
@@ -444,7 +448,7 @@ class ChessControlSystem:
         print("Initializing gantry communication...")
         # Simulate some processing delay before gantry is ready.
         #self.gantry = GantryControl()
-        self.gantry.connect_to_grbl()
+        # self.gantry.connect_to_grbl()
         #self.servo = Servo()
         #self.sense = Hall()
         # self.servo.begin()

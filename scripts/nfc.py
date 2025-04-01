@@ -4,10 +4,8 @@ class NFC():
     def __init__(self):
         # Attach to I2C bus 1 on the pi
         self.nfc = Pn532(Pn532I2c(1))
-
-    def begin(self):
         self.nfc.begin()
-        self.nfc.SAMConfig()
+        self.nfc.SAMConfig()   
     
     def read(self):
         tag_present = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
