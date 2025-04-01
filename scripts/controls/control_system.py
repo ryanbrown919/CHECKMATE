@@ -468,19 +468,19 @@ class ChessControlSystem:
         self.selected_piece = None
         while self.selected_piece is None:
 
-            self.selected_peice = self.hall.compare_boards(self.hall.get_squares_game(), self.initial_board)
+            self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
 
         self.select_piece(self.selected_piece)
         self.notify_observers()
 
         #get second change
     def second_piece_detection_poll(self):
-        self.initial_board = self.hall.sense_layer.get_squares()
+        self.initial_board = self.hall.sense_layer.get_squares_game()
 
         self.selected_move = None
         while self.selected_move is None:
 
-            self.selected_move = self.hall.compare_boards(self.hall.get_squares_game(), self.initial_board)
+            self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
 
         if self.selected_piece == self.selected_move:
             # selected_piece = None
