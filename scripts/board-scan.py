@@ -176,7 +176,7 @@ def main():
     """Main program execution."""
     
     # Create hardware objects
-    sensor_layer = SenseLayer()
+    sense_layer = SenseLayer()
     gantry = Gantry()
     # nfc_reader = NFC()
     
