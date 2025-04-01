@@ -222,11 +222,11 @@ class ChessControlSystem:
 
 
 
-        self.rocker.toggle()
-        time.sleep(0.2)
-        self.rocker.toggle()
-        time.sleep(0.2)
-        self.rocker.toggle()
+        # self.rocker.toggle()
+        # time.sleep(0.2)
+        # self.rocker.toggle()
+        # time.sleep(0.2)
+        # self.rocker.toggle()
 
         
 
@@ -590,7 +590,8 @@ class ChessControlSystem:
     # Example backend methods:
     def init_gantry(self):
         # Asynchronously initialize GRBL serial communication.
-        print("Initializing gantry communication...")
+        self.hall = Hall()
+        print("Hall Initialized")
         # Simulate some processing delay before gantry is ready.
         #self.gantry = GantryControl()
         # self.gantry.connect_to_grbl()
