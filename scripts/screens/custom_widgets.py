@@ -546,7 +546,11 @@ class ChessBoard(Widget):
                 # You might call control_system.select_piece to update legal moves.
                 self.legal_moves = self.control_system.select_piece(piece_widget.chess_square)
                 self.clear_highlights()
-                self.highlight_legal_moves(self.legal_moves)
+
+                if self.control_system.legal_moves is not None:
+                    self.highlight_legal_moves(self.control_system.legal_moves)
+                else:
+                    self.highlight_legal_moves(self.legal_moves)
             return True
 
         return super(ChessBoard, self).on_touch_down(touch)

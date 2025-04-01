@@ -241,6 +241,7 @@ class ChessControlSystem:
         self.first_change = None
         self.second_change = None
 
+        self.legal_moves = None
 
 
 
@@ -393,6 +394,8 @@ class ChessControlSystem:
 
                 self.checkmate = False
 
+            self.legal_moves = None
+
             self.board.push(move)
             self.notify_observers()
 
@@ -487,7 +490,7 @@ class ChessControlSystem:
 
         print("Detected_first_piece")
         self.selected_piece = self.hall.first_change
-        self.select_piece(self.selected_piece)
+        self.legal_moves = self.select_piece(self.selected_piece)
         self.notify_observers()
 
 
