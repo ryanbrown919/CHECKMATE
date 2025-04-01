@@ -473,6 +473,8 @@ class ChessControlSystem:
 
         self.initial_board = self.hall.sense_layer.get_squares_game()
 
+        print(self.initial_board)
+
         print("Trying to find first peice")
         self.selected_piece = None
         while self.selected_piece is None:
