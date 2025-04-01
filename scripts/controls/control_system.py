@@ -476,7 +476,7 @@ class ChessControlSystem:
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.control.system.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread = threading.Thread(target=self.control_system.hall.scan_for_move, args=(self.first_change,))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
@@ -503,19 +503,19 @@ class ChessControlSystem:
         #get second change
     def second_piece_detection_poll(self):
 
-        self.first_change = None
+        self.second_change = None
 
         # Create a new event for this invocation of the state
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.control.system.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread = threading.Thread(target=self.control_system.hall.scan_for_move, args=(self.second_change,))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
         result_event.wait()
 
-        print("test_function returned:", self.first_change)
+        print("test_function returned:", self.second_change)
         scanner_thread.join()  # Optionally join the thread to clean up
         
         # self.initial_board = self.hall.sense_layer.get_squares_game()
