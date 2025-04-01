@@ -158,6 +158,8 @@ def main_test():
         print("\nMonitoring stopped")
     finally:
         layer.cleanup()
+
+
 class Hall:
 
     def __init__(self):

@@ -100,7 +100,8 @@ class ChessControlSystem:
         ]
         },
         'gantryscreen',
-        'settingsscreen'
+        'settingsscreen',
+        'endgamescreen'
     ]
 
     systems_enabled = {
@@ -116,6 +117,7 @@ class ChessControlSystem:
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
         self.endgame_message = "Jobs not finished"
+        self.checkmate = False
 
         self.board = chess.Board()  # Integrated chess board.
         self.running = True
@@ -170,7 +172,9 @@ class ChessControlSystem:
                                     unless='is_auto_engine_mode', after=['on_player_turn', 'notify_observers'])
 
 
-        self.machine.add_transition(trigger='end_game', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='gamescreen_end_game', after='on_end_game')
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
+        self.machine.add_transition(trigger='resetboard', source='endgamescreen', dest='resetboardscreen')
+
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
 
@@ -178,9 +182,7 @@ class ChessControlSystem:
         self.game_progress = 0  # Just an example variable
 
         self.engine = None
-
         self.servo = None
-        # self.gantry = None
         self.gantry = GantryControl()
         # self.gantry.connect_to_grbl()
         self.move_history = []
@@ -297,6 +299,8 @@ class ChessControlSystem:
         # self.hall_thread = threading.Thread(target=self.sense.poll_board_for_change, daemon=True)
         # self.hall_thread.start()
 
+        
+
         # while self.sense.move is None:
         #     time.sleep(0.5)
 
@@ -382,12 +386,28 @@ class ChessControlSystem:
                 
                 self.move_history.append(move.uci())
 
-                
+                if self.board.is_checkmate(move):
+                    self.checkmate = True
+                    
+                elif self.board.is_check(move):
+                    # Make some indication
 
+                    self.check = f"{self.board.turn}"
+                    self.checkmate = False
+
+                else:
+                    self.check = ""
+                    self.checkmate = False
 
                 self.board.push(move)
-
                 self.notify_observers()
+
+
+                if self.checkmate:
+                    self.end_game(f"{self.board.turn}")
+
+
+                # self.notify_observers()
             except Exception as e:
                 print("[Engine] Error computing engine move:", e)
             # finally:
@@ -490,6 +510,14 @@ class ChessControlSystem:
         print("Resetting board...")
         # Reset board logic here.
         self.to_gameplay()
+    
+    def end_game(self):
+        
+        self.game_winner = ""
+        self.game_state = "FINISHED"
+
+        self.notify_observers()
+        pass
 
     def toggle_clock(self):
         self.clock_logic.toggle_active_player()

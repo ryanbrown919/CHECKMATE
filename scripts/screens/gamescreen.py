@@ -107,6 +107,9 @@ class GameScreen(Screen):
         
         # Update widgets on the screen
 
+        if self.control_system.game_state == 'FINSIHED':
+            self.show_endgame_popup(self)
+
         pass
 
 
@@ -142,28 +145,4 @@ class GameScreen(Screen):
         #     commands = self.gantry_control.movement_to_gcode(movements)
         #     self.gantry_control.send_commands(commands)
 
-    def show_endgame_popup(self, message):
-        
-        message = self.control_system.endgame_message
-
-        def reset_and_return(*args):
-            popup.dismiss()
-            self.control_system.go_to_board_reset()  # Assuming this resets the board and returns to the main menu
-            self.control_system.reset_board_from_game()  # Reset the board logic
-
-        # Create the popup layout
-        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        layout.add_widget(Label(text=message, font_size=60, halign='center', valign='middle', size_hint=(1, 0.8)))
-
-        # Add the button
-        button = Button(text="Reset Board and Return to Main Menu", size_hint=(1, 0.2))
-        button.bind(on_release=reset_and_return)
-        layout.add_widget(button)
-
-        # Create the popup
-        popup = Popup(title="Game Over", content=layout, size_hint=(0.8, 0.5), auto_dismiss=False)
-        popup.open()
-
-        # Schedule the timer to auto-trigger the button
-        Clock.schedule_once(reset_and_return, 10)
 

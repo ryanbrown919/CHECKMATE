@@ -4,6 +4,7 @@ from .initscreen import InitScreen
 from .loadingscreen import LoadingScreen
 from .gantryscreen import GantryControlScreen
 from .boardresetscreen import BoardResetScreen
+from .endgamescreen import EndGameScreen
 
 __all__ = [
     'GameScreen',
@@ -11,5 +12,6 @@ __all__ = [
     'InitScreen',
     'LoadingScreen',
     'GantryControlScreen',
-    'BoardResetScreen'
+    'BoardResetScreen',
+    'EndGameScreen'
 ]

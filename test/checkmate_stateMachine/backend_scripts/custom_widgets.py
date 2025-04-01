@@ -892,12 +892,10 @@ class PlayerClock(Widget):
         self.update_background()
 
 
-
-class EndGame(Popup):
-        def __init__(self, control_system):
-            self.contorl_system = control_system
-
-            self.message = self.control_system.endgame_message
+class EndGamePopup(Popup):
+        def __init__(self, control_system, **kwargs):
+            super(EndGamePopup, self).__init__(**kwargs)
+            self.control_system = control_system
 
 
             self.control_system.register_observer(self.check_state())
@@ -920,7 +918,13 @@ class EndGame(Popup):
 
 
         def check_state(self):
-            if self.control_system.game_state == 'FINISHED':
-            # Schedule the timer to auto-trigger the button
 
-            Clock.schedule_once(self.reset_and_return, 10)
+            if self.control_system.game_state == 'FINISHED':
+                # Schedule the timer to auto-trigger the button
+                self.message = self.control_system.endgame_message
+
+                
+
+
+
+        #         Clock.schedule_once(self.reset_and_return, 10)
