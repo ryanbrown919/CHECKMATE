@@ -143,7 +143,7 @@ class GantryTargetWidget(Widget):
 
                     print(f"Square {square_label} is {self.hall.sense_layer.get_square_from_notation(square_label)}")
 
-                    if self.hall.get_square_from_notation(square_label):
+                    if self.hall.sense_layer.get_square_from_notation(square_label):
                         Color(0, 1, 0, 1)  # Blue color for the circle.
                     else:
                         Color(0, 1, 0, 0)  # No visibility if not detected for the circle.
