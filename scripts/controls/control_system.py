@@ -480,6 +480,7 @@ class ChessControlSystem:
         while self.selected_piece is None:
              print("no change detected")
              new_board = self.hall.sense_layer.get_squares_game()
+             print(new_board)
              self.selected_peice = self.hall.compare_boards(new_board, self.initial_board)
              time.sleep(0.5)
 
