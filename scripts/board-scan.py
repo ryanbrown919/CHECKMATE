@@ -9,7 +9,7 @@ import time
 
 from gantry import Gantry
 from hall import SenseLayer
-from nfc import NFC
+# from nfc import NFC
 
 NFC_OFFSET = 42
 BOARD_TO_PHYSICAL = {
@@ -107,7 +107,7 @@ def nearest_neighbor(start_point, targets):
 
     return path
 
-def scan_board(gantry, nfc, layer):
+def scan_board(gantry, layer):
     """
     Scan the chess board using Hall sensors and read pieces with NFC.
     Returns a dictionary mapping square names to piece identifiers.
@@ -160,7 +160,7 @@ def scan_board(gantry, nfc, layer):
             gantry.move(x, y, blocking=True)
             
             # Read the piece with NFC
-            piece_info = nfc.read()
+            piece_info = square_name  # Placeholder for NFC read
             results[square_name] = piece_info
             print(f"  → {square_name}: {piece_info}")
             
@@ -178,17 +178,17 @@ def main():
     # Create hardware objects
     sensor_layer = SenseLayer()
     gantry = Gantry()
-    nfc_reader = NFC()
+    # nfc_reader = NFC()
     
     gantry.home()
-    nfc_begin()
+    # nfc_begin()
     
     try:
         while True:
             input("\nPress Enter to scan the board...")
             
             try:
-                scan_results = scan_board(gantry, nfc, sense_layer)
+                scan_results = scan_board(gantry, sense_layer)
                 print("\nScan Results:")
                 for square, piece in scan_results.items():
                     print(f"{square}: {piece}")
