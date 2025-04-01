@@ -215,7 +215,7 @@ class Hall:
             for col in range(8):
                 if reference_board[row][col] != board[row][col]:
                     
-                    change = self.board_to_chess_notation(row, col)
+                    change = self.board_to_chess_notation(9-row, col)
                     return change  # Update reference board after first change
 
         return None
