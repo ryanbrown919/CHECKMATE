@@ -71,10 +71,10 @@ def distance(point1, point2):
 def coord_to_chess_square(coord):
     """
     Convert board coordinate (x, y) into a chess square label.
-    x=0, y=0 corresponds to H1 (bottom-right of board)
+    x=0, y=0 corresponds to A1 (bottom-left of board)
     """
     x, y = coord
-    file = chr(ord('H') - x)  # H→G→F→...→A as x increases
+    file = chr(ord('A') + x)  # A→B→C→...→H as x increases
     rank = str(y + 1)         # 1→2→3→...→8 as y increases
     return file + rank
 
