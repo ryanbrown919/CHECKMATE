@@ -49,6 +49,8 @@ class GantryControl:
             self.send("$H")
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
+            self.send("$120 = 600")
+            self.send("$121 = 600")
 
         def send(self, command):
             with self.serial_lock:
