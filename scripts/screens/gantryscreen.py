@@ -150,7 +150,7 @@ class GantryTargetWidget(Widget):
                     
                     square_occupancy = transposed_board[row-2][col]
 
-                    print(f"Square {square_label} is {square_occupancy}")
+                    # print(f"Square {square_label} is {square_occupancy}")
 
                     if square_occupancy:
                         Color(0, 1, 0, 1)  # Blue color for the circle.
