@@ -8,11 +8,13 @@ import sys
 # from transitions import Machine
 from kivy.clock import Clock
 
+FEEDRATE=15000
 STEP_MM = 25
 
 
 class GantryControl:
         def __init__(self, **kwargs):
+            #self.feed_rate = FEEDRATE
             #self.hall = SenseLayer()
 
             for key, value in kwargs.items():
@@ -51,8 +53,59 @@ class GantryControl:
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
 
         def send(self, command):
-            self.ser.write(str.encode(command + "\n"))
+            self.serial.write(str.encode(command + "\n"))
+        
+        def send_gcode(self, command):
+            """
+            Send a G-code command to GRBL.
+            In simulation mode, the command is logged to the debug log.
+            Errors during write/read are caught and handled.
+            """
+            print(f"Sending: {command}")
+            if self.simulate:
+                return
 
+            with self.serial_lock:
+                try:
+                    self.ser.write(f"{command}\n".encode())
+                except Exception as e:
+                    error_msg = f"Error writing command: {e}"
+                    print(error_msg)
+                    sys.exit(1)
+                    self.handle_serial_error(e)
+                    return
+
+                try:
+                    while True:
+                        response = self.ser.readline().decode('utf-8', errors='replace').strip()
+                        if response:
+                            print(f"GRBL Response: {response}")
+                        if response == "ok":
+                            break
+                        elif response == "ALARM:1":
+                            #self.log_debug("ALARM:1 - Resetting GRBL")
+                            self.send_gcode("$X")
+                            break   
+                        
+                except Exception as e:
+                    error_msg = f"Error reading response: {e}"
+                    print(error_msg)
+                    self.handle_serial_error(e)
+                    return
+
+        def handle_serial_error(self, error):
+            """
+            Handle serial communication errors by logging the error,
+            closing the serial port if necessary, and scheduling a reconnect.
+            """
+            self.log_debug(f"Serial error occurred: {error}. Attempting to reconnect...")
+            try:
+                if hasattr(self, 'ser') and self.ser:
+                    self.ser.close()
+            except Exception as close_err:
+                pass
+            # Schedule a reconnect attempt after a short delay.
+            # Clock.schedule_once(lambda dt: self.connect_to_grbl(), 1)
 
         def send_jog_command(self, dx, dy):
             """
@@ -63,8 +116,10 @@ class GantryControl:
             if dx:
                 cmd += f"X{dx * step}"
             if dy:
-                cmd += f"Y{dy * step}" 
-            self.send(cmd)
+                cmd += f"Y{dy * step}"
+            cmd += f"F{FEEDRATE}"
+            self.send_gcode("$X") 
+            self.send_gcode(cmd)
 
         def send_coordinates_command(self, location):
             """
@@ -81,7 +136,9 @@ class GantryControl:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            self.send(f"G21G90G1X{x}Y{y}")
+            cmd += f"F{FEEDRATE}\n"
+            #self.send_gcode("$X") 
+            self.send_gcode(f"G21G90G1X{x}Y{y}F{FEEDRATE}")
 
             while True:
                 self.ser.write(b'?')
@@ -89,6 +146,8 @@ class GantryControl:
                 print(f"Status: {status}")
                 if '<Idle' in status:
                     break
+                time.sleep(0.5)
+
 
         def on_step_change(self, instance, value):
             """
@@ -99,7 +158,14 @@ class GantryControl:
             except ValueError:
                 self.jog_step = 1
 
-
+        def on_reconnect(self, instance):
+            """
+            Manually trigger a reconnect to the GRBL device.
+            This can be useful if a flag is raised (e.g., a limit switch is triggered)
+            and you need to reinitialize the connection.
+            """
+            # Attempt to reconnect immediately.
+            self.connect_to_grbl()
 
         def square_to_coord(self, square):
             """
@@ -1122,7 +1188,7 @@ class GantryControl:
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
-                    self.send(full_cmd)
+                    self.send_gcode(full_cmd)
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
@@ -1150,14 +1216,14 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send("M9") # off
+                self.send_gcode("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send("M8") # on
+                self.send_gcode("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
@@ -1165,9 +1231,9 @@ class GantryControl:
                     dy = self.sign(move_list[-1][1]) * self.overshoot
 
                     print(f"Overshoots: {dx, dy}")
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1176,7 +1242,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
 
 
             
@@ -1193,22 +1259,22 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send("M9") # off
+                self.send_gcode("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send("M8") # on
+                self.send_gcode("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1217,7 +1283,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
 
 
             
@@ -1225,9 +1291,9 @@ class GantryControl:
         
         def magnet_control(self):
             if self.magnet_state == "MAG ON":
-                self.send("M8")
+                self.send_gcode("M8")
             elif self.magnet_state == "MAG OFF":
-                self.send("M9")
+                self.send_gcode("M9")
 
 
 class ClockLogic:
