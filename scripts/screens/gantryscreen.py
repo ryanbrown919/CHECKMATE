@@ -102,8 +102,10 @@ class GantryTargetWidget(Widget):
     
     def update_canvas(self, *args):
         self.canvas.clear()
-        self.board_occupancy = self.hall.sense_layer.get_squares()
-        transposed_board = list(map(list, zip(*self.board_occupancy)))
+        self.board_occupancy = self.hall.sense_layer.get_squares_gantry()
+        # transposed_board = list(map(list, zip(*self.board_occupancy)))
+        # rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
+
 
         # Compute square size relative to parent's available size minus the offset.
         self.square_size = min((self.width - self.offset_value) / self.cols,
@@ -148,7 +150,7 @@ class GantryTargetWidget(Widget):
                     # - Files (columns) are labeled from 'a' to 'h' (left to right).
                     # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
                     
-                    square_occupancy = transposed_board[row-2][col]
+                    square_occupancy = self.board_occupancy[row-2][col]
 
                     # print(f"Square {square_label} is {square_occupancy}")
 

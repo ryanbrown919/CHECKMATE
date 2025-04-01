@@ -102,6 +102,14 @@ class SenseLayer:
                 board[row][col] = 0 if ((outputs >> j) & 1) else 1
 
         return board
+    
+    def get_squares_gantry(self):
+        board = self.get_squares()
+
+        transposed_board = list(map(list, zip(*self.board)))
+        rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
+
+        return rotated_board
 
     def get_square_from_notation(self, square):
         """
