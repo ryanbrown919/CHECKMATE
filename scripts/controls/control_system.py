@@ -460,7 +460,7 @@ class ChessControlSystem:
         print("[State] Entering Player Turn")
         self.update_ui()
 
-        time.sleep(1)
+        
         self.go_to_first_piece_detection()
         # When entering player's turn, immediately begin hall effect polling.
         
@@ -471,7 +471,7 @@ class ChessControlSystem:
         while self.selected_piece is None:
 
             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-
+            time.sleep(0.5)
         self.select_piece(self.selected_piece)
         self.notify_observers()
 
@@ -483,7 +483,7 @@ class ChessControlSystem:
         while self.selected_move is None:
 
             self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-
+            time.sleep(0.5)
         if self.selected_piece == self.selected_move:
             # selected_piece = None
             self.go_to_first_piece_detection()
