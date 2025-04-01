@@ -141,7 +141,7 @@ class GantryTargetWidget(Widget):
                     rank_label = chr(ord(8 + col))
                     square_label = f"{file_label}{rank_label}"
 
-                    print(f"Square {square_label} is {self.hall.get_square_from_notation(square_label)}")
+                    print(f"Square {square_label} is {self.hall.sense_layer.get_square_from_notation(square_label)}")
 
                     if self.hall.get_square_from_notation(square_label):
                         Color(0, 1, 0, 1)  # Blue color for the circle.
