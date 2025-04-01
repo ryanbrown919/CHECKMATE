@@ -15,6 +15,7 @@ import time
 import threading
 import sys
 import random
+import copy
 
 import logging
 logging.getLogger('transitions').setLevel(logging.WARNING)
@@ -471,14 +472,14 @@ class ChessControlSystem:
     def first_piece_detection_poll(self):
 
 
-        self.initial_board = self.hall.sense_layer.get_squares_game()
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
 
         print(self.initial_board)
 
         print("Trying to find first peice")
         self.selected_piece = None
         while self.selected_piece is None:
-             print("no change detected")
+             
              new_board = self.hall.sense_layer.get_squares_game()
              #print(new_board)
              self.selected_peice = self.hall.compare_boards(new_board, self.initial_board)
