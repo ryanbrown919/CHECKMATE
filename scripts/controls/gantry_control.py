@@ -101,9 +101,7 @@ class GantryControl:
                 cmd += f"X{dx * step}"
             if dy:
                 cmd += f"Y{dy * step}"
-            cmd += f"F{FEEDRATE}"
-            self.send_gcode("$X") 
-            self.send_gcode(cmd)
+            self.send(cmd)
 
         def send_coordinates_command(self, location):
             """
@@ -1171,8 +1169,8 @@ class GantryControl:
                 
                 for cmd in cmd_list:
                     self.finished = False
-                    full_cmd = cmd + "\n"
-                    self.send_gcode(full_cmd)
+                    # full_cmd = cmd + "\n"
+                    self.send(full_cmd)
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
