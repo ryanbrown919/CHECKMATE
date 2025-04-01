@@ -88,25 +88,9 @@ class GantryControl:
                             break   
                         
                 except Exception as e:
-                    error_msg = f"Error reading response: {e}"
-                    print(error_msg)
-                    self.handle_serial_error(e)
                     return
 
-        def handle_serial_error(self, error):
-            """
-            Handle serial communication errors by logging the error,
-            closing the serial port if necessary, and scheduling a reconnect.
-            """
-            self.log_debug(f"Serial error occurred: {error}. Attempting to reconnect...")
-            try:
-                if hasattr(self, 'ser') and self.ser:
-                    self.ser.close()
-            except Exception as close_err:
-                pass
-            # Schedule a reconnect attempt after a short delay.
-            # Clock.schedule_once(lambda dt: self.connect_to_grbl(), 1)
-
+    
         def send_jog_command(self, dx, dy):
             """
             Construct and send the jog command based on dx, dy, and the current jog step size.
