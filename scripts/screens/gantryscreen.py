@@ -75,7 +75,7 @@ class GantryTargetWidget(Widget):
         super(GantryTargetWidget, self).__init__(**kwargs)
         self.control_system = control_system
         self.capture_move = self.control_system.capture_move
-        self.hall = self.contorl_system.hall
+        self.hall = self.control_system.hall
         self.gantry = self.control_system.gantry
         self.cols = 8
         self.rows = 10
