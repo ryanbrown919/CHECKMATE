@@ -196,6 +196,7 @@ class Hall:
         self.sense_layer = SenseLayer()
         # self.sense_layer.begin()
         self.initial_board = self.sense_layer.get_squares()
+        self.lock = threading.Lock()
         self.reference_board = None
         self.first_change = None
         self.second_change = None
@@ -293,20 +294,22 @@ class Hall:
         result_event.set()    
     def scan_for_second_move(self, result_event):
 
-        initial_board = self.sense_layer.get_squares_game()
-        print("Initial Board second move")
-        print(initial_board)
+        with self.lock:
 
-        self.second_change = None
+            initial_board = self.sense_layer.get_squares_game()
+            print("Initial Board second move")
+            print(initial_board)
 
-        while self.second_change is None:
+            self.second_change = None
 
-            new_board = self.sense_layer.get_squares_game()
-            time.sleep(0.5)
+            while self.second_change is None:
 
-            self.second_change = self.compare_boards(initial_board, new_board)
+                new_board = self.sense_layer.get_squares_game()
+                time.sleep(0.5)
 
-        result_event.set()
+                self.second_change = self.compare_boards(initial_board, new_board)
+
+            result_event.set()
 
     def wait_for_first_board_change(self, result_event, poll_interval=0.1):
         """
@@ -318,33 +321,15 @@ class Hall:
             result_event: A threading.Event to signal when a change is detected.
             poll_interval: Delay in seconds between polls.
         """
-        time.sleep(0.5)
-        initial_board = self.sense_layer.get_squares_game()
-        time.sleep(0.5)
-
-        for y in range(7, -1, -1):
-            row_str = f"{y+1}|"
-            for x in range(8):
-                if initial_board[y][x] == 1:  # Piece present
-                    row_str += "■ "  # Filled square for occupied
-                else:
-                    row_str += "□ "  # Hollow square for empty
-            print(row_str + f"|{y+1}")
-        
-        print(" +-----------------+")
-        print("  a b c d e f g h")
-
-        while True:
-            # Obtain the current board state.
-            new_board = self.sense_layer.get_squares_game()
+        with self.lock:
             time.sleep(0.5)
-
-            print("Polling new board state:", new_board)
+            initial_board = self.sense_layer.get_squares_game()
+            time.sleep(0.5)
 
             for y in range(7, -1, -1):
                 row_str = f"{y+1}|"
                 for x in range(8):
-                    if new_board[y][x] == 1:  # Piece present
+                    if initial_board[y][x] == 1:  # Piece present
                         row_str += "■ "  # Filled square for occupied
                     else:
                         row_str += "□ "  # Hollow square for empty
@@ -353,16 +338,35 @@ class Hall:
             print(" +-----------------+")
             print("  a b c d e f g h")
 
-            # Compare the boards using your custom function.
-            diff = self.compare_boards(initial_board, new_board)
-            if diff is not None:
-                self.first_change = diff  # diff can be (row, col, initial_value, new_value)
-                print("Board change detected:", diff)
-                result_event.set()  # Signal that the change was detected.
-                break
+            while True:
+                # Obtain the current board state.
+                new_board = self.sense_layer.get_squares_game()
+                time.sleep(0.5)
 
-            # Sleep briefly to prevent high CPU usage.
-            time.sleep(poll_interval)
+                print("Polling new board state:", new_board)
+
+                for y in range(7, -1, -1):
+                    row_str = f"{y+1}|"
+                    for x in range(8):
+                        if new_board[y][x] == 1:  # Piece present
+                            row_str += "■ "  # Filled square for occupied
+                        else:
+                            row_str += "□ "  # Hollow square for empty
+                    print(row_str + f"|{y+1}")
+                
+                print(" +-----------------+")
+                print("  a b c d e f g h")
+
+                # Compare the boards using your custom function.
+                diff = self.compare_boards(initial_board, new_board)
+                if diff is not None:
+                    self.first_change = diff  # diff can be (row, col, initial_value, new_value)
+                    print("Board change detected:", diff)
+                    result_event.set()  # Signal that the change was detected.
+                    break
+
+                # Sleep briefly to prevent high CPU usage.
+                time.sleep(poll_interval)
 
     def wait_for_second_board_change(self, initial_board, result_event, poll_interval=0.1):
         """
@@ -374,25 +378,27 @@ class Hall:
             result_event: A threading.Event to signal when a change is detected.
             poll_interval: Delay in seconds between polls.
         """
-        initial_board = self.sense_layer.get_squares_game()
 
-        while True:
-            # Obtain the current board state.
-            new_board = self.sense_layer.get_squares_game()
-            time.sleep(0.5)
+        with self.lock:
+            initial_board = self.sense_layer.get_squares_game()
 
-            print("Polling new board state:", new_board)
+            while True:
+                # Obtain the current board state.
+                new_board = self.sense_layer.get_squares_game()
+                time.sleep(0.5)
 
-            # Compare the boards using your custom function.
-            diff = self.compare_boards(initial_board, new_board)
-            if diff is not None:
-                self.first_change = diff  # diff can be (row, col, initial_value, new_value)
-                print("Board change detected:", diff)
-                result_event.set()  # Signal that the change was detected.
-                break
+                print("Polling new board state:", new_board)
 
-            # Sleep briefly to prevent high CPU usage.
-            time.sleep(poll_interval)
+                # Compare the boards using your custom function.
+                diff = self.compare_boards(initial_board, new_board)
+                if diff is not None:
+                    self.first_change = diff  # diff can be (row, col, initial_value, new_value)
+                    print("Board change detected:", diff)
+                    result_event.set()  # Signal that the change was detected.
+                    break
+
+                # Sleep briefly to prevent high CPU usage.
+                time.sleep(poll_interval)
 
     # def poll_board_for_change(self):
     #     while move is None:
