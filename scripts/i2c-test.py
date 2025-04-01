@@ -234,7 +234,7 @@ class I2CMaster():
 class NFC():
     def __init__(self):
         self.i2c = I2CMaster()
-        self.i2c.SAMConfig()
+        self.SAMConfig()
 
     def SAMConfig(self) -> bool:
         """
