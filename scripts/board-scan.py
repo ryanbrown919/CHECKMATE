@@ -12,60 +12,46 @@ from hall import SenseLayer
 # from nfc import NFC
 
 NFC_OFFSET = 42
-BOARD_TO_PHYSICAL = {
-    # Organized by ranks for better readability
-    # Rank 1
-    "A1": (0, 350 + NFC_OFFSET), "B1": (0, 300 + NFC_OFFSET), 
-    "C1": (0, 250 + NFC_OFFSET), "D1": (0, 200 + NFC_OFFSET),
-    "E1": (0, 150 + NFC_OFFSET), "F1": (0, 100 + NFC_OFFSET), 
-    "G1": (0, 50 + NFC_OFFSET),  "H1": (0, 0 + NFC_OFFSET),
+# Physical coordinates for each square (in mm)
+SQUARE_COORDINATES = [
+    # Format: (x, y) for each square
+    # Each entry represents a square on the 8x8 board
+    # Row 0 (A1-H1)
+    (0, 0 + NFC_OFFSET),     (50, 0 + NFC_OFFSET),   (100, 0 + NFC_OFFSET),   (150, 0 + NFC_OFFSET),
+    (200, 0 + NFC_OFFSET),   (250, 0 + NFC_OFFSET),  (300, 0 + NFC_OFFSET),   (350, 0 + NFC_OFFSET),
     
-    # Rank 2
-    "A2": (50, 350 + NFC_OFFSET), "B2": (50, 300 + NFC_OFFSET), 
-    "C2": (50, 250 + NFC_OFFSET), "D2": (50, 200 + NFC_OFFSET),
-    "E2": (50, 150 + NFC_OFFSET), "F2": (50, 100 + NFC_OFFSET), 
-    "G2": (50, 50 + NFC_OFFSET),  "H2": (50, 0 + NFC_OFFSET),
+    # Row 1 (A2-H2)
+    (0, 50 + NFC_OFFSET),    (50, 50 + NFC_OFFSET),  (100, 50 + NFC_OFFSET),  (150, 50 + NFC_OFFSET),
+    (200, 50 + NFC_OFFSET),  (250, 50 + NFC_OFFSET), (300, 50 + NFC_OFFSET),  (350, 50 + NFC_OFFSET),
     
-    # Rank 3
-    "A3": (100, 350 + NFC_OFFSET), "B3": (100, 300 + NFC_OFFSET),
-    "C3": (100, 250 + NFC_OFFSET), "D3": (100, 200 + NFC_OFFSET),
-    "E3": (100, 150 + NFC_OFFSET), "F3": (100, 100 + NFC_OFFSET),
-    "G3": (100, 50 + NFC_OFFSET),  "H3": (100, 0 + NFC_OFFSET),
+    # Row 2 (A3-H3)
+    (0, 100 + NFC_OFFSET),   (50, 100 + NFC_OFFSET), (100, 100 + NFC_OFFSET), (150, 100 + NFC_OFFSET),
+    (200, 100 + NFC_OFFSET), (250, 100 + NFC_OFFSET),(300, 100 + NFC_OFFSET), (350, 100 + NFC_OFFSET),
     
-    # Rank 4
-    "A4": (150, 350 + NFC_OFFSET), "B4": (150, 300 + NFC_OFFSET),
-    "C4": (150, 250 + NFC_OFFSET), "D4": (150, 200 + NFC_OFFSET),
-    "E4": (150, 150 + NFC_OFFSET), "F4": (150, 100 + NFC_OFFSET),
-    "G4": (150, 50 + NFC_OFFSET),  "H4": (150, 0 + NFC_OFFSET),
+    # Row 3 (A4-H4)
+    (0, 150 + NFC_OFFSET),   (50, 150 + NFC_OFFSET), (100, 150 + NFC_OFFSET), (150, 150 + NFC_OFFSET),
+    (200, 150 + NFC_OFFSET), (250, 150 + NFC_OFFSET),(300, 150 + NFC_OFFSET), (350, 150 + NFC_OFFSET),
     
-    # Rank 5
-    "A5": (200, 350 + NFC_OFFSET), "B5": (200, 300 + NFC_OFFSET),
-    "C5": (200, 250 + NFC_OFFSET), "D5": (200, 200 + NFC_OFFSET),
-    "E5": (200, 150 + NFC_OFFSET), "F5": (200, 100 + NFC_OFFSET),
-    "G5": (200, 50 + NFC_OFFSET),  "H5": (200, 0 + NFC_OFFSET),
+    # Row 4 (A5-H5)
+    (0, 200 + NFC_OFFSET),   (50, 200 + NFC_OFFSET), (100, 200 + NFC_OFFSET), (150, 200 + NFC_OFFSET),
+    (200, 200 + NFC_OFFSET), (250, 200 + NFC_OFFSET),(300, 200 + NFC_OFFSET), (350, 200 + NFC_OFFSET),
     
-    # Rank 6
-    "A6": (250, 350 + NFC_OFFSET), "B6": (250, 300 + NFC_OFFSET),
-    "C6": (250, 250 + NFC_OFFSET), "D6": (250, 200 + NFC_OFFSET),
-    "E6": (250, 150 + NFC_OFFSET), "F6": (250, 100 + NFC_OFFSET),
-    "G6": (250, 50 + NFC_OFFSET),  "H6": (250, 0 + NFC_OFFSET),
+    # Row 5 (A6-H6)
+    (0, 250 + NFC_OFFSET),   (50, 250 + NFC_OFFSET), (100, 250 + NFC_OFFSET), (150, 250 + NFC_OFFSET),
+    (200, 250 + NFC_OFFSET), (250, 250 + NFC_OFFSET),(300, 250 + NFC_OFFSET), (350, 250 + NFC_OFFSET),
     
-    # Rank 7
-    "A7": (300, 350 + NFC_OFFSET), "B7": (300, 300 + NFC_OFFSET),
-    "C7": (300, 250 + NFC_OFFSET), "D7": (300, 200 + NFC_OFFSET),
-    "E7": (300, 150 + NFC_OFFSET), "F7": (300, 100 + NFC_OFFSET),
-    "G7": (300, 50 + NFC_OFFSET),  "H7": (300, 0 + NFC_OFFSET),
+    # Row 6 (A7-H7)
+    (0, 300 + NFC_OFFSET),   (50, 300 + NFC_OFFSET), (100, 300 + NFC_OFFSET), (150, 300 + NFC_OFFSET),
+    (200, 300 + NFC_OFFSET), (250, 300 + NFC_OFFSET),(300, 300 + NFC_OFFSET), (350, 300 + NFC_OFFSET),
     
-    # Rank 8
-    "A8": (350, 350 + NFC_OFFSET), "B8": (350, 300 + NFC_OFFSET),
-    "C8": (350, 250 + NFC_OFFSET), "D8": (350, 200 + NFC_OFFSET),
-    "E8": (350, 150 + NFC_OFFSET), "F8": (350, 100 + NFC_OFFSET),
-    "G8": (350, 50 + NFC_OFFSET),  "H8": (350, 0 + NFC_OFFSET),
-}
+    # Row 7 (A8-H8)
+    (0, 350 + NFC_OFFSET),   (50, 350 + NFC_OFFSET), (100, 350 + NFC_OFFSET), (150, 350 + NFC_OFFSET),
+    (200, 350 + NFC_OFFSET), (250, 350 + NFC_OFFSET),(300, 350 + NFC_OFFSET), (350, 350 + NFC_OFFSET)
+]
 
 # Utility functions
 def distance(point1, point2):
-    """Calculate Manhattan distance between two board coordinates."""
+    """Calculate Manhattan distance between two points."""
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 def coord_to_chess_square(coord):
@@ -80,14 +66,17 @@ def coord_to_chess_square(coord):
 
 def get_occupied_squares(board_state):
     """
-    Return a list of (x, y) coordinates for occupied squares on the board.
+    Return a list of physical coordinates for occupied squares on the board.
     board_state: 2D array with 1 for occupied squares, 0 for empty
     """
     occupied = []
     for y in range(len(board_state)):
         for x in range(len(board_state[y])):
             if board_state[y][x] == 1:
-                occupied.append((x, y))
+                # Convert board position to index in SQUARE_COORDINATES
+                index = y * 8 + x
+                if index < len(SQUARE_COORDINATES):
+                    occupied.append(SQUARE_COORDINATES[index])
     return occupied
 
 def nearest_neighbor(start_point, targets):
@@ -110,7 +99,7 @@ def nearest_neighbor(start_point, targets):
 def scan_board(gantry, layer):
     """
     Scan the chess board using Hall sensors and read pieces with NFC.
-    Returns a dictionary mapping square names to piece identifiers.
+    Returns a dictionary mapping coordinates to piece identifiers.
     """
     print("Starting board scan...")
     
@@ -130,44 +119,30 @@ def scan_board(gantry, layer):
     
     # Display the full planned path
     print("\nPlanned scan sequence:")
-    planned_moves = []
-    for i, square_coord in enumerate(path[1:]):  # Skip start point
-        square_name = coord_to_chess_square(square_coord)
-        if square_name in BOARD_TO_PHYSICAL:
-            x, y = BOARD_TO_PHYSICAL[square_name]
-            planned_moves.append(f"{i+1}. {square_name} at coordinates ({x}, {y})")
-        else:
-            planned_moves.append(f"{i+1}. {square_name} - NO PHYSICAL COORDINATES")
-    
-    for move in planned_moves:
-        print(f"  {move}")
+    for i, coords in enumerate(path[1:]):  # Skip start point
+        x, y = coords
+        print(f"  {i+1}. Coordinates ({x}, {y})")
     
     # Ask user to confirm before executing
     input("\nPress Enter to execute scan sequence...")
     
     # Execute the scan path
     results = {}
-    for i, square_coord in enumerate(path[1:]):  # Skip start point
-        square_name = coord_to_chess_square(square_coord)
-        print(f"Scanning square {square_name} ({i+1}/{len(path)-1})...")
+    for i, coords in enumerate(path[1:]):  # Skip start point
+        x, y = coords
+        print(f"Scanning position {i+1}/{len(path)-1}...")
         
-        # Get physical coordinates from mapping
-        if square_name in BOARD_TO_PHYSICAL:
-            x, y = BOARD_TO_PHYSICAL[square_name]
-            
-            # Move gantry to the square and wait until it arrives
-            print(f"  Moving to coordinates: ({x}, {y})")
-            gantry.move(x, y, blocking=True)
-            
-            # Read the piece with NFC
-            piece_info = square_name  # Placeholder for NFC read
-            results[square_name] = piece_info
-            print(f"  → {square_name}: {piece_info}")
-            
-            # Brief pause to ensure stability
-            time.sleep(0.5)
-        else:
-            print(f"  Warning: No physical coordinates for {square_name}")
+        # Move gantry to the position and wait until it arrives
+        print(f"  Moving to coordinates: ({x}, {y})")
+        gantry.move(x, y, blocking=True)
+        
+        # Read the piece with NFC
+        piece_info = f"piece_{i}"  # Placeholder for NFC read
+        results[coords] = piece_info
+        print(f"  → Position ({x}, {y}): {piece_info}")
+        
+        # Brief pause to ensure stability
+        time.sleep(0.5)
     
     print("Board scan complete!")
     return results
@@ -190,8 +165,8 @@ def main():
             try:
                 scan_results = scan_board(gantry, sense_layer)
                 print("\nScan Results:")
-                for square, piece in scan_results.items():
-                    print(f"{square}: {piece}")
+                for coords, piece in scan_results.items():
+                    print(f"Position {coords}: {piece}")
             except Exception as e:
                 print(f"Error during scan: {e}")
                 
