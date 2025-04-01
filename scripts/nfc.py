@@ -8,7 +8,7 @@ class NFC():
         time.sleep(0.5)
         self.nfc.begin()
         time.sleep(0.5)
-        self.nfc.SAMConfig()   
+        # self.nfc.SAMConfig()   
     
     def read(self):
         tag_present = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS, 1000)
