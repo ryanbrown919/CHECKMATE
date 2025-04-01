@@ -96,6 +96,8 @@ class ChessControlSystem:
             'hall_polling',
             'player_move_confirmed',
             'engine_turn', 
+            'first_piece_detection',
+            'second_piece_detection'
             'end_game'
         ]
         },
