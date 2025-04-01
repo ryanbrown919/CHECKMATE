@@ -1,10 +1,13 @@
 from pn532pi import Pn532, pn532, Pn532I2c
+import time
 
 class NFC():
     def __init__(self):
         # Attach to I2C bus 1 on the pi
         self.nfc = Pn532(Pn532I2c(1))
+        time.sleep(0.5)
         self.nfc.begin()
+        time.sleep(0.5)
         self.nfc.SAMConfig()   
     
     def read(self):
