@@ -183,7 +183,8 @@ class ChessControlSystem:
         self.rocker.begin()
         print("Rocker initialized")
         self.gantry = GantryControl()
-        # self.gantry.connect_to_grbl()
+        self.gantry.home()
+        print("Gantry initialized: homing")
         self.move_history = []
         self.captured_pieces = []
         self.SQUARES = chess.SQUARES
@@ -404,8 +405,6 @@ class ChessControlSystem:
         # Transition back to player's turn.
 
         self.rocker.toggle()
-        time.sleep(0.5)
-
         self.notify_observers()
         self.update_ui()
         self.engine_move_complete()

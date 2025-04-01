@@ -40,85 +40,17 @@ class GantryControl:
                                         "g1": (0, 2),  "g2": (2, 2), "g3": (4, 2), "g4": (6, 2), "g5": (8, 2), "g6": (10, 2), "g7": (12, 2), "g8": (14, 2),
                                         "h1": (0, 0),  "h2": (2, 0), "h3": (4, 0), "h4": (6, 0), "h5": (8, 0), "h6": (10, 0), "h7": (12, 0), "h8": (14, 0)}
             
+            self.ser = serial.Serial("/dev/ttyACM0", 115200)
+            self.send("\r\n\r")
+            time.sleep(2)
+            self.ser.flushInput()  
+            self.position = None
 
 
         def home(self):
-            self.send_gcode("$H")
-
-        def correct_position(self):
-            self.home()
-            self.send_gcode("$120=400") # X accl = 100
-            self.send_gcode("$121=400") # Y accl = 100
-            self.send_gcode("G21G91G1Y-11F15000")
-            self.send_gcode("G92X0Y0Z0")
-
-
-        def list_serial_ports(self):
-            if sys.platform.startswith('darwin'):
-                # macOS: use a wildcard pattern
-                ports = glob.glob('/dev/tty.usbmodem*')
-            elif sys.platform.startswith('win'):
-                # Windows: Try a range of COM ports
-                ports = ['COM%s' % (i + 1) for i in range(256)]
-            elif sys.platform.startswith('linux'):
-                # Linux: use a wildcard pattern
-                ports = glob.glob('/dev/ttyACM*')
-            else:
-                raise EnvironmentError('Unsupported platform')
-            return ports
-
-        def find_grbl_port(self, baudrate=115200, timeout=2):
-            ports = self.list_serial_ports()
-            print("Scanning ports:", ports)
-            for port in ports:
-                try:
-                    print(f"Trying to open port: {port}")
-                    ser = serial.Serial(port, baudrate, timeout=timeout)
-                    # Allow time for GRBL to reset and output its welcome message.
-                    time.sleep(2)
-                    # Do not flush immediately to avoid discarding data.
-                    welcome = ""
-                    # Try reading lines for up to 3 seconds.
-                    start_time = time.time()
-                    while time.time() - start_time < 3:
-                        line = ser.readline().decode('utf-8', errors='ignore').strip()
-                        if line:
-                            welcome += line + "\n"
-                    print("Welcome message received:")
-                    print(welcome)
-                    if "Grbl" in welcome:
-                        print(f"Found GRBL on port: {port}")
-                        return ser  # Return the already-opened serial instance.
-                    else:
-                        ser.close()
-                except Exception as e:
-                    print(f"Could not open port {port}: {e}")
-            return None
-
-        def connect_to_grbl(self):
-            """
-            Attempt to connect to a GRBL device via serial.
-            If no device is found or an error occurs, simulation mode is enabled.
-            """
-            grbl_serial = self.find_grbl_port()
-            print(f"grbl_serial: {grbl_serial}")
-            if not grbl_serial:
-                print("No GRBL device found, switching to simulation mode.")
-                self.simulate = True
-                return
-
-            try:
-                self.simulate = False
-                # Use the serial instance returned by find_grbl_port directly.
-                self.ser = grbl_serial
-                time.sleep(2)  # Allow GRBL to initialize.
-                self.send_gcode("$X")  # Clear alarms.
-                print(f"Connected to GRBL on port: {self.ser.port}")
-                self.correct_position()
-            except Exception as e:
-                print(f"Error connecting to GRBL: {e}")
-                self.simulate = True
-
+            self.send("$H")
+            self.send("G91 X0 Y-11")  # Center under H1
+            self.send("G92 X0 Y0 Z0") # Reposition coordinate system
 
 
         def send_gcode(self, command):
@@ -171,7 +103,7 @@ class GantryControl:
             except Exception as close_err:
                 pass
             # Schedule a reconnect attempt after a short delay.
-            Clock.schedule_once(lambda dt: self.connect_to_grbl(), 1)
+            # Clock.schedule_once(lambda dt: self.connect_to_grbl(), 1)
 
         def send_jog_command(self, dx, dy):
             """
