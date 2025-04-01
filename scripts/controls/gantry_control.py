@@ -94,7 +94,7 @@ class GantryControl:
             Construct and send the jog command based on dx, dy, and the current jog step size.
             """
             step = self.jog_step
-            cmd = "$J=G21G91"
+            cmd = "$J=G91"
             if dx:
                 cmd += f"X{dx * step}"
             if dy:
@@ -111,13 +111,13 @@ class GantryControl:
             x = location[0] + x_offset
             y = location[1] + y_offset
 
-            cmd = "G21G90G1"
+            cmd = "G90"
             if x:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
             #self.send_gcode("$X") 
-            self.send_gcode(f"G21G90G1X{x}Y{y}")
+            self.send_gcode(f"G90X{x}Y{y}")
 
             while True:
                 self.ser.write(b'?')
@@ -1202,7 +1202,7 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
@@ -1210,9 +1210,9 @@ class GantryControl:
                     dy = self.sign(move_list[-1][1]) * self.overshoot
 
                     print(f"Overshoots: {dx, dy}")
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
+                    gcode_commands.append(f"G91X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
+                    gcode_commands.append(f"G91X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1221,7 +1221,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G91X{move[0]}Y{move[1]}")
 
 
             
@@ -1245,15 +1245,15 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
+                    gcode_commands.append(f"G91X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
+                    gcode_commands.append(f"G91X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1262,7 +1262,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
+                    gcode_commands.append(f"G91X{move[0]}Y{move[1]}")
 
 
             
