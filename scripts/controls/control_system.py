@@ -476,7 +476,7 @@ class ChessControlSystem:
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.control_system.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread = threading.Thread(target=self.hall.scan_for_move, args=(self.first_change,))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
@@ -509,7 +509,7 @@ class ChessControlSystem:
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.control_system.hall.scan_for_move, args=(self.second_change,))
+        scanner_thread = threading.Thread(target=self.hall.scan_for_move, args=(self.second_change,))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
