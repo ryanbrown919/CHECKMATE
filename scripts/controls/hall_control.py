@@ -317,6 +317,7 @@ class Hall:
         """
 
         initial_board = self.sense_layer.get_squares_game()
+        time.sleep(0.5)
 
         for y in range(7, -1, -1):
             row_str = f"{y+1}|"
