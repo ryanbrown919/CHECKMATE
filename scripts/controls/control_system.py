@@ -208,12 +208,12 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='go_to_boardreset', source='mainscreen', dest='boardresetscreen', after='update_ui')
 
 
-        print("trying to init hall")
-        try:
-            self.hall = Hall()
-        except Exception as e:
-            print(f"Errorwith halls : {e}")
-        print("Hall Initialized")
+        # print("trying to init hall")
+        # try:
+        #     self.hall = Hall()
+        # except Exception as e:
+        #     print(f"Errorwith halls : {e}")
+        # print("Hall Initialized")
 
         self.rocker = Rocker()
         self.rocker.begin()
@@ -226,12 +226,12 @@ class ChessControlSystem:
         self.SQUARES = chess.SQUARES
         self.observers = []
         self.game_state = "UNFINISHED"
-        # print("trying to init hall")
-        # try:
-        #     self.hall = Hall()
-        # except Exception as e:
-        #     print(f"Errorwith halls : {e}")
-        # print("Hall Initialized")
+        print("trying to init hall")
+        try:
+            self.hall = Hall()
+        except Exception as e:
+            print(f"Errorwith halls : {e}")
+        print("Hall Initialized")
 
 
 
@@ -603,6 +603,7 @@ class ChessControlSystem:
 
     # Example backend methods:
     def init_gantry(self):
+        pass
         # Asynchronously initialize GRBL serial communication.
         # self.hall = Hall()
         # print("Hall Initialized")
