@@ -49,8 +49,8 @@ class GantryControl:
             self.send("$H")
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
-            self.send("$120 = 800")
-            self.send("$121 = 800")
+            self.send("$120 = 600")
+            self.send("$121 = 600")
 
         def send(self, command):
             with self.serial_lock:
@@ -1180,12 +1180,12 @@ class GantryControl:
                     full_cmd = cmd + "\n"
                     self.send(full_cmd)
                     # Wait for GRBL response ("ok")
-                    response = self.ser.readline().decode().strip()
-                    while response != "ok":
-                        # You might log the response or wait until "ok" arrives.
-                        response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
-                time.sleep(0.1)
+                #     response = self.ser.readline().decode().strip()
+                #     while response != "ok":
+                #         # You might log the response or wait until "ok" arrives.
+                #         response = self.ser.readline().decode().strip()
+                #     print(f"Sent: {cmd}, Response: {response}")
+                # time.sleep(0.1)
 
                 while not self.finished:
                     self.ser.write(b'?')
