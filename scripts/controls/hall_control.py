@@ -119,10 +119,10 @@ class SenseLayer:
 
         transposed_board = list(map(list, zip(*board)))
         # transposed_board = board
-        board_t = [[transposed_board[j][i] for j in range(len(transposed_board))] for i in range(len(transposed_board[0])-1,-1,-1)]
+        #board_t = [[transposed_board[j][i] for j in range(len(transposed_board))] for i in range(len(transposed_board[0])-1,-1,-1)]
         # final_board = list(map(list, zip(*board_t)))
 
-        return board_t
+        return transposed_board
 
     def get_square_from_notation(self, square):
         """
