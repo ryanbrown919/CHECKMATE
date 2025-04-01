@@ -226,20 +226,25 @@ from kivy.clock import Clock
 #from scripts.control_system_old import GameLogic
 
 # Map chess piece symbols to image file paths.
-piece_images = {
-    'P': 'assets/white_pawn.png',
-    'R': 'assets/white_rook.png',
-    'N': 'assets/white_knight.png',
-    'B': 'assets/white_bishop.png',
-    'Q': 'assets/white_queen.png',
-    'K': 'assets/white_king.png',
-    'p': 'assets/black_pawn.png',
-    'r': 'assets/black_rook.png',
-    'n': 'assets/black_knight.png',
-    'b': 'assets/black_bishop.png',
-    'q': 'assets/black_queen.png',
-    'k': 'assets/black_king.png',
-}
+# piece_images = {
+#     'P': 'assets/white_pawn.png',
+#     'R': 'assets/white_rook.png',
+#     'N': 'assets/white_knight.png',
+#     'B': 'assets/white_bishop.png',
+#     'Q': 'assets/white_queen.png',
+#     'K': 'assets/white_king.png',
+#     'p': 'assets/black_pawn.png',
+#     'r': 'assets/black_rook.png',
+#     'n': 'assets/black_knight.png',
+#     'b': 'assets/black_bishop.png',
+#     'q': 'assets/black_queen.png',
+#     'k': 'assets/black_king.png',
+#     'K_mate': 'assets/black_king_mate.png',
+#     'K_check': 'assets/black_king_check.png',
+#     'k_mate': 'assets/white_king_mate.png',
+#     'k_check': 'assets/white_king_mate.png',
+
+# }
 
 # ------------------------------------------------------------
 # ChessPiece: widget representing one chess piece.
@@ -472,8 +477,8 @@ class ChessBoard(Widget):
             piece = self.board.piece_at(sq)
             if piece is not None:
                 symbol = piece.symbol()
-                if symbol in piece_images:
-                    source = piece_images[symbol]
+                if symbol in self.control_system.piece_images:
+                    source = self.control_system.piece_images[symbol]
                     piece_widget = ChessPiece(chess_square=sq,
                                               piece_symbol=symbol,
                                               control_system=self.control_system,
@@ -621,7 +626,7 @@ class CapturedPieces(Widget):
         for idx, piece in enumerate(self.captured_list):
             row = idx // self.cols
             col = idx % self.cols
-            source = piece_images.get(piece, '')
+            source = self.control_system.piece_images.get(piece, '')
             img = Image(source=source, allow_stretch=True, keep_ratio=True)
             img.size = (cell_width, cell_height)
             # Basic positioning: one image per cell.

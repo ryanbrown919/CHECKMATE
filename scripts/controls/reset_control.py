@@ -149,6 +149,12 @@ class BoardReset:
             time.sleep(1)
 
 
+
+
+
+
+
+
     def reset_board_from_menu(self):
         start = (0, 0)
 
@@ -173,6 +179,15 @@ class BoardReset:
             piece = board_reset.nfc.read()
             print(f"Read piece: {piece}")
             time.sleep(1)
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":    
     board = [

@@ -175,7 +175,7 @@ class Hall:
     def board_to_chess_notation(self, row, col):
         return f"{chr(97 + col)}{8 - row}"
 
-    def compare_boards(self, board):
+    def compare_boards(self, board, reference_board):
         # if self.initial_board is None:
         #     self.initial_board = board
         #     self.reference_board = board
@@ -184,7 +184,7 @@ class Hall:
         # Compare with the reference board
         for row in range(8):
             for col in range(8):
-                if self.reference_board[row][col] != board[row][col]:
+                if reference_board[row][col] != board[row][col]:
                     
                     change = self.board_to_chess_notation(row, col)
                     return change  # Update reference board after first change
@@ -201,13 +201,13 @@ class Hall:
             # print(f"Board {i + 1}:")
             if first_change is None:
                 # print("Checking first change")
-                first_change = self.compare_boards(board)
+                first_change = self.compare_boards(board, self.reference_board)
                 if first_change and not second_change:
                     print(f"First change detected: {first_change}")
                     self.reference_board = boards[i]
             elif second_change is None:
                 # print("checking second change")
-                second_change = self.compare_boards(board)
+                second_change = self.compare_boards(board, self.reference_board)
                 
             else:
                 print(f"Move detected: {first_change}{second_change}")
@@ -235,8 +235,8 @@ class Hall:
         return None
     
 
-    def poll_board_for_change(self):
-        while move is None:
-            move = self.poll_board_for_change(self.sense_layer.get_squares())
+    # def poll_board_for_change(self):
+    #     while move is None:
+    #         move = self.poll_board_for_change(self.sense_layer.get_squares())
 
-        return move
+    #     return move

@@ -75,6 +75,7 @@ class GantryTargetWidget(Widget):
         super(GantryTargetWidget, self).__init__(**kwargs)
         self.control_system = control_system
         self.capture_move = self.control_system.capture_move
+        self.hall = self.contorl_system.hall
         self.gantry = self.control_system.gantry
         self.cols = 8
         self.rows = 10
@@ -127,6 +128,25 @@ class GantryTargetWidget(Widget):
                         #Color(247/255.0, 182/255.0, 114/255.0, 1)
                         Color(189/255.0, 100/255.0, 6/255.0, 1)
                     Rectangle(pos=(x, y), size=(self.square_size, self.square_size))
+                    # Draw a circle in the top left of the square.
+                    circle_radius = self.square_size * 0.1
+                    circle_x = x + self.square_size * 0.1 - circle_radius
+                    circle_y = y + self.square_size * 0.9 - circle_radius
+
+                    # Calculate the chess notation for the square.
+                    # In the rotated system:
+                    # - Files (columns) are labeled from 'a' to 'h' (left to right).
+                    # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
+                    file_label = str(ord('a') + (row - 2))
+                    rank_label = chr(ord(8 + col))
+                    square_label = f"{file_label}{rank_label}"
+
+                    if self.hall.get_square_from_notation(square_label):
+                        Color(0, 1, 0, 1)  # Blue color for the circle.
+                    else:
+                        Color(0, 1, 0, 0)  # No visibility if not detected for the circle.
+                    Ellipse(pos=(circle_x, circle_y), size=(circle_radius * 2, circle_radius * 2))
+
 
                     #square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
                     square_label = f"{chr(ord('h') - (7 - (row-2)))}{8-col}"
@@ -280,7 +300,7 @@ class GantryTargetWidget(Widget):
             self.trail_points.append(new_center)
         self.update_canvas()
     
-    def process_chess_move(self, move_str, is_capture):
+    def process_chess_move(self, move_str, is_capture, is_castling, is_en_passant, is_white):
         """
         Processes a chess move string (e.g., "e2e4").
         Moves the red dot first to the "from" square then (after 0.5 sec) to the "to" square.
@@ -292,7 +312,7 @@ class GantryTargetWidget(Widget):
         to_sq = move_str[2:4]
         
         
-        self.path = (self.gantry.interpret_chess_move(move_str, is_capture))
+        self.path = (self.gantry.interpret_chess_move(move_str, is_capture, is_castling, is_en_passant, is_white))
         self.move_dot_to_chess_square(from_sq)
         Clock.schedule_once(lambda dt: self.move_dot_to_chess_square(to_sq), 0.5)
 
@@ -433,8 +453,12 @@ class GantryControlScreen(Screen):
 
     def on_move_entered(self, move):
         # When a move is entered via the text input, force trail mode so the moves leave a trail.
+
+        self.is_castling = False
+        self.is_en_passant = False
+        self.is_white = False
         self.target_board.trail_enabled = True
-        self.target_board.process_chess_move(move, self.capture_move)
+        self.target_board.process_chess_move(move, self.capture_move, self.is_castling, self.is_en_passant, self.is_white)
         # Disable the text input and update its display with the trail coordinates.
         self.chess_move_input.disabled = True
         if self.target_board.trail_points:
