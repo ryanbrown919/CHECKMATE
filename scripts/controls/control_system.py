@@ -217,6 +217,7 @@ class ChessControlSystem:
         self.observers = []
         self.game_state = "UNFINISHED"
         self.hall = Hall()
+        print("Hall Initialized")
 
 
 
