@@ -986,7 +986,7 @@ class GantryControl:
         def to_deadzone(self, dead_coordinates, is_white):
 
             ## FELIPE DIAZ DO SOME MAGIC HERE
-
+            offset = 25
 
             dead_x = self.deadzone_origin[0] - dead_coordinates[0]
             dead_y = self.deadzone_origin[1] - dead_coordinates[1]
