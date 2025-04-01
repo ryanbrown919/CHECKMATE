@@ -47,14 +47,27 @@ class I2CMaster():
         print(f"writeCommand: {header}    {body}    {data_out}")
 
         try:
-            # send data using lgpio
-            result = lgpio.i2c_write_i2c_block_data(self.handle, 0x00, bytearray(data_out))
-            if result < 0:
-                print(f"Error writing command: {result}")
-                return self.PN532_INVALID_FRAME
+            # send data using lgpio - maximum 32 bytes per transfer
+            data_bytes = bytearray(data_out)
+            max_size = 32  # I2C typical maximum packet size
+            
+            if len(data_bytes) <= max_size:
+                result = lgpio.i2c_write_i2c_block_data(self.handle, 0x00, data_bytes)
+                if result < 0:
+                    print(f"Error writing command: {result}")
+                    return self.PN532_INVALID_FRAME
+            else:
+                # Split into chunks if needed
+                for i in range(0, len(data_bytes), max_size):
+                    chunk = data_bytes[i:i+max_size]
+                    result = lgpio.i2c_write_i2c_block_data(self.handle, 0x00, chunk)
+                    if result < 0:
+                        print(f"Error writing command chunk: {result}")
+                        return self.PN532_INVALID_FRAME
+                    time.sleep(0.001)  # Small delay between chunks
         except Exception as e:
             print(e)
-            print("\nToo many data to send, I2C doesn't support such a big packet")  # I2C max packet: 32 bytes
+            print("\nError in I2C communication")
             return self.PN532_INVALID_FRAME
 
         return self._readAckFrame()
@@ -232,6 +245,8 @@ class I2CMaster():
 
 
 class NFC():
+    PN532_COMMAND_SAMCONFIGURATION = (0x14)
+
     def __init__(self):
         self.i2c = I2CMaster()
         self.SAMConfig()
@@ -241,7 +256,7 @@ class NFC():
         Configures the SAM (Secure Access Module)
         :returns: True if success, False if error
         """
-        header = bytearray([PN532_COMMAND_SAMCONFIGURATION,
+        header = bytearray([self.PN532_COMMAND_SAMCONFIGURATION,
                             0x01,   # normal mode
                             0x14,   # timeout 50ms * 20 = 1 second
                             0x01])  # use IRQ pin!
@@ -254,6 +269,11 @@ class NFC():
             
     def write(self, fen_piece):
         return None
+        
+    def close(self):
+        """Close the I2C connection."""
+        if hasattr(self, 'i2c'):
+            self.i2c.close()
 
 
 
@@ -262,11 +282,7 @@ if __name__ == "__main__":
     try:
         # Create an instance of the NFC class
         nfc_device = NFC()
-        
-        # Read a register (example)
-        value = nfc_device.read_register(0x00)
-        if value is not None:
-            print(f"Register 0x00 value: 0x{value:02X}")
+        print("NFC device initialized.")
         
     except Exception as e:
         print(f"Error: {e}")
