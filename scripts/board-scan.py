@@ -86,9 +86,9 @@ def get_occupied_squares(board_state):
     for y in range(8):
         for x in range(8):
             if y < len(board_state) and x < len(board_state[y]) and board_state[y][x] == 1:
-                # Convert board position to chess square
-                file = chr(ord('A') + x)
-                rank = str(8 - y)  # Adjust for the coordinate system
+                # Convert board position to chess square: Adjusted so that (0,0) is H1 and (7,7) is A8
+                file = chr(ord('H') - x)
+                rank = str(y + 1)
                 square = file + rank
                 
                 if square in BOARD_TO_PHYSICAL:
