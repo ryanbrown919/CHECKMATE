@@ -264,11 +264,7 @@ if __name__ == "__main__":
     try:
         # Create an instance of the NFC class
         nfc_device = NFC()
-        
-        # Read a register (example)
-        value = nfc_device.read_register(0x00)
-        if value is not None:
-            print(f"Register 0x00 value: 0x{value:02X}")
+        print("NFC device initialized.")
         
     except Exception as e:
         print(f"Error: {e}")
