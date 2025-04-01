@@ -17,7 +17,7 @@ class I2CMaster():
     PN532_INVALID_FRAME           = (-3)
     PN532_NO_SPACE                = (-4)
 
-    def __init__(self, i2c_bus=1, i2c_addr=0x48):
+    def __init__(self, i2c_bus=1, i2c_addr=0x34):
         self.i2c_addr = i2c_addr
         self.i2c_bus = i2c_bus
         
