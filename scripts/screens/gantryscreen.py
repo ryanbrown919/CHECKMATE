@@ -138,7 +138,7 @@ class GantryTargetWidget(Widget):
                     # - Files (columns) are labeled from 'a' to 'h' (left to right).
                     # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
                     file_label = chr(ord('a') + (row - 2))
-                    rank_label = str(ord(8 + col))
+                    rank_label = str((8 + col))
                     square_label = f"{file_label}{rank_label}"
 
                     print(f"Square {square_label} is {self.hall.sense_layer.get_square_from_notation(square_label)}")
