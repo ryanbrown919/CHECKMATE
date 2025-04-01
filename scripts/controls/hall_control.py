@@ -318,10 +318,34 @@ class Hall:
 
         initial_board = self.sense_layer.get_squares_game()
 
+        for y in range(7, -1, -1):
+            row_str = f"{y+1}|"
+            for x in range(8):
+                if initial_board[y][x] == 1:  # Piece present
+                    row_str += "■ "  # Filled square for occupied
+                else:
+                    row_str += "□ "  # Hollow square for empty
+            print(row_str + f"|{y+1}")
+        
+        print(" +-----------------+")
+        print("  a b c d e f g h")
+
         while True:
             # Obtain the current board state.
             new_board = self.sense_layer.get_squares_game()
             print("Polling new board state:", new_board)
+
+            for y in range(7, -1, -1):
+                row_str = f"{y+1}|"
+                for x in range(8):
+                    if new_board[y][x] == 1:  # Piece present
+                        row_str += "■ "  # Filled square for occupied
+                    else:
+                        row_str += "□ "  # Hollow square for empty
+                print(row_str + f"|{y+1}")
+            
+            print(" +-----------------+")
+            print("  a b c d e f g h")
 
             # Compare the boards using your custom function.
             diff = self.compare_boards(initial_board, new_board)
