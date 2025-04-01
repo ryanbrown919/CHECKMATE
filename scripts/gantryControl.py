@@ -249,24 +249,6 @@ class gantryControl:
             self.send_gcode(cmd)
 
 
-        def on_step_change(self, instance, value):
-            """
-            Update the jog step size when the user modifies the TextInput.
-            """
-            try:
-                self.jog_step = int(value)
-            except ValueError:
-                self.jog_step = 1
-
-        def on_reconnect(self, instance):
-            """
-            Manually trigger a reconnect to the GRBL device.
-            This can be useful if a flag is raised (e.g., a limit switch is triggered)
-            and you need to reinitialize the connection.
-            """
-            # Attempt to reconnect immediately.
-            self.connect_to_grbl()
-
         def square_to_coord(self, square):
             """
             Converts a chess square string (e.g. "e2") to coordinates (x, y)
