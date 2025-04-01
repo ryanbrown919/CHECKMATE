@@ -188,8 +188,8 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
 
 
-        self.machine.add_transition(trigger='go_to_first_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='first_piece_detection')
-        self.machine.add_transition(trigger='go_to_second_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='second_piece_detection')
+        self.machine.add_transition(trigger='go_to_first_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='first_piece_detection_poll')
+        self.machine.add_transition(trigger='go_to_second_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='second_piece_detection_poll')
 
 
         self.machine.add_transition(trigger='process_move', source=['gamescreen_player_turn', 'gamescreen_player_move_confirmed'], dest='gamescreen_engine_turn', after=['on_board_turn', 'toggle_clock', 'notify_observers'])
