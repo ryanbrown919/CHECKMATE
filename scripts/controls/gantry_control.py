@@ -8,13 +8,11 @@ import sys
 # from transitions import Machine
 from kivy.clock import Clock
 
-FEEDRATE=15000
 STEP_MM = 25
 
 
 class GantryControl:
         def __init__(self, **kwargs):
-            #self.feed_rate = FEEDRATE
             #self.hall = SenseLayer()
 
             for key, value in kwargs.items():
@@ -83,7 +81,6 @@ class GantryControl:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            cmd += f"F{FEEDRATE}\n"
             self.send(f"G21G90G1X{x}Y{y}")
 
             while True:
@@ -1160,7 +1157,7 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
@@ -1168,9 +1165,9 @@ class GantryControl:
                     dy = self.sign(move_list[-1][1]) * self.overshoot
 
                     print(f"Overshoots: {dx, dy}")
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1179,7 +1176,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
 
 
             
@@ -1203,15 +1200,15 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1220,7 +1217,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}")
 
 
             
