@@ -119,45 +119,45 @@ class SenseLayer:
         """Clean up GPIO resources"""
         self.mux.cleanup()
 
-def main_test():
-    """Test function that continuously monitors the chess board"""
-    try:
-        layer = SenseLayer()
-        layer.begin()
-        print("Chess board monitoring - Press Ctrl+C to exit")
-        
-        while True:
-            # Clear the screen for better readability
-            print("\033[H\033[J", end="")
+    def main_test():
+        """Test function that continuously monitors the chess board"""
+        try:
+            layer = SenseLayer()
+            layer.begin()
+            print("Chess board monitoring - Press Ctrl+C to exit")
             
-            # Read the board
-            board = layer.get_squares()
-            
-            # Print the board with coordinate labels
-            print("  a b c d e f g h")
-            print(" +-----------------+")
-            
-            # Print the board rows in reverse order (8 to 1)
-            for y in range(7, -1, -1):
-                row_str = f"{y+1}|"
-                for x in range(8):
-                    if board[y][x] == 1:  # Piece present
-                        row_str += "■ "  # Filled square for occupied
-                    else:
-                        row_str += "□ "  # Hollow square for empty
-                print(row_str + f"|{y+1}")
-            
-            print(" +-----------------+")
-            print("  a b c d e f g h")
-            
-            # Count total pieces
-            total = sum(sum(row) for row in board)
-            print(f"Total pieces: {total}")
-            
-    except KeyboardInterrupt:
-        print("\nMonitoring stopped")
-    finally:
-        layer.cleanup()
+            while True:
+                # Clear the screen for better readability
+                print("\033[H\033[J", end="")
+                
+                # Read the board
+                board = layer.get_squares()
+                
+                # Print the board with coordinate labels
+                print("  a b c d e f g h")
+                print(" +-----------------+")
+                
+                # Print the board rows in reverse order (8 to 1)
+                for y in range(7, -1, -1):
+                    row_str = f"{y+1}|"
+                    for x in range(8):
+                        if board[y][x] == 1:  # Piece present
+                            row_str += "■ "  # Filled square for occupied
+                        else:
+                            row_str += "□ "  # Hollow square for empty
+                    print(row_str + f"|{y+1}")
+                
+                print(" +-----------------+")
+                print("  a b c d e f g h")
+                
+                # Count total pieces
+                total = sum(sum(row) for row in board)
+                print(f"Total pieces: {total}")
+                
+        except KeyboardInterrupt:
+            print("\nMonitoring stopped")
+        finally:
+            layer.cleanup()
 
 
 class Hall:
