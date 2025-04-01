@@ -1187,8 +1187,7 @@ class GantryControl:
                 time.sleep(0.1)
 
                 while True:
-                    while True:
-                        if self.is_idle():
+                    if self.is_idle():
                         self.ser.flushInput()
                         break
                     
