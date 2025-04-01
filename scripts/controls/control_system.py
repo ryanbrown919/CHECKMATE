@@ -463,6 +463,8 @@ class ChessControlSystem:
     def on_player_turn(self):
         print("[State] Entering Player Turn")
 
+        time.sleep(1)
+
         
         self.go_to_first_piece_detection()
         # When entering player's turn, immediately begin hall effect polling.
@@ -470,36 +472,54 @@ class ChessControlSystem:
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
 
-        self.first_change = None
 
-        # Create a new event for this invocation of the state
-        result_event = threading.Event()
+        self.initial_board = self.hall.sense_layer.get_squares_game()
 
-        # Start test_function on a separate thread, passing the event to signal when done
-        # scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_first_move(result_event))
-        scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_first_board_change(result_event))
+        print("Trying to find first peice")
+        self.selected_piece = None
+        while self.selected_piece is None:
 
-        scanner_thread.start()
+             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+             time.sleep(0.5)
 
-        # Wait until the event is signaled by test_function
+        print("Detected_first_piece")
+        self.selected_piece = self.hall.first_change
+        self.select_piece(self.selected_piece)
+        self.notify_observers()
 
-        def check_for_result(dt):
-            if result_event.is_set():
-                print("scan_for_first_move returned:", self.hall.first_change)
-                scanner_thread.join()  # Clean up the thread
-                self.selected_piece = self.hall.first_change
-                self.select_piece(self.selected_piece)
-                self.notify_observers()
-                # Optionally trigger a subsequent state transition here
-            else:
-                # Schedule another check after a short delay
-                Clock.schedule_once(check_for_result, 0.1)
 
-        # Start checking without blocking
-        Clock.schedule_once(check_for_result, 0.1)
-        # result_event.wait()
 
-        print("test_function returned:", self.hall.first_change)
+
+        # self.first_change = None
+
+        # # Create a new event for this invocation of the state
+        # result_event = threading.Event()
+
+        # # Start test_function on a separate thread, passing the event to signal when done
+        # # scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_first_move(result_event))
+        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_first_board_change(result_event))
+
+        # scanner_thread.start()
+
+        # # Wait until the event is signaled by test_function
+
+        # def check_for_result(dt):
+        #     if result_event.is_set():
+        #         print("scan_for_first_move returned:", self.hall.first_change)
+        #         scanner_thread.join()  # Clean up the thread
+        #         self.selected_piece = self.hall.first_change
+        #         self.select_piece(self.selected_piece)
+        #         self.notify_observers()
+        #         # Optionally trigger a subsequent state transition here
+        #     else:
+        #         # Schedule another check after a short delay
+        #         Clock.schedule_once(check_for_result, 0.1)
+
+        # # Start checking without blocking
+        # Clock.schedule_once(check_for_result, 0.1)
+        # # result_event.wait()
+
+        # print("test_function returned:", self.hall.first_change)
         # scanner_thread.join()  # Optionally join the thread to clean up
         
 
@@ -521,42 +541,42 @@ class ChessControlSystem:
         #get second change
     def second_piece_detection_poll(self):
 
-        self.second_change = None
+        # self.second_change = None
 
-        # Create a new event for this invocation of the state
-        result_event = threading.Event()
+        # # Create a new event for this invocation of the state
+        # result_event = threading.Event()
 
-        # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_second_board_change(result_event))
-        scanner_thread.start()
+        # # Start test_function on a separate thread, passing the event to signal when done
+        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_second_board_change(result_event))
+        # scanner_thread.start()
 
-        # # Wait until the event is signaled by test_function
-        # result_event.wait()
+        # # # Wait until the event is signaled by test_function
+        # # result_event.wait()
 
-        # print("test_function returned:", self.hall.second_change)
-        # scanner_thread.join()  # Optionally join the thread to clean up
+        # # print("test_function returned:", self.hall.second_change)
+        # # scanner_thread.join()  # Optionally join the thread to clean up
 
-        def check_for_result(dt):
-            if result_event.is_set():
-                print("scan_for_second_move returned:", self.hall.second_change)
-                scanner_thread.join()  # Clean up the thread
-                self.selected_move = self.hall.second_change
-                # self.notify_observers()
-                # Optionally trigger a subsequent state transition here
-            else:
-                # Schedule another check after a short delay
-                Clock.schedule_once(check_for_result, 0.1)
+        # def check_for_result(dt):
+        #     if result_event.is_set():
+        #         print("scan_for_second_move returned:", self.hall.second_change)
+        #         scanner_thread.join()  # Clean up the thread
+        #         self.selected_move = self.hall.second_change
+        #         # self.notify_observers()
+        #         # Optionally trigger a subsequent state transition here
+        #     else:
+        #         # Schedule another check after a short delay
+        #         Clock.schedule_once(check_for_result, 0.1)
 
-        # Start checking without blocking
-        Clock.schedule_once(check_for_result, 0.1)
+        # # Start checking without blocking
+        # Clock.schedule_once(check_for_result, 0.1)
         
-        # self.initial_board = self.hall.sense_layer.get_squares_game()
+        self.initial_board = self.hall.sense_layer.get_squares_game()
 
-        # self.selected_move = None
-        # while self.selected_move is None:
+        self.selected_move = None
+        while self.selected_move is None:
 
-        #     self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-        #     time.sleep(0.5)
+            self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+            time.sleep(0.5)
 
         self.selected_move = self.hall.second_change
 
