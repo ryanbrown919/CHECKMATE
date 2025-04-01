@@ -463,10 +463,8 @@ class ChessControlSystem:
     def on_player_turn(self):
         print("[State] Entering Player Turn")
 
-        time.sleep(1)
-
-        
-        self.go_to_first_piece_detection()
+    
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 3)
         # When entering player's turn, immediately begin hall effect polling.
         
         # State transition will stay in this state until a change is detected, then it will go to second state
@@ -475,11 +473,15 @@ class ChessControlSystem:
 
         self.initial_board = self.hall.sense_layer.get_squares_game()
 
+        print(self.initial_board)
+
         print("Trying to find first peice")
         self.selected_piece = None
         while self.selected_piece is None:
-
-             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+             print("no change detected")
+             new_board = self.hall.sense_layer.get_squares_game()
+             print(new_board)
+             self.selected_peice = self.hall.compare_boards(new_board, self.initial_board)
              time.sleep(0.5)
 
         print("Detected_first_piece")
@@ -791,9 +793,13 @@ class ChessControlSystem:
 
         if turn == chess.WHITE:
             self.game_winner = "White"
+            self.victory_lap('white')
+            #find white king, victory lap
         else:
             self.game_winner = "Black"
-        
+            self.victory_lap('black')
+            #find black king, victory lap
+
         self.end_game_screen()
 
         self.notify_observers()
@@ -808,6 +814,123 @@ class ChessControlSystem:
     #################################################################################################################
     # Non-state related functions
     #################################################################################################################
+
+    def victory_lap(self, color):
+
+        white_king_square = self.board.king(chess.WHITE)
+        black_king_square = self.board.king(chess.BLACK)
+
+
+        if color == 'white':
+            start_square = f"{white_king_square}"
+            end_square = f"{black_king_square}"
+        else:
+            start_square = f"{black_king_square}"
+            end_square = f"{white_king_square}"
+
+        # Convert algebraic notation to board coordinates
+        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
+        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
+
+        # Calculate Manhattan distance
+        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
+
+        init_coords = self.gantry.square_to_coord(start_square)
+        end_coords = self.gantry.square_to_coord(end_square)
+
+        # find closest border corner
+        if init_coords[0] > 180:
+            close_x = 325
+            dx = 1 if init_coords[0] != 350 else -1
+        else:
+            close_x = 25
+            dx = -1 if init_coords[0] != 0 else 1
+
+        if init_coords[1] > 180:
+            close_y = 325
+            dy = 1 if init_coords[1] != 350 else -1
+        else:
+            close_y = 25
+            dy = -1 if init_coords[1] != 350 else 1
+
+        
+
+
+
+        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0), (6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50), ((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
+
+
+
+        ###############
+        #Add looping king logic if time
+        ###############
+
+        # path = []
+        
+        # dx = init_coords[0] - end_coords[0]
+        # dy = init_coords[1] - end_coords[1]
+
+        # dx_sign = self.gantry.sign(dx)
+        # dy_sign = self.gantry.sign(dy)
+
+        # dy_flag = 1
+        # dx_flag = 1
+
+        # # deal with logic for going to an inside edge here
+        # if dx_sign == 0:
+        #     dx_flag = -1
+        #     if init_coords[0] > 180:
+        #         dx_sign = -1
+        #     else:
+        #         dx_sign = 1
+            
+        # if dy_sign == 0:
+        #     dy_flag = -1
+        #     if init_coords[1] > 180:
+        #         dy_sign = -1
+        #     else:
+        #         dy_sign = 1
+
+        # offset = 25
+
+        # # Get the king to within 25 mm of the other king
+        # path = [init_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign)]
+
+
+
+        # # Edge cases
+
+
+        # # Should be on the closest corner right now, coming from dx_sign dy_sign direction
+
+
+        # # if dx = 1, dy = 1 : go up, right, down, left x2
+        # # if dx = 1, dy = -1 :
+        # #
+        # #
+        # #
+
+        # # Always start
+        # loop_path = 
+
+        
+        #     # 
+
+        # else: 
+
+
+        # laps = ()
+
+        cmds = self.gantry.movement_to_gcode(path)
+        self.gantry.send_commands(cmds)
+
+        # self.rocker.toggle()
+        self.notify_observers
+
+
+
+
+        pass
 
     def select_piece(self, square):
         # Find legal moves for the selected piece, update any boards with hgihlighted squares
