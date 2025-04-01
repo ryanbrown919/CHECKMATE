@@ -220,6 +220,7 @@ class Hall:
                 if reference_board[row][col] != board[row][col]:
                     print("yo these are not the same")
                     change = self.board_to_chess_notation(row, col)
+                    print(change)
                     return change  # Update reference board after first change
 
         return None
