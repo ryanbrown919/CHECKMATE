@@ -425,7 +425,7 @@ class ChessControlSystem:
         print("Initializing gantry communication...")
         # Simulate some processing delay before gantry is ready.
         #self.gantry = GantryControl()
-        self.gantry.connect_to_grbl()
+        # self.gantry.connect_to_grbl()
         #self.servo = Servo()
         #self.sense = Hall()
         # self.servo.begin()
