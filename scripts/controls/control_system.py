@@ -180,7 +180,8 @@ class ChessControlSystem:
         self.engine = None
 
         self.rocker = Rocker()
-        # self.gantry = None
+        self.rocker.begin()
+        print("Rocker initialized")
         self.gantry = GantryControl()
         # self.gantry.connect_to_grbl()
         self.move_history = []
