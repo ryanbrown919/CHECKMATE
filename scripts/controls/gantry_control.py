@@ -1179,7 +1179,7 @@ class GantryControl:
                     self.finished = False
                     full_cmd = cmd + "\n"
                     self.send(full_cmd)
-                    Wait for GRBL response ("ok")
+                    # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
                         # You might log the response or wait until "ok" arrives.
