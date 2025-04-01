@@ -53,7 +53,7 @@ class GantryControl:
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
 
         def send(self, command):
-            self.serial.write(str.encode(command + "\n"))
+            self.ser.write(str.encode(command + "\n"))
         
         def send_gcode(self, command):
             """
