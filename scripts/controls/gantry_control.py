@@ -1173,18 +1173,10 @@ class GantryControl:
                 time.sleep(2)
                 print(f"Sent commands")
             else:
-                
-                for cmd in cmd_list:
-                    self.finished = False
-                    full_cmd = cmd + "\n"
-                    self.send(full_cmd)
-                    # Wait for GRBL response ("ok")
-                    response = self.ser.readline().decode().strip()
-                    while response != "ok":
-                        # You might log the response or wait until "ok" arrives.
-                        response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
-                time.sleep(0.1)
+                concatenated_cmds = "".join(cmd + "\n" for cmd in cmd_list)
+                self.send(concatenated_cmds)
+                print(f"Sent: {cmd}")
+                time.sleep(0.05)
 
                 while True:
                     if self.is_idle():
