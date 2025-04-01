@@ -478,8 +478,9 @@ class ChessControlSystem:
         print("Trying to find first peice")
         self.selected_piece = None
         while self.selected_piece is None:
-
-             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+             print("no change detected")
+             new_board = self.hall.sense_layer.get_squares_game()
+             self.selected_peice = self.hall.compare_boards(new_board, self.initial_board)
              time.sleep(0.5)
 
         print("Detected_first_piece")
