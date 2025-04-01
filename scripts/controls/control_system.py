@@ -482,7 +482,7 @@ class ChessControlSystem:
              
              new_board = self.hall.sense_layer.get_squares_game()
              #print(new_board)
-             self.selected_peice = self.hall.compare_boards(new_board, self.initial_board)
+             self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
              time.sleep(0.5)
 
         print("Detected_first_piece")
