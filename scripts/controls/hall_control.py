@@ -266,6 +266,8 @@ class Hall:
     def scan_for_first_move(self, result_event):
 
         initial_board = self.sense_layer.get_squares_game()
+        print("Initial Board first move")
+        print(initial_board)
 
         self.first_change = None
 
@@ -278,6 +280,8 @@ class Hall:
     def scan_for_second_move(self, result_event):
 
         initial_board = self.sense_layer.get_squares_game()
+        print("Initial Board second move")
+        print(initial_board)
 
         self.second_change = None
 

@@ -536,7 +536,7 @@ class ChessControlSystem:
 
         def check_for_result(dt):
             if result_event.is_set():
-                print("scan_for_second_move returned:", self.hall.first_change)
+                print("scan_for_second_move returned:", self.hall.second_change)
                 scanner_thread.join()  # Clean up the thread
                 self.selected_move = self.hall.second_change
                 # self.notify_observers()
