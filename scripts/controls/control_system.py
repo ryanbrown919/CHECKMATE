@@ -479,7 +479,7 @@ class ChessControlSystem:
 
         print(self.initial_board)
 
-        print("Trying to find first peice")
+        print("Trying to find first piece")
         self.selected_piece = None
         while self.selected_piece is None:
              
