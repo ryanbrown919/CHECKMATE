@@ -5,7 +5,6 @@ PN532_I2C_ADDRESS = 0x24  # Verify this is your device's address
 
 try:
     with SMBus(1) as bus:
-        # Optional: small delay to let the device power up or settle
         time.sleep(0.1)
         data = bus.read_byte(PN532_I2C_ADDRESS)
         print("Data read:", data)
