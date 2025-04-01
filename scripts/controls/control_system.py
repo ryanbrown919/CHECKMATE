@@ -101,7 +101,8 @@ class ChessControlSystem:
         },
         'gantryscreen',
         'settingsscreen',
-        'endgamescreen'
+        'endgamescreen',
+        'boardresetscreen'
     ]
 
     systems_enabled = {
