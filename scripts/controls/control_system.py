@@ -151,11 +151,13 @@ class ChessControlSystem:
             self.engine_path = "./bin/stockfish-macos-m1-apple-silicon"
         else:
             print("Need to download windows stockfish")
-            self.engine_path = None
+            self.engine = None
         
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path}  # Default parameters to be set by the user 
 
         self.timer_enabled = False
+
+        self.engine_path = None
         
         # Create a hierarchical state machine.
         self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
@@ -219,7 +221,7 @@ class ChessControlSystem:
         self.rocker.begin()
         print("Rocker initialized")
         self.gantry = GantryControl()
-        #self.gantry.home()
+        self.gantry.home()
         print("Gantry initialized: homing")
         self.move_history = []
         self.captured_pieces = []
@@ -460,11 +462,11 @@ class ChessControlSystem:
         
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
-        self.initial_board = self.hall.sense_layer.get_squares()
+        self.initial_board = self.hall.sense_layer.get_squares_game()
         self.selected_piece = None
         while self.selected_piece is None:
 
-            self.selected_peice = self.hall.compare_boards(self.hall.get_squares(), self.initial_board)
+            self.selected_peice = self.hall.compare_boards(self.hall.get_squares_game(), self.initial_board)
 
         self.select_piece(self.selected_piece)
         self.notify_observers()
@@ -476,7 +478,7 @@ class ChessControlSystem:
         self.selected_move = None
         while self.selected_move is None:
 
-            self.selected_move = self.hall.compare_boards(self.hall.get_squares(), self.initial_board)
+            self.selected_move = self.hall.compare_boards(self.hall.get_squares_game(), self.initial_board)
 
         if self.selected_piece == self.selected_move:
             # selected_piece = None

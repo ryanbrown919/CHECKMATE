@@ -123,6 +123,12 @@ class SenseLayer:
         # final_board = list(map(list, zip(*board_t)))
 
         return transposed_board
+    
+    def get_squares_game(self):
+        board = self.get_squares()
+        transposed_board = list(map(list, zip(*board)))
+
+        return transposed_board
 
     def get_square_from_notation(self, square):
         """
