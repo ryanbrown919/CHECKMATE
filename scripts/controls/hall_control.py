@@ -106,7 +106,7 @@ class SenseLayer:
     def get_squares_gantry(self):
         board = self.get_squares()
 
-        transposed_board = list(map(list, zip(*self.board)))
+        transposed_board = list(map(list, zip(*board)))
         rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
 
         return rotated_board
