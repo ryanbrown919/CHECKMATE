@@ -459,6 +459,8 @@ class ChessControlSystem:
     def on_player_turn(self):
         print("[State] Entering Player Turn")
         self.update_ui()
+
+        time.sleep(1)
         self.go_to_first_piece_detection()
         # When entering player's turn, immediately begin hall effect polling.
         
