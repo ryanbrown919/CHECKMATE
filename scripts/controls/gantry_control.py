@@ -59,7 +59,7 @@ class GantryControl:
             for _ in range(max_attempts):
                 self.send("?")
                 response = self.serial.readline().decode().strip()
-                
+
                 if 'MPos:' in response:
                     pos_part = response.split('MPos:')[1].split('|')[0]
                     coords = pos_part.split(',')
@@ -68,24 +68,12 @@ class GantryControl:
                     coords = pos_part.split(',')
                 else:
                     continue 
-                    
+
                 x = int(float(coords[0]) + 475)
                 y = int(float(coords[1]) + 486)
-                
+
                 return x, y   
             return None, None  
-    
-        def send_jog_command(self, dx, dy):
-            """
-            Construct and send the jog command based on dx, dy, and the current jog step size.
-            """
-            step = self.jog_step
-            cmd = "$J=G91"
-            if dx:
-                cmd += f"X{dx * step}"
-            if dy:
-                cmd += f"Y{dy * step}"
-            self.send(cmd)
 
         def send_coordinates_command(self, location):
             """
