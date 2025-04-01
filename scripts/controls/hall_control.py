@@ -215,7 +215,7 @@ class Hall:
             for col in range(8):
                 if reference_board[row][col] != board[row][col]:
                     
-                    change = self.board_to_chess_notation(7-row, col)
+                    change = self.board_to_chess_notation(row, col)
                     return change  # Update reference board after first change
 
         return None
@@ -267,7 +267,18 @@ class Hall:
 
         initial_board = self.sense_layer.get_squares_game()
         print("Initial Board first move")
-        print(initial_board)
+        # Print the board rows in reverse order (8 to 1)
+            for y in range(7, -1, -1):
+                row_str = f"{y+1}|"
+                for x in range(8):
+                    if initial_board[y][x] == 1:  # Piece present
+                        row_str += "■ "  # Filled square for occupied
+                    else:
+                        row_str += "□ "  # Hollow square for empty
+                print(row_str + f"|{y+1}")
+            
+            print(" +-----------------+")
+            print("  a b c d e f g h")
 
         self.first_change = None
 
@@ -275,7 +286,7 @@ class Hall:
 
             new_board = self.sense_layer.get_squares_game()
             print("New board")
-            print(new_board)
+            #print(new_board)
             self.first_change = self.compare_boards(initial_board, new_board)
 
         result_event.set()    
