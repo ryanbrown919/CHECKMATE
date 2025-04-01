@@ -205,8 +205,8 @@ class ChessControlSystem:
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
-        self.machine.add_transition(trigger='go_to_boardreset', source='mainscreen', dest='boardresetscreen', after='update_ui')
-
+        self.machine.add_transition(trigger='go_to_boardreset', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
+        
 
         # print("trying to init hall")
         # try:
