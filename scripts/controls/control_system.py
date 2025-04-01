@@ -237,6 +237,10 @@ class ChessControlSystem:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
+        self.first_change = None
+        self.second_change = None
+
+
 
 
 
@@ -465,28 +469,63 @@ class ChessControlSystem:
         
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
-        self.initial_board = self.hall.sense_layer.get_squares_game()
 
-        print("Trying to find first peice")
-        self.selected_piece = None
-        while self.selected_piece is None:
+        self.first_change = None
 
-            self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-            time.sleep(0.5)
+        # Create a new event for this invocation of the state
+        result_event = threading.Event()
 
-        print("Detected_first_piece")
+        # Start test_function on a separate thread, passing the event to signal when done
+        scanner_thread = threading.Thread(target=self.control.system.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread.start()
+
+        # Wait until the event is signaled by test_function
+        result_event.wait()
+
+        print("test_function returned:", self.first_change)
+        scanner_thread.join()  # Optionally join the thread to clean up
+        
+
+
+        # self.initial_board = self.hall.sense_layer.get_squares_game()
+
+        # print("Trying to find first peice")
+        # self.selected_piece = None
+        # while self.selected_piece is None:
+
+        #     self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+        #     time.sleep(0.5)
+
+        # print("Detected_first_piece")
         self.select_piece(self.selected_piece)
         self.notify_observers()
 
         #get second change
     def second_piece_detection_poll(self):
-        self.initial_board = self.hall.sense_layer.get_squares_game()
 
-        self.selected_move = None
-        while self.selected_move is None:
+        self.first_change = None
 
-            self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-            time.sleep(0.5)
+        # Create a new event for this invocation of the state
+        result_event = threading.Event()
+
+        # Start test_function on a separate thread, passing the event to signal when done
+        scanner_thread = threading.Thread(target=self.control.system.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread.start()
+
+        # Wait until the event is signaled by test_function
+        result_event.wait()
+
+        print("test_function returned:", self.first_change)
+        scanner_thread.join()  # Optionally join the thread to clean up
+        
+        # self.initial_board = self.hall.sense_layer.get_squares_game()
+
+        # self.selected_move = None
+        # while self.selected_move is None:
+
+        #     self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+        #     time.sleep(0.5)
+
         if self.selected_piece == self.selected_move:
             # selected_piece = None
             self.go_to_first_piece_detection()

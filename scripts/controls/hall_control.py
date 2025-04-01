@@ -263,6 +263,17 @@ class Hall:
         print("No changes detected")
         return None
     
+    def scan_for_move(self):
+
+        initial_board = self.sense_layer.get_squares_game()
+
+        change = None
+
+        while change is None:
+
+            new_board = self.sense_layer.get_squares_game()
+            change = self.compare_boards(initial_board, new_board)
+        return change
 
     # def poll_board_for_change(self):
     #     while move is None:
