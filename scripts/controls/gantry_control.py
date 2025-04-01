@@ -54,14 +54,6 @@ class GantryControl:
         def send(self, command):
             with self.serial_lock:
                 self.ser.write(str.encode(command + "\n"))
-        
-        def is_idle(self):
-            self.send("?")
-            response = self.serial.readline().decode().strip()
-            if "Idle" in response:
-                return True
-            else:
-                return False
     
         def send_jog_command(self, dx, dy):
             """
