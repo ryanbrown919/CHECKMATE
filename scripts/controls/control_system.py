@@ -104,7 +104,7 @@ class ChessControlSystem:
     ]
 
     systems_enabled = {
-        "servo": False,
+        "rocker": True,
         "gantry": True,
         "hall": False,
         "rfid": False
@@ -179,7 +179,7 @@ class ChessControlSystem:
 
         self.engine = None
 
-        self.servo = None
+        self.rocker = Rocker()
         # self.gantry = None
         self.gantry = GantryControl()
         # self.gantry.connect_to_grbl()
@@ -402,6 +402,7 @@ class ChessControlSystem:
                 self.board.push(move)
         # Transition back to player's turn.
 
+        self.rocker.toggle()
         time.sleep(0.5)
 
         self.notify_observers()
