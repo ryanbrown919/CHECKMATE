@@ -622,6 +622,7 @@ class ChessControlSystem:
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
 
+
         self.rocker.to_white()
 
         self.update_ui()
@@ -657,6 +658,10 @@ class ChessControlSystem:
 
         # Initialize engine or API for given game parameters 
         self.game_progress = 0  # Reset progress
+
+        # if self.parameters['colour'].lower() == 'white' and not self.parameters['bot_mode']:
+        
+        # else :   
 
 
 
