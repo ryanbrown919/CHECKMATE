@@ -232,6 +232,8 @@ class I2CMaster():
 
 
 class NFC():
+    PN532_COMMAND_SAMCONFIGURATION = (0x14)
+
     def __init__(self):
         self.i2c = I2CMaster()
         self.SAMConfig()
@@ -241,7 +243,7 @@ class NFC():
         Configures the SAM (Secure Access Module)
         :returns: True if success, False if error
         """
-        header = bytearray([PN532_COMMAND_SAMCONFIGURATION,
+        header = bytearray([self.PN532_COMMAND_SAMCONFIGURATION,
                             0x01,   # normal mode
                             0x14,   # timeout 50ms * 20 = 1 second
                             0x01])  # use IRQ pin!
