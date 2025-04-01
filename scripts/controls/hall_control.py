@@ -1,5 +1,7 @@
 import lgpio
 import time
+import numpy as np
+
 
 class Multiplexer:
     MUX_S0 = 6
@@ -106,10 +108,19 @@ class SenseLayer:
     def get_squares_gantry(self):
         board = self.get_squares()
 
-        transposed_board = list(map(list, zip(*board)))
-        rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
+        transposed_np = board.T
+        # print("Transposed Matrix (NumPy):")
+        # print(transposed_np)
 
-        return rotated_board
+        # Rotate the original matrix 90° counterclockwise using np.rot90
+        final_board = np.rot90(transposed_np, k=1)  # k=1 rotates by 90° CCW
+        # print("\nRotated 90° Counterclockwise (NumPy):")
+        # print(rotated_ccw_np)
+
+        # transposed_board = list(map(list, zip(*board)))
+        # rotated_board = [list(row) for row in list(zip(*transposed_board))[::-1]]
+
+        return final_board
 
     def get_square_from_notation(self, square):
         """
