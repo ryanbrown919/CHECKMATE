@@ -54,6 +54,15 @@ class GantryControl:
             with self.serial_lock:
                 self.ser.write(str.encode(command + "\n"))
         
+        def is_idle(self):
+            self.send("?")
+            response = self.serial.readline().decode().strip()
+            if "Idle" in response:
+                return True
+            else:
+                return False
+    
+        
         def send_gcode(self, command):
             """
             Send a G-code command to GRBL.
@@ -1177,13 +1186,12 @@ class GantryControl:
                     print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
 
-                while not self.finished:
-                    self.ser.write(b'?')
-                    status = self.ser.readline().decode().strip()
-                    print(f"Status: {status}")
-                    if '<Idle' in status:
-                        self.finished = True
-                    time.sleep(0.5)
+                while True:
+                    while True:
+                        if self.is_idle():
+                        self.ser.flushInput()
+                        break
+                    
                 print("Finished Sending commands")
 
             
