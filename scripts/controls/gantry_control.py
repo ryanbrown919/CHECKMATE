@@ -63,43 +63,6 @@ class GantryControl:
             else:
                 return False
     
-        
-        def send_gcode(self, command):
-            """
-            Send a G-code command to GRBL.
-            In simulation mode, the command is logged to the debug log.
-            Errors during write/read are caught and handled.
-            """
-            print(f"Sending: {command}")
-            if self.simulate:
-                return
-
-            with self.serial_lock:
-                try:
-                    self.ser.write(f"{command}\n".encode())
-                except Exception as e:
-                    error_msg = f"Error writing command: {e}"
-                    print(error_msg)
-                    sys.exit(1)
-                    self.handle_serial_error(e)
-                    return
-
-                try:
-                    while True:
-                        response = self.ser.readline().decode('utf-8', errors='replace').strip()
-                        if response:
-                            print(f"GRBL Response: {response}")
-                        if response == "ok":
-                            break
-                        elif response == "ALARM:1":
-                            #self.log_debug("ALARM:1 - Resetting GRBL")
-                            self.send_gcode("$X")
-                            break   
-                        
-                except Exception as e:
-                    return
-
-    
         def send_jog_command(self, dx, dy):
             """
             Construct and send the jog command based on dx, dy, and the current jog step size.
@@ -127,8 +90,7 @@ class GantryControl:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            #self.send_gcode("$X") 
-            self.send_gcode(f"G90X{x}Y{y}")
+            self.send(f"G90X{x}Y{y}")
 
             while True:
                 self.ser.write(b'?')
@@ -1204,9 +1166,9 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
@@ -1247,9 +1209,9 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
@@ -1279,9 +1241,9 @@ class GantryControl:
         
         def magnet_control(self):
             if self.magnet_state == "MAG ON":
-                self.send_gcode("M8")
+                self.send("M8")
             elif self.magnet_state == "MAG OFF":
-                self.send_gcode("M9")
+                self.send("M9")
 
 
 class ClockLogic:
