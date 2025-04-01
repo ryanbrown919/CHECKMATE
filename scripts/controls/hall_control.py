@@ -205,7 +205,7 @@ class Hall:
         self.move = None
 
     def board_to_chess_notation(self, row, col):
-        return f"{chr(96 + row)}{col}"
+        return f"{chr(96 + row)}{col+2}"
 
     def compare_boards(self, board, reference_board):
         # if self.initial_board is None:
