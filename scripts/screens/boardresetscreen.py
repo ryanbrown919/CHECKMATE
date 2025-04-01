@@ -7,16 +7,28 @@ Window.fullscreen = True
 
 FONT_SIZE=40
 try:
-    from custom_widgets import RoundedButton
+    from custom_widgets import RoundedButton, MatrixWidget
+
 
 except:
     from scripts.screens.custom_widgets import RoundedButton
+
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Rectangle
 class BoardResetScreen(Screen):
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)
+
+        self.contorl_system = control_system
         layout = BoxLayout(orientation='vertical', padding=10)
         #layout.add_widget(Image(source='assets/start_logo.png', size_hint=(1, 1), keep_ratio=True, allow_stretch=True))
-        custom1 = RoundedButton(text="[size=70][b]Play Game[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))
+
+   
+
+        custom1 = MatrixWidget(control_system = self.control_system)
+
+
         layout.add_widget(custom1)
         self.add_widget(layout)
 

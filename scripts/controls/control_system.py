@@ -200,7 +200,7 @@ class ChessControlSystem:
 
 
         self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
-        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='resetboardscreen')
+        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after=update_ui)
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -216,7 +216,11 @@ class ChessControlSystem:
         self.SQUARES = chess.SQUARES
         self.observers = []
         self.game_state = "UNFINISHED"
-        self.hall = Hall()
+        print("trying to init hall")
+        try:
+            self.hall = Hall()
+        except Exception as e:
+            print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
 
@@ -695,6 +699,13 @@ class ChessControlSystem:
         self.update_ui()
 
         return legal_moves
+    
+
+    def on_boardresetscreen(self):
+        while True:
+            self.notify_observers()
+            self.sleep(0.5)
+        
 
 
 

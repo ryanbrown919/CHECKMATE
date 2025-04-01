@@ -897,4 +897,36 @@ class PlayerClock(Widget):
         # Refresh the background to reflect active state.
         self.update_background()
 
+
+class MatrixWidget(GridLayout):
+    def __init__(self, control_system, **kwargs):
+        super().__init__(**kwargs)
+
+        self.matrix = control_system.hall.sense_layer.get_squares()
+        self.cols = len(self.matrix[0])
+        self.rows = len(self.matrix)
+        self.spacing = 2
+        self.size_hint = (1, 1)
+
+        self.control_system.register_observer(self.update_matrix)
+
+    def update_matrix(self):
+        for row in self.matrix:
+            for cell in row:
+                self.add_widget(CellWidget(cell))
+
+class CellWidget(Widget):
+    def __init__(self, value, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas:
+            if value == 1:
+                Color(0, 1, 0)  # Green for 1
+            else:
+                Color(1, 0, 0)  # Red for 0
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
         
