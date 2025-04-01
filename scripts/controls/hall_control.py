@@ -111,9 +111,11 @@ class SenseLayer:
         square = square.lower()
         if square not in self.square_mapping:
             return False
+        
+        board = self.get_squares()
             
         x, y = self.square_mapping[square]
-        return self.get_square_cartesian(x, y)
+        return board[y][x]
         
     def cleanup(self):
         """Clean up GPIO resources"""
