@@ -10,7 +10,6 @@ from kivy.clock import Clock
 
 STEP_MM = 25
 
-
 class GantryControl:
         def __init__(self, **kwargs):
             #self.hall = SenseLayer()
@@ -49,8 +48,8 @@ class GantryControl:
             self.send("$H")
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
-            self.send("$120 = 1000")
-            self.send("$121 = 1000")
+            self.send("$120 = 400")
+            self.send("$121 = 400")
 
         def send(self, command):
             with self.serial_lock:
