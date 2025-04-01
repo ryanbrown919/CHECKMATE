@@ -263,17 +263,31 @@ class Hall:
         print("No changes detected")
         return None
     
-    def scan_for_move(self):
+    def scan_for_first_move(self):
 
         initial_board = self.sense_layer.get_squares_game()
 
-        change = None
+        self.first_change = None
 
-        while change is None:
+        while self.first_change is None:
 
             new_board = self.sense_layer.get_squares_game()
-            change = self.compare_boards(initial_board, new_board)
-        return change
+            self.first_change = self.compare_boards(initial_board, new_board)
+
+        return self.first_change
+    
+    def scan_for_second_move(self):
+
+        initial_board = self.sense_layer.get_squares_game()
+
+        self.second_change = None
+
+        while self.second_change is None:
+
+            new_board = self.sense_layer.get_squares_game()
+            self.second_change = self.compare_boards(initial_board, new_board)
+
+        return self.second_change
 
     # def poll_board_for_change(self):
     #     while move is None:

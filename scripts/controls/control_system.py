@@ -476,13 +476,13 @@ class ChessControlSystem:
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.hall.scan_for_move, args=(self.first_change,))
+        scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_first_move(result_event))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
         result_event.wait()
 
-        print("test_function returned:", self.first_change)
+        print("test_function returned:", self.hall.first_change)
         scanner_thread.join()  # Optionally join the thread to clean up
         
 
@@ -497,6 +497,7 @@ class ChessControlSystem:
         #     time.sleep(0.5)
 
         # print("Detected_first_piece")
+        self.selected_piece = self.hall.first_change
         self.select_piece(self.selected_piece)
         self.notify_observers()
 
@@ -509,13 +510,13 @@ class ChessControlSystem:
         result_event = threading.Event()
 
         # Start test_function on a separate thread, passing the event to signal when done
-        scanner_thread = threading.Thread(target=self.hall.scan_for_move, args=(self.second_change,))
+        scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_second_move(result_event))
         scanner_thread.start()
 
         # Wait until the event is signaled by test_function
         result_event.wait()
 
-        print("test_function returned:", self.second_change)
+        print("test_function returned:", self.hall.second_change)
         scanner_thread.join()  # Optionally join the thread to clean up
         
         # self.initial_board = self.hall.sense_layer.get_squares_game()
@@ -525,6 +526,8 @@ class ChessControlSystem:
 
         #     self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
         #     time.sleep(0.5)
+
+        self.selected_move = self.hall.second_change
 
         if self.selected_piece == self.selected_move:
             # selected_piece = None
