@@ -54,22 +54,15 @@ def distance(point1, point2):
     """Calculate Manhattan distance between two points."""
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
-def coord_to_chess_square(coord):
-    """
-    Convert board coordinate (x, y) into a chess square label.
-    x=0, y=0 corresponds to A1 (bottom-left of board)
-    """
-    x, y = coord
-    file = chr(ord('A') + x)  # A→B→C→...→H as x increases
-    rank = str(y + 1)         # 1→2→3→...→8 as y increases
-    return file + rank
-
 def get_occupied_squares(board_state):
     """
     Return a list of physical coordinates for occupied squares on the board.
     board_state: 2D array with 1 for occupied squares, 0 for empty
     """
     occupied = []
+    print("Board State:")
+    for row in board_state:
+        print(" ".join(str(cell) for cell in row))
     for y in range(len(board_state)):
         for x in range(len(board_state[y])):
             if board_state[y][x] == 1:
