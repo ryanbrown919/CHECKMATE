@@ -315,7 +315,7 @@ class Hall:
             result_event: A threading.Event to signal when a change is detected.
             poll_interval: Delay in seconds between polls.
         """
-
+        time.sleep(0.5)
         initial_board = self.sense_layer.get_squares_game()
         time.sleep(0.5)
 
