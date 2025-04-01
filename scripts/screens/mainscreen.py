@@ -94,6 +94,7 @@ class MainScreen(Screen):
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True))
+        reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
         gantry_btn = IconButton(source="assets/Power.png", 
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
