@@ -51,7 +51,8 @@ class GantryControl:
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
 
         def send(self, command):
-            self.ser.write(str.encode(command + "\n"))
+            with self.serial_lock:
+                self.ser.write(str.encode(command + "\n"))
         
         def send_gcode(self, command):
             """
@@ -1167,7 +1168,7 @@ class GantryControl:
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
-                    self.send_gcode(full_cmd)
+                    self.send(full_cmd)
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
