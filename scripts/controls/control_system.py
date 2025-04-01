@@ -464,7 +464,7 @@ class ChessControlSystem:
         print("[State] Entering Player Turn")
 
     
-        Clock.schedule_once(self.go_to_first_piece_detection(), 2)
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 2)
         # When entering player's turn, immediately begin hall effect polling.
         
         # State transition will stay in this state until a change is detected, then it will go to second state
