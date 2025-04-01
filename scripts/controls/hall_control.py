@@ -274,6 +274,8 @@ class Hall:
         while self.first_change is None:
 
             new_board = self.sense_layer.get_squares_game()
+            print("New board")
+            print(new_board)
             self.first_change = self.compare_boards(initial_board, new_board)
 
         result_event.set()    
