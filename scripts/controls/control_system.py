@@ -270,7 +270,7 @@ class ChessControlSystem:
         state = self.state
         print(f"UI updated to state: {state}")
         if self.ui_update_callback:
-            Clock.schedule_once(lambda dt: self.ui_update_callback(state), 0)
+            Clock.schedule_once(lambda dt: self.ui_update_callback(state), 0.1)
 
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
@@ -458,7 +458,6 @@ class ChessControlSystem:
 
     def on_player_turn(self):
         print("[State] Entering Player Turn")
-        self.update_ui()
 
         
         self.go_to_first_piece_detection()
@@ -467,11 +466,15 @@ class ChessControlSystem:
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
         self.initial_board = self.hall.sense_layer.get_squares_game()
+
+        print("Trying to find first peice")
         self.selected_piece = None
         while self.selected_piece is None:
 
             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
             time.sleep(0.5)
+
+        print("Detected_first_piece")
         self.select_piece(self.selected_piece)
         self.notify_observers()
 
