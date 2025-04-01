@@ -53,7 +53,7 @@ class GantryControl:
         def send(self, command):
             self.ser.write(str.encode(command + "\n"))
         
-        def send_gcode(self, command):
+        def send(self, command):
             """
             Send a G-code command to GRBL.
             In simulation mode, the command is logged to the debug log.
@@ -82,7 +82,7 @@ class GantryControl:
                             break
                         elif response == "ALARM:1":
                             #self.log_debug("ALARM:1 - Resetting GRBL")
-                            self.send_gcode("$X")
+                            self.send("$X")
                             break   
                         
                 except Exception as e:
@@ -116,8 +116,8 @@ class GantryControl:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            #self.send_gcode("$X") 
-            self.send_gcode(f"G90X{x}Y{y}")
+            #self.send("$X") 
+            self.send(f"G90X{x}Y{y}")
 
             while True:
                 self.ser.write(b'?')
@@ -1167,7 +1167,7 @@ class GantryControl:
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
-                    self.send_gcode(full_cmd)
+                    self.send(full_cmd)
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
@@ -1195,9 +1195,9 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
@@ -1238,9 +1238,9 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
@@ -1270,9 +1270,9 @@ class GantryControl:
         
         def magnet_control(self):
             if self.magnet_state == "MAG ON":
-                self.send_gcode("M8")
+                self.send("M8")
             elif self.magnet_state == "MAG OFF":
-                self.send_gcode("M9")
+                self.send("M9")
 
 
 class ClockLogic:
