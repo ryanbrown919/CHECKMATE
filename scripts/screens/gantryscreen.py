@@ -97,8 +97,8 @@ class GantryTargetWidget(Widget):
         self.left_labels = []
         self.right_labels = []
         self.bind(pos=self.update_canvas, size=self.update_canvas)
-        Clock.schedule_once(lambda dt: self.update_canvas(), 0)
-        Clock.schedule_once(lambda dt: self.add_labels(), 0)
+        Clock.schedule_once(lambda dt: self.update_canvas(), 0.1)
+        Clock.schedule_once(lambda dt: self.add_labels(), 0.1)
     
     def update_canvas(self, *args):
         self.canvas.clear()
