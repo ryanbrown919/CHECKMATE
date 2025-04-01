@@ -27,6 +27,8 @@ class Rocker():
 
     def home(self):
         self._move_servo(self.CENTER_DUTY)
+        time.sleep(0.3)  
+        self._stop_servo()  
     
     def to_white(self):
         self._move_servo(self.OPEN_DUTY)
@@ -47,6 +49,10 @@ class Rocker():
         while time.time() - start_time <= self.MAX_WAIT_TIME:
             if self.get_switch_state() != initial_state:
                 break
+
+    def _stop_servo(self):
+        """Stop sending PWM signals to reduce jitter"""
+        lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
     
     def toggle(self):
         if self.get_switch_state():
