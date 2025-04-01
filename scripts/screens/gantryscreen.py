@@ -102,6 +102,9 @@ class GantryTargetWidget(Widget):
     
     def update_canvas(self, *args):
         self.canvas.clear()
+        self.board_occupancy = self.hall.sense_layer.get_squares()
+        transposed_board = list(map(list, zip(*self.board_occupancy)))
+
         # Compute square size relative to parent's available size minus the offset.
         self.square_size = min((self.width - self.offset_value) / self.cols,
                                (self.height - self.offset_value) / self.rows)
@@ -137,19 +140,25 @@ class GantryTargetWidget(Widget):
                     # In the rotated system:
                     # - Files (columns) are labeled from 'a' to 'h' (left to right).
                     # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
-                    file_label = chr(ord('a') + (row - 2))
-                    rank_label = str((8 - col))
-                    square_label = f"{file_label}{rank_label}"
+                    # file_label = chr(ord('a') + (row - 2))
+                    # rank_label = str((8 - col))
+                    # square_label = f"{file_label}{rank_label}"
+                    # Calculate the diagonal mirror square.
+                    # In the rotated system:
+                    # - Files (columns) are labeled from 'a' to 'h' (left to right).
+                    # - Ranks (rows) are labeled from 8 to 1 (top to bottom).
+                    
+                    square_occupancy = transposed_board[row-2][col]
 
-                    print(f"Square {square_label} is {self.hall.sense_layer.get_square_from_notation(square_label)}")
+                    print(f"Square {square_label} is {square_occupancy}")
 
-                    if self.hall.sense_layer.get_square_from_notation(square_label):
+                    if square_occupancy:
                         Color(0, 1, 0, 1)  # Blue color for the circle.
                     else:
                         Color(0, 1, 0, 0)  # No visibility if not detected for the circle.
                     Ellipse(pos=(circle_x, circle_y), size=(circle_radius * 2, circle_radius * 2))
 
-
+                    Color(1, 1, 1, 1)
                     #square_label = f"{chr(ord('a') + (7 - col))}{row - 1}"
                     square_label = f"{chr(ord('h') - (7 - (row-2)))}{8-col}"
                     # Create a CoreLabel to render the text.
