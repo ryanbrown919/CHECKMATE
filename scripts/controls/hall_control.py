@@ -1,6 +1,6 @@
 import lgpio
 import time
-import numpy as np
+import threading
 
 
 class Multiplexer:
@@ -263,7 +263,7 @@ class Hall:
         print("No changes detected")
         return None
     
-    def scan_for_first_move(self):
+    def scan_for_first_move(self, result_event):
 
         initial_board = self.sense_layer.get_squares_game()
 
@@ -274,9 +274,8 @@ class Hall:
             new_board = self.sense_layer.get_squares_game()
             self.first_change = self.compare_boards(initial_board, new_board)
 
-        return self.first_change
-    
-    def scan_for_second_move(self):
+        result_event.set()    
+    def scan_for_second_move(self, result_event):
 
         initial_board = self.sense_layer.get_squares_game()
 
@@ -287,7 +286,7 @@ class Hall:
             new_board = self.sense_layer.get_squares_game()
             self.second_change = self.compare_boards(initial_board, new_board)
 
-        return self.second_change
+        result_event.set()
 
     # def poll_board_for_change(self):
     #     while move is None:
