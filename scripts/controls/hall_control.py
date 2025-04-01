@@ -123,7 +123,7 @@ class SenseLayer:
         """Test function that continuously monitors the chess board"""
         try:
             layer = SenseLayer()
-            layer.begin()
+            # layer.begin()
             print("Chess board monitoring - Press Ctrl+C to exit")
             
             while True:
@@ -165,7 +165,7 @@ class Hall:
     def __init__(self):
 
         self.sense_layer = SenseLayer()
-        self.sense_layer.begin()
+        # self.sense_layer.begin()
         self.initial_board = self.sense_layer.get_squares()
         self.reference_board = None
         self.first_change = None
