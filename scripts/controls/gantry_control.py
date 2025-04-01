@@ -8,13 +8,10 @@ import sys
 # from transitions import Machine
 from kivy.clock import Clock
 
-FEEDRATE=15000
 STEP_MM = 25
-
 
 class GantryControl:
         def __init__(self, **kwargs):
-            #self.feed_rate = FEEDRATE
             #self.hall = SenseLayer()
 
             for key, value in kwargs.items():
@@ -40,152 +37,35 @@ class GantryControl:
                                         "g1": (0, 2),  "g2": (2, 2), "g3": (4, 2), "g4": (6, 2), "g5": (8, 2), "g6": (10, 2), "g7": (12, 2), "g8": (14, 2),
                                         "h1": (0, 0),  "h2": (2, 0), "h3": (4, 0), "h4": (6, 0), "h5": (8, 0), "h6": (10, 0), "h7": (12, 0), "h8": (14, 0)}
             
+            self.ser = serial.Serial("/dev/ttyACM0", 115200)
+            self.send("\r\n\r")
+            time.sleep(2)
+            self.ser.flushInput()  
+            self.position = None
 
 
         def home(self):
-            self.send_gcode("$H")
+            self.send("$H")
+            self.send("G91 X0 Y-11")  # Center under H1
+            self.send("G92 X0 Y0 Z0") # Reposition coordinate system
+            self.send("$120 = 400")
+            self.send("$121 = 400")
 
-        def correct_position(self):
-            self.home()
-            self.send_gcode("$120=400") # X accl = 100
-            self.send_gcode("$121=400") # Y accl = 100
-            self.send_gcode("G21G91G1Y-11F15000")
-            self.send_gcode("G92X0Y0Z0")
-
-
-        def list_serial_ports(self):
-            if sys.platform.startswith('darwin'):
-                # macOS: use a wildcard pattern
-                ports = glob.glob('/dev/tty.usbmodem*')
-            elif sys.platform.startswith('win'):
-                # Windows: Try a range of COM ports
-                ports = ['COM%s' % (i + 1) for i in range(256)]
-            elif sys.platform.startswith('linux'):
-                # Linux: use a wildcard pattern
-                ports = glob.glob('/dev/ttyACM*')
-            else:
-                raise EnvironmentError('Unsupported platform')
-            return ports
-
-        def find_grbl_port(self, baudrate=115200, timeout=2):
-            ports = self.list_serial_ports()
-            print("Scanning ports:", ports)
-            for port in ports:
-                try:
-                    print(f"Trying to open port: {port}")
-                    ser = serial.Serial(port, baudrate, timeout=timeout)
-                    # Allow time for GRBL to reset and output its welcome message.
-                    time.sleep(2)
-                    # Do not flush immediately to avoid discarding data.
-                    welcome = ""
-                    # Try reading lines for up to 3 seconds.
-                    start_time = time.time()
-                    while time.time() - start_time < 3:
-                        line = ser.readline().decode('utf-8', errors='ignore').strip()
-                        if line:
-                            welcome += line + "\n"
-                    print("Welcome message received:")
-                    print(welcome)
-                    if "Grbl" in welcome:
-                        print(f"Found GRBL on port: {port}")
-                        return ser  # Return the already-opened serial instance.
-                    else:
-                        ser.close()
-                except Exception as e:
-                    print(f"Could not open port {port}: {e}")
-            return None
-
-        def connect_to_grbl(self):
-            """
-            Attempt to connect to a GRBL device via serial.
-            If no device is found or an error occurs, simulation mode is enabled.
-            """
-            grbl_serial = self.find_grbl_port()
-            print(f"grbl_serial: {grbl_serial}")
-            if not grbl_serial:
-                print("No GRBL device found, switching to simulation mode.")
-                self.simulate = True
-                return
-
-            try:
-                self.simulate = False
-                # Use the serial instance returned by find_grbl_port directly.
-                self.ser = grbl_serial
-                time.sleep(2)  # Allow GRBL to initialize.
-                self.send_gcode("$X")  # Clear alarms.
-                print(f"Connected to GRBL on port: {self.ser.port}")
-                self.correct_position()
-            except Exception as e:
-                print(f"Error connecting to GRBL: {e}")
-                self.simulate = True
-
-
-
-        def send_gcode(self, command):
-            """
-            Send a G-code command to GRBL.
-            In simulation mode, the command is logged to the debug log.
-            Errors during write/read are caught and handled.
-            """
-            print(f"Sending: {command}")
-            if self.simulate:
-                return
-
+        def send(self, command):
             with self.serial_lock:
-                try:
-                    self.ser.write(f"{command}\n".encode())
-                except Exception as e:
-                    error_msg = f"Error writing command: {e}"
-                    print(error_msg)
-                    sys.exit(1)
-                    self.handle_serial_error(e)
-                    return
-
-                try:
-                    while True:
-                        response = self.ser.readline().decode('utf-8', errors='replace').strip()
-                        if response:
-                            print(f"GRBL Response: {response}")
-                        if response == "ok":
-                            break
-                        elif response == "ALARM:1":
-                            #self.log_debug("ALARM:1 - Resetting GRBL")
-                            self.send_gcode("$X")
-                            break   
-                        
-                except Exception as e:
-                    error_msg = f"Error reading response: {e}"
-                    print(error_msg)
-                    self.handle_serial_error(e)
-                    return
-
-        def handle_serial_error(self, error):
-            """
-            Handle serial communication errors by logging the error,
-            closing the serial port if necessary, and scheduling a reconnect.
-            """
-            self.log_debug(f"Serial error occurred: {error}. Attempting to reconnect...")
-            try:
-                if hasattr(self, 'ser') and self.ser:
-                    self.ser.close()
-            except Exception as close_err:
-                pass
-            # Schedule a reconnect attempt after a short delay.
-            Clock.schedule_once(lambda dt: self.connect_to_grbl(), 1)
-
+                self.ser.write(str.encode(command + "\n"))
+    
         def send_jog_command(self, dx, dy):
             """
             Construct and send the jog command based on dx, dy, and the current jog step size.
             """
             step = self.jog_step
-            cmd = "$J=G21G91"
+            cmd = "$J=G91"
             if dx:
                 cmd += f"X{dx * step}"
             if dy:
                 cmd += f"Y{dy * step}"
-            cmd += f"F{FEEDRATE}"
-            self.send_gcode("$X") 
-            self.send_gcode(cmd)
+            self.send(cmd)
 
         def send_coordinates_command(self, location):
             """
@@ -197,14 +77,12 @@ class GantryControl:
             x = location[0] + x_offset
             y = location[1] + y_offset
 
-            cmd = "G21G90G1"
+            cmd = "G90"
             if x:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            cmd += f"F{FEEDRATE}\n"
-            #self.send_gcode("$X") 
-            self.send_gcode(f"G21G90G1X{x}Y{y}F{FEEDRATE}")
+            self.send(f"G90X{x}Y{y}")
 
             while True:
                 self.ser.write(b'?')
@@ -1245,7 +1123,6 @@ class GantryControl:
             return final_points
 
         def send_commands(self, cmd_list):
-
             if self.simulate:
                 time.sleep(2)
                 print(f"Sent commands")
@@ -1254,7 +1131,7 @@ class GantryControl:
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
-                    self.send_gcode(full_cmd)
+                    self.send(full_cmd)
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
@@ -1269,7 +1146,6 @@ class GantryControl:
                     print(f"Status: {status}")
                     if '<Idle' in status:
                         self.finished = True
-                    time.sleep(0.5)
                 print("Finished Sending commands")
 
             
@@ -1282,14 +1158,14 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
@@ -1297,9 +1173,9 @@ class GantryControl:
                     dy = self.sign(move_list[-1][1]) * self.overshoot
 
                     print(f"Overshoots: {dx, dy}")
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1308,7 +1184,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{move[0]}Y{move[1]}")
 
 
             
@@ -1325,22 +1201,22 @@ class GantryControl:
 
             print(f"move list: {move_list}")
             if self.magnet_state == "MAG OFF":
-                self.send_gcode("M9") # off
+                self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.send_gcode("M8") # on
+                self.send("M8") # on
 
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append(f"G21G90G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
                     dy = self.sign(move_list[-1][1]) * self.overshoot
-                    gcode_commands.append(f"G21G91G1X{move[0]+dx}Y{move[1]+dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{move[0]+dx}Y{move[1]+dy}")
 
-                    gcode_commands.append(f"G21G91G1X{-dx}Y{-dy}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{-dx}Y{-dy}")
                     # gcode_commands.append(f"M8") # deactivate after final movement
                     # gcode_commands.append(f"M9") # deactivate after final movement
 
@@ -1349,7 +1225,7 @@ class GantryControl:
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append(f"M9") # deactivate after final movement
                 else:
-                    gcode_commands.append(f"G21G91G1X{move[0]}Y{move[1]}F{FEEDRATE}")
+                    gcode_commands.append(f"G91X{move[0]}Y{move[1]}")
 
 
             
@@ -1357,9 +1233,9 @@ class GantryControl:
         
         def magnet_control(self):
             if self.magnet_state == "MAG ON":
-                self.send_gcode("M8")
+                self.send("M8")
             elif self.magnet_state == "MAG OFF":
-                self.send_gcode("M9")
+                self.send("M9")
 
 
 class ClockLogic:
