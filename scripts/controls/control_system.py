@@ -830,6 +830,8 @@ class ChessControlSystem:
         init_coords = (init_coords[0]*25, init_coords[1]*25)
         end_coords = (end_coords[0]*25, end_coords[1]*25)
 
+        print(init_coords)
+
         # find closest border corner
         if init_coords[0] > 180:
             close_x = 325
