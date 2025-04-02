@@ -598,7 +598,7 @@ class ChessControlSystem:
         
         move = chess.Move.from_uci(move_str)
 
-        legal_moves = [move for move in self.board.legal_moves if move.from_square == self.chess.parse_square(self.selected_piece)]
+        legal_moves = [move for move in self.board.legal_moves if move.from_square == chess.parse_square(self.selected_piece)]
 
         print(legal_moves)
 
