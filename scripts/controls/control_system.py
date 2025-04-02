@@ -212,7 +212,7 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['victory_lap'])
+        # self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen')
         self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
@@ -674,7 +674,7 @@ class ChessControlSystem:
 
     def end_game_processes(self):
         self.running = False
-
+        self.victory_lap()
         # Ensure that if an engine is still running, we shut it down.
         if self.engine:
             print("[Engine] Shutting down engine on game over...")
@@ -797,7 +797,7 @@ class ChessControlSystem:
             #find black king, victory lap  
             # 
         self.end_game_processes()
-        Clock.schedule_once(lambda dt: self.end_game_screen(), 5)
+        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 5)
 
         self.notify_observers()
 
