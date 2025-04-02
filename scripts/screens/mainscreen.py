@@ -10,6 +10,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from threading import Thread
 import random
+# from kivy.metrics import dp
 
 # Import your custom widgets and screens
 try:
@@ -19,7 +20,7 @@ except:
     from custom_widgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
 
 Window.fullscreen = True
-FONT_SIZE = 40
+FONT_SIZE = 32
 
 class MainScreen(Screen):
     def __init__(self, control_system, **kwargs):
@@ -53,16 +54,16 @@ class MainScreen(Screen):
         play_layout.add_widget(customplay_layout)
 
         # When "Play Game" is pressed, go to the loading screen
-        custom1 = RoundedButton(text="[size=50][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom1 = RoundedButton(text="[size=30][b]Play Engine[/b][/size]\n[size=20]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom1.bind(on_release=lambda instance: self.start_custom1())
 
-        custom2 = RoundedButton(text="[size=50][b]Play Online?[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom2 = RoundedButton(text="[size=30][b]Play Online?[/b][/size]\n[size=20]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom2.bind(on_release=lambda instance: self.start_custom2())
 
-        custom3 = RoundedButton(text="[size=50][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom3 = RoundedButton(text="[size=30][b]Bot V Bot[/b][/size]\n[size=20]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom3.bind(on_release=lambda instance: self.start_custom3())
 
-        custom4 = RoundedButton(text="[size=50][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom4 = RoundedButton(text="[size=53][b]Challenge Mode[/b][/size]\n[size=20]Color: White\nElo: 3000[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom4.bind(on_release=lambda instance: self.start_custom4())
 
 

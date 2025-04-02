@@ -85,7 +85,7 @@ class headerLayout(BoxLayout):
         icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
 
         if not menu:
-            self.add_widget(Label(text="Check-M.A.T.E", font_size=120, size_hint=(0.4, 1)))
+            self.add_widget(Label(text="Check-M.A.T.E", font_size=80, size_hint=(0.4, 1)))
 
             self.add_widget(Widget(size_hint_x=0.4))
             self.add_widget(IconButton(source="assets/hamburgMenu.png", 
