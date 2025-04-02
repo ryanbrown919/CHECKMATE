@@ -377,7 +377,7 @@ class ChessControlSystem:
         
         self.move_history.append(move.uci())
     
-        if self.board.is_checkmate(move):
+        if self.board.is_checkmate():
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
@@ -480,7 +480,7 @@ class ChessControlSystem:
         
         self.move_history.append(move.uci())
     
-        if self.board.is_checkmate(move):
+        if self.board.is_checkmate():
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
