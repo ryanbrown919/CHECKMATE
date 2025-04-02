@@ -996,8 +996,8 @@ class ChessControlSystem:
         ## Need to put a lil more thought into this
 
         # print(path)
-        # cmds = self.gantry.movement_to_gcode(path)
-        # self.gantry.send_commands(cmds)
+        cmds = self.gantry.movement_to_gcode(path)
+        self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
         self.notify_observers
