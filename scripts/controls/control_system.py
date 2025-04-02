@@ -681,7 +681,7 @@ class ChessControlSystem:
         else:
             print("Illegal move, executing YOU")
 
-            self.process_illegal_player_move(move)
+            self.process_illegal_player_move(move_str)
             
             # if self.board.is_capture(move):
             #         # For a normal capture, the captured piece is on the destination square.
