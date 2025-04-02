@@ -250,6 +250,7 @@ class ChessControlSystem:
         self.second_change = None
 
         self.legal_moves = None
+        self.game_winner = None
 
 
 
@@ -693,6 +694,8 @@ class ChessControlSystem:
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
 
+        self.game_winner = None
+        self.board.reset_board()
 
         self.rocker.to_white()
 
