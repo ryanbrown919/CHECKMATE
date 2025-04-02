@@ -523,8 +523,8 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        if self.checkmate:
-            self.end_game(self.board.turn)
+        # if self.checkmate:
+        self.end_game(self.board.turn)
 
         self.rocker.toggle()
 
