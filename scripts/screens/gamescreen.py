@@ -94,13 +94,13 @@ class GameScreen(Screen):
 
         
         # Middle layout wdigets
-        middle_layout.add_widget(Label(text="Material Possession", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
+        middle_layout.add_widget(Label(text="Material Possession", size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.material_possesion)
         #middle_layout.add_widget(HorizontalLine())
-        middle_layout.add_widget(Label(text="Move History", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
+        middle_layout.add_widget(Label(text="Move History", size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.move_list)
         #middle_layout.add_widget(HorizontalLine())
-        middle_layout.add_widget(Label(text="Piece Jail", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
+        middle_layout.add_widget(Label(text="Piece Jail", size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.piece_jail)
 
         white_layout.add_widget(white_board)  

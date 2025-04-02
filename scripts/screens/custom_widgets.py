@@ -370,7 +370,7 @@ class ChessBoard(Widget):
         for i in range(8):
             label_text = chr(ord('a') + i)
             label = Label(text=label_text, halign="center", valign="middle", font_size = self.font_size)
-            label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
+            # label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
             label.pos = (board_origin[0] + i * cell_size, self.y)
             label.size = (cell_size, cell_size)
             self.add_widget(label)
