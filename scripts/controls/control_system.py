@@ -160,8 +160,6 @@ class ChessControlSystem:
 
         self.timer_enabled = False
 
-        self.engine_path = None
-        
         # Create a hierarchical state machine.
         self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
 
