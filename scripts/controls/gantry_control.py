@@ -999,7 +999,7 @@ class GantryControl:
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
                 else:
-                    self.nextdead_white = (self.nextdead_white[0] + offset, self.nextdead_white[1])
+                    self.nextdead_white = (self.nextdead_white[0] + offset, 435)
                 
 
             else: 
@@ -1011,7 +1011,7 @@ class GantryControl:
                 if self.nextdead_black[1] == 435:
                     self.nextdead_black = (self.nextdead_black[0], 410)
                 else:
-                    self.nextdead_black = (self.nextdead_black[0] - offset, self.nextdead_black[1])
+                    self.nextdead_black = (self.nextdead_black[0] - offset, 435)
     
             print(f"moving to deadzone: {path}")
 
