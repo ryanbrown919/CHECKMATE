@@ -395,6 +395,7 @@ class ChessControlSystem:
                 self.checkmate = False
 
             self.legal_moves = None
+            print("pushoing move:")
 
             self.board.push(move)
             self.notify_observers()
@@ -405,7 +406,7 @@ class ChessControlSystem:
             self.rocker.toggle()
 
             self.notify_observers()
-            self.process_move()
+            self.on_player_move_confirmed()
 
     def process_illegal_player_move(self, move):
 
@@ -459,7 +460,58 @@ class ChessControlSystem:
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white)
                 
-        self.process_legal_player_move(f"{move}")
+        # move = chess.Move.from_uci(move_str)
+        if self.board.is_capture(move):
+            # For a normal capture, the captured piece is on the destination square.
+            captured_piece = self.board.piece_at(move.to_square)
+            if captured_piece:
+                self.captured_pieces.append(captured_piece.symbol())
+                # Note: You might need special handling for en passant captures.
+        
+        self.move_history.append(move.uci())
+    
+        if self.board.is_checkmate(move):
+            self.checkmate = True
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_mate.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_mate.png'
+            
+        elif self.board.is_check(move):
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_check.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_check.png'
+            # Make some indication
+
+            self.check = f"{self.board.turn}"
+            self.checkmate = False
+
+        else:
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king.png'
+            
+            self.check = ""
+
+            self.checkmate = False
+
+        self.legal_moves = None
+        print("pushoing move:")
+
+        self.board.push(move)
+        self.notify_observers()
+
+        if self.checkmate:
+            self.end_game(self.board.turn)
+
+        self.rocker.toggle()
+
+        self.notify_observers()
+        self.engine_move_complete()
+
+        # self.process_legal_player_move(f"{move}")
 
 
         
@@ -705,10 +757,10 @@ class ChessControlSystem:
                 self.board.push(move)
         # Transition back to player's turn.
 
-        self.rocker.toggle()
-        self.notify_observers()
-        self.update_ui()
-        self.engine_move_complete()
+        # self.rocker.toggle()
+        # self.notify_observers()
+        # self.update_ui()
+        # self.engine_move_complete()
 
     def on_game_over(self):
         print("[State] Game Over")
