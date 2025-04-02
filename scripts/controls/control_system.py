@@ -827,6 +827,66 @@ class ChessControlSystem:
 
         self.notify_observers()
 
+    def process_predefined_board_move(self, move, is_white):
+
+        captured_symbol = None
+        # move = chess.Move.from_uci(move_str)
+        if self.board.is_capture(move):
+            # For a normal capture, the captured piece is on the destination square.
+            captured_piece = self.board.piece_at(move.to_square)
+            if captured_piece:
+                self.captured_pieces.append(captured_piece.symbol())
+                captured_symbol = captured_piece.symbol()
+
+                # Note: You might need special handling for en passant captures.
+
+        self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
+
+        
+        self.move_history.append(move.uci())
+    
+        if self.is_move_checkmate(self.board, move):
+            self.checkmate = True
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_mate.png'
+                self.game_winner = 'White'
+            else:
+                self.piece_images['K'] = 'assets/white_king_mate.png'
+                self.game_winner = 'Black'
+            
+        elif self.board.gives_check(move):
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_check.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_check.png'
+            # Make some indication
+
+            self.check = f"{self.board.turn}"
+            self.checkmate = False
+
+        else:
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king.png'
+            
+            self.check = ""
+
+            self.checkmate = False
+
+        self.legal_moves = None
+        print("pushing move:")
+
+        self.board.push(move)
+        self.notify_observers()
+
+        self.rocker.toggle()
+
+        self.notify_observers()
+
+        if self.checkmate:
+            self.end_game()
+
     def on_predefined_first_turn(self):
         self.game_winner = None
         self.board.reset()
@@ -840,7 +900,7 @@ class ChessControlSystem:
     def on_predefined_turn(self):
 
         for i, move in enumerate(self.demo_game):
-            self.process_board_move(chess.Move.from_uci(move),  i % 2 == 0)
+            self.process_predefined_board_move(chess.Move.from_uci(move),  i % 2 == 0)
             time.sleep(1)
  
 
