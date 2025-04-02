@@ -11,7 +11,7 @@ from gantry import Gantry
 from hall import SenseLayer
 from nfc import NFC
 
-NFC_OFFSET = 50
+NFC_OFFSET = 43
 
 # Map chess squares to physical coordinates (in mm)
 BOARD_TO_PHYSICAL = {
@@ -199,7 +199,7 @@ def main():
         # Clean up hardware resources
         print("Cleaning up...")
         try:
-            gantry.home()  # Return to home position
+            # gantry.home()  # Return to home position
             # Add any other cleanup needed
         except Exception as e:
             print(f"Error during cleanup: {e}")
