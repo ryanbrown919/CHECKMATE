@@ -71,16 +71,18 @@ class GameScreen(Screen):
         self.move_list = MovesHistory(size_hint=(1, 0.5), control_system=self.control_system)
         self.piece_jail = CapturedPieces(size_hint=(1, 0.3), control_system=self.control_system) 
 
-        if control_system.parameters['bot_mode']:
+        if self.control_system.parameters['bot_mode'] or self.control_system.parameters['demo_mode']:
             black_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
-            white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
+            white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=False, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
 
-        elif control_system.parameters['local_mode']:
+        elif self.control_system.parameters['local_mode']:
             black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
             white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
 
-        elif control_system.parameters['colour'] == 'white':
-            white_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
+        
+        
+        elif self.control_system.parameters['colour'] == 'white':
+            white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=False, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
             black_board = Label(Text = self.ingame_message, font_size = 50)
         else:
             black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
