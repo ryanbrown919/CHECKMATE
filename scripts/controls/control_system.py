@@ -172,7 +172,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_player_turn',
                                     conditions=lambda: self.parameters["colour"].lower() == "white",
                                     unless='is_auto_engine_mode',
-                                    after=['init_game', 'update_ui', 'on_player_turn'])
+                                    after=['init_game', 'update_ui', 'on_player_first_turn'])
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["colour"].lower() == "black",
                                     unless='is_auto_engine_mode',
@@ -531,13 +531,17 @@ class ChessControlSystem:
         # self.process_legal_player_move(f"{move}")
 
 
-        
+    def on_player_first_turn(self):  
+        print("[State] Entering Player Turn")
+
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
+
 
     def on_player_turn(self):
         print("[State] Entering Player Turn")
 
     
-        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.1)
         # When entering player's turn, immediately begin hall effect polling.
         
         # State transition will stay in this state until a change is detected, then it will go to second state
