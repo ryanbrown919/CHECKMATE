@@ -212,7 +212,7 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine', 'victory_lap'])
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['victory_lap','update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
