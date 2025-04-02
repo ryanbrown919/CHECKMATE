@@ -205,7 +205,16 @@ class Hall:
         self.move = None
 
     def board_to_chess_notation(self, row, col):
-        return f"{chr(96 + row)}{col+2}"
+        # row 0 is rank 1
+
+        # column 0 is file a
+
+        rank = 8 - row  # Convert row to rank (1-8)
+        file = chr(97 + col)  # Convert column to file ('a'-'h')
+        return f"{file}{rank}"
+
+
+        # return f"{chr(96 + row)}{col+2}"
 
     def compare_boards(self, board, reference_board):
         # if self.initial_board is None:
