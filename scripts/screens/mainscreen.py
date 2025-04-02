@@ -162,7 +162,7 @@ class MainScreen(Screen):
 
     def start_custom1(self):
 
-        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False}  # Default parameters to be set by the user 
         self.control_system.start_game()
     
     def start_custom2(self):
@@ -170,11 +170,11 @@ class MainScreen(Screen):
         # If time
         pass
     def start_custom3(self):
-        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True}  # Default parameters to be set by the user 
+        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'local_mode': False}  # Default parameters to be set by the user 
         self.control_system.start_game()
 
     def start_custom4(self):
-        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 3000, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 3000, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False}  # Default parameters to be set by the user 
         self.control_system.start_game()
 
 
