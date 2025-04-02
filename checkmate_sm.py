@@ -3,7 +3,7 @@ from kivy.config import Config
 # Set full screen mode and hide cursor globally
 Config.set('graphics', 'fullscreen', '1')
 Config.set('graphics', 'show_cursor', '0')
-Config.set('graphics', 'dpi', '96')
+Config.set('graphics', 'dpi', '144')
 
 
 
