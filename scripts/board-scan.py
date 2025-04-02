@@ -186,7 +186,7 @@ def main():
             input("\nPress Enter to scan the board...")
             
             try:
-                scan_results = scan_board(gantry, sense_layer)
+                scan_results = scan_board(gantry, sense_layer, nfc_reader)
                 print("\nScan Results:")
                 for square, piece in scan_results.items():
                     print(f"Square {square}: {piece}")
