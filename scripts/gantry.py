@@ -4,7 +4,7 @@ import time
 class Gantry():
     def __init__(self):
         self.serial = serial.Serial("/dev/ttyACM0", 115200)
-        self.serial.send("\r\n\r")
+        self.send("\r\n\r")
         time.sleep(2)
         self.serial.flushInput()  
         self.position = None

@@ -212,7 +212,8 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine'])
+        # self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen')
+        self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
@@ -250,6 +251,7 @@ class ChessControlSystem:
         self.second_change = None
 
         self.legal_moves = None
+        self.game_winner = None
 
 
 
@@ -388,8 +390,10 @@ class ChessControlSystem:
         elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_check.png'
+                self.game_winner = 'White'
             else:
                 self.piece_images['K'] = 'assets/white_king_check.png'
+                self.game_winner = 'Black'
             # Make some indication
 
             self.check = f"{self.board.turn}"
@@ -411,13 +415,13 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        if self.checkmate:
-            self.end_game(self.board.turn)
-
         self.rocker.toggle()
 
         self.notify_observers()
         self.on_player_move_confirmed()
+
+        if self.checkmate:
+            self.end_game()
 
     def process_illegal_player_move(self, move_str):
 
@@ -494,8 +498,10 @@ class ChessControlSystem:
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
+                self.game_winner = 'White'
             else:
                 self.piece_images['K'] = 'assets/white_king_mate.png'
+                self.game_winner = 'Black'
             
         elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
@@ -523,13 +529,14 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        # if self.checkmate:
-        self.end_game(self.board.turn)
-
         self.rocker.toggle()
 
         self.notify_observers()
-        self.engine_move_complete()
+
+        if self.checkmate:
+            self.end_game()
+        else:
+            self.engine_move_complete()
 
         # self.process_legal_player_move(f"{move}")
 
@@ -584,7 +591,7 @@ class ChessControlSystem:
 
             new_board = self.hall.sense_layer.get_squares_game()
             self.selected_move = self.hall.compare_boards(new_board, initial_board)
-            time.sleep(0.2)
+            time.sleep(0.1)
 
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
@@ -666,12 +673,12 @@ class ChessControlSystem:
 
     def end_game_processes(self):
         self.running = False
-
+        self.victory_lap()
         # Ensure that if an engine is still running, we shut it down.
         if self.engine:
             print("[Engine] Shutting down engine on game over...")
             self.engine.quit()
-            self.engine_thread.join()
+            # self.engine_thread.join()
             self.engine = None
 
     # Example backend methods:
@@ -693,6 +700,8 @@ class ChessControlSystem:
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
 
+        self.game_winner = None
+        self.board.reset_board()
 
         self.rocker.to_white()
 
@@ -772,20 +781,22 @@ class ChessControlSystem:
         # Reset board logic here.
         self.to_gameplay()
     
-    def end_game(self, turn):
+    def end_game(self):
 
         self.game_state = "FINISHED"
-        self.end_game_processes()
-        self.end_game_screen()
+        
 
-        if turn == chess.WHITE:
-            self.game_winner = "White"
-            self.victory_lap('white')
-            #find white king, victory lap
-        else:
-            self.game_winner = "Black"
-            self.victory_lap('black')
-            #find black king, victory lap    
+        # if turn == chess.WHITE:
+        #     self.game_winner = "White"
+        #     # self.victory_lap('white')
+        #     #find white king, victory lap
+        # else:
+        #     self.game_winner = "Black"
+            # self.victory_lap('black')
+            #find black king, victory lap  
+            # 
+        self.end_game_processes()
+        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 5)
 
         self.notify_observers()
 
@@ -799,15 +810,21 @@ class ChessControlSystem:
     # Non-state related functions
     #################################################################################################################
 
-    def victory_lap(self, color):
+    def victory_lap(self):
+
+        white_win = (self.game_winner.lower() == 'white')
 
         white_king_square = chess.square_name(self.board.king(chess.WHITE))
         black_king_square = chess.square_name(self.board.king(chess.BLACK))
 
+        print("winner white?")
+        print(white_win)
+
+        print("white king square")
         print(white_king_square)
 
 
-        if color == 'white':
+        if white_win:
             start_square = f"{white_king_square}"
             end_square = f"{black_king_square}"
         else:
@@ -823,97 +840,57 @@ class ChessControlSystem:
         init_coords = (init_coords[0]*25, init_coords[1]*25)
         end_coords = (end_coords[0]*25, end_coords[1]*25)
 
+        # print("testing")
+
+        # print(init_coords)
+        # print(init_coords[0])
+        # print(init_coords[0] > 180)
+
         # find closest border corner
         if init_coords[0] > 180:
             close_x = 325
             dx = 1 if init_coords[0] != 350 else -1
         else:
-            close_x = 75
+            close_x = 25
             dx = -1 if init_coords[0] != 0 else 1
 
         if init_coords[1] > 180:
             close_y = 325
             dy = 1 if init_coords[1] != 350 else -1
         else:
-            close_y = 75
-            dy = -1 if init_coords[1] != 350 else 1
+            close_y = 25
+            dy = -1 if init_coords[1] != 0 else 1
+
+        # print("pasdsed")
 
         
         
 
 
-        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0)]
+        init_path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]+dy*25)), (close_x-(init_coords[0]+dx*25), 0)]
         if close_x == 325:
-            path.append([(6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50)])
+            if close_y == 325:
+                loop_path = ([(-6*50, 0), (0, -6*50), (6*50, 0), (0, 6*50)])
+            else:
+                loop_path = ([(-6*50, 0), (0, 6*50), (6*50, 0), (0, -6*50)])
         else:
-            path.append([(-6*50, 0), (0, 6*50), (6*50, 0), (0, 6*50)])
-
-        path.append = [((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
-
-
-
-        ###############
-        #Add looping king logic if time
-        ###############
-
-        # path = []
-        
-        # dx = init_coords[0] - end_coords[0]
-        # dy = init_coords[1] - end_coords[1]
-
-        # dx_sign = self.gantry.sign(dx)
-        # dy_sign = self.gantry.sign(dy)
-
-        # dy_flag = 1
-        # dx_flag = 1
-
-        # # deal with logic for going to an inside edge here
-        # if dx_sign == 0:
-        #     dx_flag = -1
-        #     if init_coords[0] > 180:
-        #         dx_sign = -1
-        #     else:
-        #         dx_sign = 1
-            
-        # if dy_sign == 0:
-        #     dy_flag = -1
-        #     if init_coords[1] > 180:
-        #         dy_sign = -1
-        #     else:
-        #         dy_sign = 1
-
-        # offset = 25
-
-        # # Get the king to within 25 mm of the other king
-        # path = [init_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign)]
-
-
-
-        # # Edge cases
-
-
-        # # Should be on the closest corner right now, coming from dx_sign dy_sign direction
-
-
-        # # if dx = 1, dy = 1 : go up, right, down, left x2
-        # # if dx = 1, dy = -1 :
-        # #
-        # #
-        # #
-
-        # # Always start
-        # loop_path = 
+            if close_y == 325:
+                loop_path = ([(6*50, 0), (0, -6*50), (-6*50, 0), (0, 6*50)])
+            else:
+                loop_path = ([(6*50, 0), (0, 6*50), (-6*50, 0), (0, -6*50)])
 
         
-        #     # 
 
-        # else: 
+        end_path = ([((init_coords[0]+dx*25)-close_x, 0), (0, (init_coords[1]+dy*25)-close_y), (-dx*25, -dy*25)])
+
+        path = init_path + loop_path + end_path
 
 
-        # laps = ()
+        ## Need to put a lil more thought into this
 
-        cmds = self.gantry.movement_to_gcode(path)
-        self.gantry.send_commands(cmds)
+        # print(path)
+        # cmds = self.gantry.movement_to_gcode(path)
+        # self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
         self.notify_observers

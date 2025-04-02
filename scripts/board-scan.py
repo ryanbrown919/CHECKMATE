@@ -9,7 +9,7 @@ import time
 
 from gantry import Gantry
 from hall import SenseLayer
-# from nfc import NFC
+from nfc import NFC
 
 NFC_OFFSET = 42
 
@@ -83,9 +83,9 @@ def get_occupied_squares(board_state):
         print(" ".join(str(cell) for cell in row))
     
     # Map the board state to chess squares
-    for y in range(8):
+    for y in range(7, -1, -1):
         for x in range(8):
-            if y < len(board_state) and x < len(board_state[y]) and board_state[y][x] == 1:
+            if board_state[y][x] == 1:
                 # Convert board position to chess square: Adjusted so that (0,0) is H1 and (7,7) is A8
                 file = chr(ord('H') - x)
                 rank = str(y + 1)
@@ -117,7 +117,7 @@ def nearest_neighbor(start_point, targets):
 
     return path
 
-def scan_board(gantry, layer):
+def scan_board(gantry, layer, nfc):
     """
     Scan the chess board using Hall sensors and read pieces with NFC.
     Returns a dictionary mapping chess squares to piece identifiers.
@@ -160,9 +160,8 @@ def scan_board(gantry, layer):
         gantry.move(x, y, blocking=True)
         
         # Read the piece with NFC
-        piece_info = f"piece_{i}"  # Placeholder for NFC read
-        results[square] = piece_info
-        print(f"  → Square {square}: {piece_info}")
+        piece = nfc.read()
+        print(f"  → Read NFC: {piece}")
         
         # Brief pause to ensure stability
         time.sleep(0.5)
@@ -176,17 +175,18 @@ def main():
     # Create hardware objects
     sense_layer = SenseLayer()
     gantry = Gantry()
-    # nfc_reader = NFC()
+    nfc_reader = NFC()
+    print("Initialized NFC")
     
     gantry.home()
-    # nfc_begin()
+
     
     try:
         while True:
             input("\nPress Enter to scan the board...")
             
             try:
-                scan_results = scan_board(gantry, sense_layer)
+                scan_results = scan_board(gantry, sense_layer, nfc_reader)
                 print("\nScan Results:")
                 for square, piece in scan_results.items():
                     print(f"Square {square}: {piece}")

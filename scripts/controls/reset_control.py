@@ -177,8 +177,9 @@ class BoardReset:
         
         
 
+        
 
-
+        ## STEP 3: PIECES IN DEADZONE RESET AFTER PIECES ON BOARD ARE REST. 
 
 
         start = (0, 0)
