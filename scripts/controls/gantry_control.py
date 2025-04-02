@@ -20,7 +20,8 @@ class GantryControl:
                 setattr(self, key, value)
 
             # Internal state variables
-            self.deadzone_origin = (0, 425)
+            self.nextdead_white = (0, 435)
+            self.nextdead_black = (350, 435)
 
             self.jog_step = 4
             self.overshoot = 4
@@ -988,27 +989,36 @@ class GantryControl:
             ## FELIPE DIAZ DO SOME MAGIC HERE
             offset = 25
 
-            dead_x = self.deadzone_origin[0] - dead_coordinates[0]
-            dead_y = self.deadzone_origin[1] - dead_coordinates[1]
+            if is_white:
+                dead_x = self.nextdead_white[0] - dead_coordinates[0]
+                dead_y = self.nextdead_white[1] - dead_coordinates[1]
+                #dz_x, dz_y = self.nextdead_white
+                
+                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dead_y - offset*15)]
+            
+                if self.nextdead_white[1] == 435:
+                    self.nextdead_white = (self.nextdead_white[0], 410)
+                else:
+                    self.nextdead_white = (self.nextdead_white[0] + offset, self.nextdead_white[1])
+                
 
-            dz_x, dz_y = self.deadzone_origin
-
-            path = [dead_coordinates, (0, offset*16 - dead_coordinates[1]), (dead_x, 0), (0, dz_y-offset*16)]
-
+            else: 
+                dead_x = self.nextdead_black[0] - dead_coordinates[0]
+                dead_y = self.nextdead_black[1] - dead_coordinates[1]
+                
+                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dead_y - offset*15)]
+                
+                if self.nextdead_black[1] == 435:
+                    self.nextdead_black = (self.nextdead_black[0], 410)
+                else:
+                    self.nextdead_black = (self.nextdead_black[0] - offset, self.nextdead_black[1])
+    
             print(f"moving to deadzone: {path}")
 
             movements = self.parse_path_to_movement(path)
             commands = self.movement_to_gcode(movements)
             print(f"Last move: {commands}")
             self.send_commands(commands)
-
-            if dz_x == 350:
-                    dz_x = -50
-                    dz_y = 400
-
-            self.deadzone_origin = (dz_x + 2*offset, dz_y)
-            
-
 
             pass
         def interpret_move(self, move_str):
