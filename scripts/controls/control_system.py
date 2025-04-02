@@ -840,7 +840,7 @@ class ChessControlSystem:
     def on_predefined_turn(self):
 
         for i, move in enumerate(self.demo_game):
-            self.process_board_move(move.uci(),  i % 2 == 0)
+            self.process_board_move(chess.Move.from_uci(move),  i % 2 == 0)
             time.sleep(1)
  
 
