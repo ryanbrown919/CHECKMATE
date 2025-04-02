@@ -389,8 +389,10 @@ class ChessControlSystem:
         elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_check.png'
+                self.game_winner = 'White'
             else:
                 self.piece_images['K'] = 'assets/white_king_check.png'
+                self.game_winner = 'Black'
             # Make some indication
 
             self.check = f"{self.board.turn}"
@@ -495,8 +497,10 @@ class ChessControlSystem:
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
+                self.game_winner = 'White'
             else:
                 self.piece_images['K'] = 'assets/white_king_mate.png'
+                self.game_winner = 'Black'
             
         elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
@@ -780,12 +784,12 @@ class ChessControlSystem:
         self.game_state = "FINISHED"
         
 
-        if turn == chess.WHITE:
-            self.game_winner = "White"
-            # self.victory_lap('white')
-            #find white king, victory lap
-        else:
-            self.game_winner = "Black"
+        # if turn == chess.WHITE:
+        #     self.game_winner = "White"
+        #     # self.victory_lap('white')
+        #     #find white king, victory lap
+        # else:
+        #     self.game_winner = "Black"
             # self.victory_lap('black')
             #find black king, victory lap  
             # 
