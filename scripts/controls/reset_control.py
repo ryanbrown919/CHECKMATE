@@ -122,6 +122,19 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
+
+    def reset_play_area(self):
+        """
+        reset all the pieces within the playing area, assuming that the "starting area" 
+        (ranks 1 and 2 and 7 and 8) are already empty, or have theire pices placed allready.
+        """
+        fen = self.control_system.board.fen()
+        self.fen_to_coords(fen)
+        # deal with the white starting area (rank 1 and 2) first:
+        if()
+
+
+
     def fen_to_coords(self,fen):
         """
         Given a fen string, output a list with the piece and its coordinates.
@@ -132,7 +145,7 @@ class BoardReset:
         board_part = fen.split()[0]
         ranks = board_part.split("/")  # Split into ranks
 
-        pieces = []
+        self.pieces = []
         
         for rank_idx, rank in enumerate(reversed(ranks)):  # Reverse so rank 1 is at the bottom
             file_idx = 0
@@ -142,10 +155,10 @@ class BoardReset:
                 else:
                     square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
                     coord = self.gantry.square_to_coord(square)
-                    pieces.append((char, (coord[0]*25, coord[1]*25)))
+                    self.pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
 
-        return pieces
+      
         
 
     def reset_board_from_game(self):
