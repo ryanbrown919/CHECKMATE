@@ -122,6 +122,23 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
+    def symbol_to_vaild_coodinates(self):
+        valid_gantry_coords = {
+            'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
+            'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
+            'B': [self.square_to_coord(f'{file}1') for file in 'cf'],  # White Bishop
+            'Q': [self.square_to_coord('d1')],  # White Queen
+            'K': [self.square_to_coord('e1')],  # White King
+            'P': [self.square_to_coord(f'{file}2') for file in 'abcdefgh'],  # White Pawn
+            'r': [self.square_to_coord(f'{file}8') for file in 'ah'],  # Black Rook
+            'n': [self.square_to_coord(f'{file}8') for file in 'bg'],  # Black Knight
+            'b': [self.square_to_coord(f'{file}8') for file in 'cf'],  # Black Bishop
+            'q': [self.square_to_coord('d8')],  # Black Queen
+            'k': [self.square_to_coord('e8')],  # Black King
+            'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
+        }
+        return valid_gantry_coords
+
     def fen_to_coords(self,fen):
         """
         Given a fen string, output a list with the piece and its coordinates.
@@ -132,7 +149,7 @@ class BoardReset:
         board_part = fen.split()[0]
         ranks = board_part.split("/")  # Split into ranks
 
-        pieces = []
+        self.pieces = []
         
         for rank_idx, rank in enumerate(reversed(ranks)):  # Reverse so rank 1 is at the bottom
             file_idx = 0
@@ -142,10 +159,10 @@ class BoardReset:
                 else:
                     square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
                     coord = self.gantry.square_to_coord(square)
-                    pieces.append((char, (coord[0]*25, coord[1]*25)))
+                    self.pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
 
-        return pieces
+      
         
 
     def reset_board_from_game(self):
