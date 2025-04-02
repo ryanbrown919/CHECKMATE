@@ -123,16 +123,12 @@ class BoardReset:
         return file + rank
     
     def reset_board_from_game(self):
-        # Add logic here for dealign with resetting as well as deadzone pieces
+ 
 
-        # for i, val in enumerate(self.control_system.captured_pieces):
 
-        #     if val.is_lower():
-        
         
 
-
-
+        ## STEP 3: PIECES IN DEADZONE RESET AFTER PIECES ON BOARD ARE REST. 
 
 
         start = (0, 0)

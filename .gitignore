@@ -7,3 +7,4 @@
 /archive
 /firmware/build
 /test/checkmate_stateMachine
+/test/diaztest.py
