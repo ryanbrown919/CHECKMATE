@@ -88,7 +88,7 @@ class GantryControl:
             while True:
                 self.ser.write(b'?')
                 status = self.ser.readline().decode().strip()
-                print(f"Status: {status}")
+                #print(f"Status: {status}")
                 if '<Idle' in status:
                     break
                 time.sleep(0.5)
@@ -147,7 +147,7 @@ class GantryControl:
             start_square = move_str[:2]
             end_square = move_str[2:4]
 
-            print(f"Move again: {start_square}, {end_square}")
+            #print(f"Move again: {start_square}, {end_square}")
             
             start_coord = self.square_to_coord(start_square)
             end_coord = self.square_to_coord(end_square)
@@ -159,8 +159,8 @@ class GantryControl:
             dx = end_coord[0] - start_coord[0]
             dy = end_coord[1] - start_coord[1]
 
-            print(dx)
-            print(dy)
+            #print(dx)
+            #print(dy)
 
             offset = STEP_MM
 
@@ -177,7 +177,7 @@ class GantryControl:
                     path = [(0, 14*offset), (0, -6*offset)]
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"Rook comamnds: {commands}")
+                    #print(f"Rook comamnds: {commands}")
                     self.send_commands(commands)
 
                     # King_path
@@ -186,7 +186,7 @@ class GantryControl:
 
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"Rook comamnds: {commands}")
+                    #print(f"Rook comamnds: {commands}")
                     self.send_commands(commands)
                     return path
                     
@@ -199,7 +199,7 @@ class GantryControl:
                     path = [(0, 0), (0, 4*offset)]
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"rook comamnds: {commands}")
+                    #print(f"rook comamnds: {commands}")
                     self.send_commands(commands)
 
                     # King_path
@@ -207,7 +207,7 @@ class GantryControl:
 
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"king comamnds: {commands}")
+                    #print(f"king comamnds: {commands}")
                     self.send_commands(commands)
                     return path
                     
@@ -217,7 +217,7 @@ class GantryControl:
                     path = [(14*offset, 14*offset), (0, -6*offset)]
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"Rook comamnds: {commands}")
+                    #print(f"Rook comamnds: {commands}")
                     self.send_commands(commands)
 
                     # King_path
@@ -225,7 +225,7 @@ class GantryControl:
 
                     movements = self.parse_path_to_movement(path)
                     commands = self.movement_to_gcode(movements)
-                    print(f"king comamnds: {commands}")
+                    #print(f"king comamnds: {commands}")
                     self.send_commands(commands)
                     return path
 
@@ -265,7 +265,7 @@ class GantryControl:
                 else:
                     print("Probably a horse")
                     angled_movement = (self.sign(dx) * offset, self.sign(dy)*offset)
-                    print(angled_movement)
+                    #print(angled_movement)
 
                     # inital offset is (sign(dx) * dx, sing(dy)*dy)
                     if abs(dx) > abs(dy):
