@@ -594,16 +594,18 @@ class ChessControlSystem:
             # selected_piece = None
             self.go_to_first_piece_detection()
 
-        move = f"{self.selected_piece}{self.selected_move}"
+        move_str = f"{self.selected_piece}{self.selected_move}"
+        
+        move = chess.Move.from_uci(move_str)
 
-        legal_moves = [move for move in self.board.legal_moves if move.from_square == {self.selected_piece}]
+        legal_moves = [move for move in self.board.legal_moves if move.from_square == self.chess.parse_square(self.selected_piece)]
 
         print(legal_moves)
 
         if move in legal_moves:
             print("Legal move, executing it")
 
-            self.process_legal_player_move(move)
+            self.process_legal_player_move(move_str)
 
         else:
             print("Illegal move, executing YOU")
