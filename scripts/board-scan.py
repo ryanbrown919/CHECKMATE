@@ -199,7 +199,7 @@ def main():
         # Clean up hardware resources
         print("Cleaning up...")
         try:
-            # gantry.home()  # Return to home position
+            gantry.home()  # Return to home position
             # Add any other cleanup needed
         except Exception as e:
             print(f"Error during cleanup: {e}")
