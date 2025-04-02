@@ -212,8 +212,9 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -621,7 +622,7 @@ class ChessControlSystem:
         print("[State] Engine Turn")
         self.update_ui()
         # Process the engine move asynchronously.
-        threading.Thread(target=self.compute_engine_move, daemon=True).start()
+        self.engine_thread = threading.Thread(target=self.compute_engine_move, daemon=True).start()
         #self.compute_engine_move()
 
     def compute_engine_move(self):
@@ -663,14 +664,14 @@ class ChessControlSystem:
         # self.update_ui()
         # self.engine_move_complete()
 
-    def on_game_over(self):
-        print("[State] Game Over")
-        self.update_ui()
+    def end_game_processes(self):
         self.running = False
+
         # Ensure that if an engine is still running, we shut it down.
         if self.engine:
             print("[Engine] Shutting down engine on game over...")
             self.engine.quit()
+            self.engine_thread.join()
             self.engine = None
 
     # Example backend methods:
@@ -774,6 +775,8 @@ class ChessControlSystem:
     def end_game(self, turn):
 
         self.game_state = "FINISHED"
+        self.end_game_processes()
+        self.end_game_screen()
 
         if turn == chess.WHITE:
             self.game_winner = "White"
@@ -782,12 +785,9 @@ class ChessControlSystem:
         else:
             self.game_winner = "Black"
             self.victory_lap('black')
-            #find black king, victory lap
-
-        self.end_game_screen()
+            #find black king, victory lap    
 
         self.notify_observers()
-        
 
     def toggle_clock(self):
         self.clock_logic.toggle_active_player()
@@ -803,6 +803,8 @@ class ChessControlSystem:
 
         white_king_square = self.board.king(chess.WHITE)
         black_king_square = self.board.king(chess.BLACK)
+
+        print(white_king_square)
 
 
         if color == 'white':
