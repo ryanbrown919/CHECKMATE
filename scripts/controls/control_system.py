@@ -377,14 +377,14 @@ class ChessControlSystem:
         
         self.move_history.append(move.uci())
     
-        if self.board.is_checkmate():
+        if self.is_move_checkmate(self.board, move):
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
             else:
                 self.piece_images['K'] = 'assets/white_king_mate.png'
             
-        elif self.board.is_check(move):
+        elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_check.png'
             else:
@@ -480,14 +480,14 @@ class ChessControlSystem:
         
         self.move_history.append(move.uci())
     
-        if self.board.is_checkmate():
+        if self.board.is_move_checkmate(self.board, move):
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
             else:
                 self.piece_images['K'] = 'assets/white_king_mate.png'
             
-        elif self.board.is_check(move):
+        elif self.board.gives_check():
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_check.png'
             else:
@@ -846,7 +846,20 @@ class ChessControlSystem:
         
         # else :   
 
-
+    def is_move_checkmate(board, move):
+        """
+        Returns True if making the given move on a copy of the board results in checkmate.
+        
+        Args:
+            board (chess.Board): The current board position.
+            move (chess.Move): The move to test.
+        
+        Returns:
+            bool: True if the move results in a checkmate, False otherwise.
+        """
+        board_copy = board.copy()   # Make a copy so we don't modify the original board
+        board_copy.push(move)         # Apply the move on the copy
+        return board_copy.is_checkmate()  # Check if t
 
     # Define the default handler for the on_move_processed event.
     def on_move_processed(self, move):
