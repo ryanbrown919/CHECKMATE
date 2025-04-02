@@ -846,7 +846,7 @@ class ChessControlSystem:
         
         # else :   
 
-    def is_move_checkmate(board, move):
+    def is_move_checkmate(self, board, move):
         """
         Returns True if making the given move on a copy of the board results in checkmate.
         
