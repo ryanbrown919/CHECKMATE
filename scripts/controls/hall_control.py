@@ -210,7 +210,7 @@ class Hall:
         # column 0 is file a
 
         files = "abcdefgh"
-        ranks = "81234567"
+        ranks = "12345678"
         file = files[col]
         rank = ranks[row]
         return f"{file}{rank}"
