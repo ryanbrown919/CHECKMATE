@@ -812,7 +812,9 @@ class ChessControlSystem:
         black_king_square = chess.square_name(self.board.king(chess.BLACK))
 
         print("winner white?")
+        print(white_win)
 
+        print("white king square")
         print(white_king_square)
 
 
