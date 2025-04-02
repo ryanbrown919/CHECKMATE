@@ -216,7 +216,7 @@ class Hall:
         # Compare with the reference board
         for row in range(8):
             for col in range(8):
-                print(f"Checking: {repr(reference_board[row][col])} == {repr(board[row][col])}")
+                # print(f"Checking: {repr(reference_board[row][col])} == {repr(board[row][col])}")
                 if reference_board[row][col] != board[row][col]:
                     print("yo these are not the same")
                     change = self.board_to_chess_notation(row, col)
