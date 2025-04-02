@@ -489,7 +489,8 @@ class ChessControlSystem:
              time.sleep(0.5)
 
         print("Detected_first_piece")
-        self.selected_piece = self.hall.first_change
+        # self.selected_piece
+        
 
         self.notify_observers()
 
