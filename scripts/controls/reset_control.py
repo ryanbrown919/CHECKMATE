@@ -122,7 +122,30 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
-   
+    def fen_to_coords(self,fen):
+        """
+        Given a fen string, output a list with the piece and its coordinates.
+        Following the convention: (symbol, (x,y))
+        """
+        
+        # Extract board setup from the FEN string
+        board_part = fen.split()[0]
+        ranks = board_part.split("/")  # Split into ranks
+
+        pieces = []
+        
+        for rank_idx, rank in enumerate(reversed(ranks)):  # Reverse so rank 1 is at the bottom
+            file_idx = 0
+            for char in rank:
+                if char.isdigit():
+                    file_idx += int(char)  # Skip empty squares
+                else:
+                    square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
+                    coord = self.gantry.square_to_coord(square)
+                    pieces.append((char, (coord[0]*25, coord[1]*25)))
+                    file_idx += 1  # Move to the next file
+
+        return pieces
         
 
     def reset_board_from_game(self):
@@ -141,8 +164,9 @@ class BoardReset:
         
         
 
+        
 
-
+        ## STEP 3: PIECES IN DEADZONE RESET AFTER PIECES ON BOARD ARE REST. 
 
 
         start = (0, 0)
