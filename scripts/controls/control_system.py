@@ -490,7 +490,6 @@ class ChessControlSystem:
 
         print("Detected_first_piece")
         self.selected_piece = self.hall.first_change
-        self.legal_moves = [move for move in self.board.legal_moves if move.from_square == square]
 
         self.notify_observers()
 
