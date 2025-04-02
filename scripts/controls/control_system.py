@@ -468,7 +468,7 @@ class ChessControlSystem:
 
     def process_board_move(self, move, is_white):
 
-        self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white)
+        self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, self.board.piece_at(move.to_square).symbol())
                 
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):

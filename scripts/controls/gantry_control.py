@@ -131,7 +131,7 @@ class GantryControl:
             y = (ord('h') - ord(file)) * 2
             return (x, y)
         
-        def interpret_chess_move(self, move_str, is_capture, is_castling, is_en_passant, is_white):
+        def interpret_chess_move(self, move_str, is_capture, is_castling, is_en_passant, is_white, symbol):
             """
             Given a move string (e.g. "e2e4") and a step_value (in mm),
             returns the relative displacement as a tuple (dx_mm, dy_mm).
@@ -296,7 +296,7 @@ class GantryControl:
                     self.send_commands(commands)
 
                     dead_coordinates = (end_coord[0]-offset*dx_sign, end_coord[1]+offset)
-                    self.to_deadzone(dead_coordinates, is_white)
+                    self.to_deadzone(dead_coordinates, is_white, symbol)
                     return (path)
 
 
@@ -334,7 +334,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] + offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
 
                         elif dx_sign == -1 and dy_sign == 0:
@@ -362,7 +362,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] + offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
 
 
@@ -389,7 +389,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] + offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
 
 
@@ -418,7 +418,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] - offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
 
                         elif dx_sign == 0 and dy_sign == -1:
@@ -444,7 +444,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] - offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
                         
                         elif dx_sign == 1 and dy_sign == 0:
@@ -471,7 +471,7 @@ class GantryControl:
 
                             # take capturing piece to deadzone
                             dead_coordinates = (end_coord[0] - offset, end_coord[1])
-                            self.to_deadzone(dead_coordinates, is_white)
+                            self.to_deadzone(dead_coordinates, is_white, symbol)
                             return (path)
 
                     
@@ -502,7 +502,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1])
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == -1 and dy_sign == 1:
@@ -528,7 +528,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1] + offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == -1 and dy_sign == 0:
@@ -554,7 +554,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1]+offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == -1 and dy_sign == -1:
@@ -579,7 +579,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1] - offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 0 and dy_sign == -1:
@@ -604,7 +604,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1])
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
 
@@ -633,7 +633,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1])
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 1 and dy_sign == 1:
@@ -659,7 +659,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1] + offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 1 and dy_sign == 0:
@@ -685,7 +685,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1]+offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 1 and dy_sign == -1:
@@ -710,7 +710,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1] - offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 0 and dy_sign == -1:
@@ -735,7 +735,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1])
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             
@@ -779,7 +779,7 @@ class GantryControl:
                                     dead_coordinates = (end_coord[0] - offset, end_coord[1]+offset)
                                 else:
                                     dead_coordinates = (end_coord[0] + offset, end_coord[1]+offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == -1 and dy_sign == -1:
@@ -805,7 +805,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] - offset, end_coord[1] + offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == -1 and dy_sign == 0:
@@ -831,7 +831,8 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0], end_coord[1]+offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
+
                                 return (path)
 
                             elif dx_sign == 1 and dy_sign == -1:
@@ -856,7 +857,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0] + offset, end_coord[1] + offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
                             elif dx_sign == 1 and dy_sign == 0:
@@ -881,7 +882,7 @@ class GantryControl:
 
                                 # take capturing piece to deadzone
                                 dead_coordinates = (end_coord[0], end_coord[1]+offset)
-                                self.to_deadzone(dead_coordinates, is_white)
+                                self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
 
@@ -942,7 +943,7 @@ class GantryControl:
 
                     dead_coordinates = (end_coord[0] + captured_new_x, end_coord[1] + captured_new_y)
 
-                    self.to_deadzone(dead_coordinates, is_white)
+                    self.to_deadzone(dead_coordinates, is_white, symbol)
 
                     return (path)
                 # dead_x = self.deadzone_origin[0] - dead_coordinates[0]
@@ -984,7 +985,7 @@ class GantryControl:
         
 
 
-        def to_deadzone(self, dead_coordinates, is_white):
+        def to_deadzone(self, dead_coordinates, is_white, symbol):
 
             ## FELIPE DIAZ DO SOME MAGIC HERE
             offset = 25

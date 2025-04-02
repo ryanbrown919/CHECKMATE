@@ -124,6 +124,17 @@ class BoardReset:
     
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
+
+        # for i, val in enumerate(self.control_system.captured_pieces):
+
+        #     if val.is_lower():
+        
+        
+
+
+
+
+
         start = (0, 0)
 
         # Get the occupied squares and compute the nearest neighbor path.
