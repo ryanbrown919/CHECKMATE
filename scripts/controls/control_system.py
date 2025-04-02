@@ -493,6 +493,8 @@ class ChessControlSystem:
         self.legal_moves = self.select_piece(self.selected_piece)
         self.notify_observers()
 
+        self.go_to_second_piece_detection()
+
 
 
 
