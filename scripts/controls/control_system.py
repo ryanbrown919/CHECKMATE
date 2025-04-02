@@ -858,7 +858,7 @@ class ChessControlSystem:
             dy = 1 if init_coords[1] != 350 else -1
         else:
             close_y = 75
-            dy = -1 if init_coords[1] != 350 else 1
+            dy = -1 if init_coords[1] != 0 else 1
 
         # print("passed")
 
@@ -885,69 +885,9 @@ class ChessControlSystem:
         path = init_path + loop_path + end_path
 
 
-
-        ###############
-        #Add looping king logic if time
-        ###############
-
-        # path = []
-        
-        # dx = init_coords[0] - end_coords[0]
-        # dy = init_coords[1] - end_coords[1]
-
-        # dx_sign = self.gantry.sign(dx)
-        # dy_sign = self.gantry.sign(dy)
-
-        # dy_flag = 1
-        # dx_flag = 1
-
-        # # deal with logic for going to an inside edge here
-        # if dx_sign == 0:
-        #     dx_flag = -1
-        #     if init_coords[0] > 180:
-        #         dx_sign = -1
-        #     else:
-        #         dx_sign = 1
-            
-        # if dy_sign == 0:
-        #     dy_flag = -1
-        #     if init_coords[1] > 180:
-        #         dy_sign = -1
-        #     else:
-        #         dy_sign = 1
-
-        # offset = 25
-
-        # # Get the king to within 25 mm of the other king
-        # path = [init_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign)]
-
-
-
-        # # Edge cases
-
-
-        # # Should be on the closest corner right now, coming from dx_sign dy_sign direction
-
-
-        # # if dx = 1, dy = 1 : go up, right, down, left x2
-        # # if dx = 1, dy = -1 :
-        # #
-        # #
-        # #
-
-        # # Always start
-        # loop_path = 
-
-        
-        #     # 
-
-        # else: 
-
-
-        # laps = ()
-
-        cmds = self.gantry.movement_to_gcode(path)
-        self.gantry.send_commands(cmds)
+        print(path)
+        # cmds = self.gantry.movement_to_gcode(path)
+        # self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
         self.notify_observers
