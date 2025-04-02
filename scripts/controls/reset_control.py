@@ -122,18 +122,22 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
-
-    def reset_play_area(self):
-        """
-        reset all the pieces within the playing area, assuming that the "starting area" 
-        (ranks 1 and 2 and 7 and 8) are already empty, or have theire pices placed allready.
-        """
-        fen = self.control_system.board.fen()
-        self.fen_to_coords(fen)
-        # deal with the white starting area (rank 1 and 2) first:
-        if()
-
-
+    def symbol_to_vaild_coodinates(self):
+        valid_gantry_coords = {
+            'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
+            'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
+            'B': [self.square_to_coord(f'{file}1') for file in 'cf'],  # White Bishop
+            'Q': [self.square_to_coord('d1')],  # White Queen
+            'K': [self.square_to_coord('e1')],  # White King
+            'P': [self.square_to_coord(f'{file}2') for file in 'abcdefgh'],  # White Pawn
+            'r': [self.square_to_coord(f'{file}8') for file in 'ah'],  # Black Rook
+            'n': [self.square_to_coord(f'{file}8') for file in 'bg'],  # Black Knight
+            'b': [self.square_to_coord(f'{file}8') for file in 'cf'],  # Black Bishop
+            'q': [self.square_to_coord('d8')],  # Black Queen
+            'k': [self.square_to_coord('e8')],  # Black King
+            'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
+        }
+        return valid_gantry_coords
 
     def fen_to_coords(self,fen):
         """
