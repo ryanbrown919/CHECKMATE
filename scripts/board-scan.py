@@ -117,7 +117,7 @@ def nearest_neighbor(start_point, targets):
 
     return path
 
-def scan_board(gantry, layer):
+def scan_board(gantry, layer, nfc):
     """
     Scan the chess board using Hall sensors and read pieces with NFC.
     Returns a dictionary mapping chess squares to piece identifiers.
@@ -160,9 +160,8 @@ def scan_board(gantry, layer):
         gantry.move(x, y, blocking=True)
         
         # Read the piece with NFC
-        piece_info = f"piece_{i}"  # Placeholder for NFC read
-        results[square] = piece_info
-        print(f"  → Square {square}: {piece_info}")
+        piece = nfc.read()
+        print(f"  → Read NFC: {piece}")
         
         # Brief pause to ensure stability
         time.sleep(0.5)
