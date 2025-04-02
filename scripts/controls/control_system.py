@@ -98,8 +98,9 @@ class ChessControlSystem:
             'player_move_confirmed',
             'engine_turn', 
             'first_piece_detection',
-            'second_piece_detection'
-            'end_game'
+            'second_piece_detection',
+            'end_game',
+            'predefined_game'
         ]
         },
         'gantryscreen',
@@ -144,6 +145,9 @@ class ChessControlSystem:
         self.endgame_message = "Jobs not finished"
         self.checkmate = False
 
+        self.font_size = 40
+        self.title_font = 120
+
         self.board = chess.Board()  # Integrated chess board.
         self.running = True
         if running_on_pi:
@@ -157,6 +161,8 @@ class ChessControlSystem:
             self.engine = None
         
         self.engine = None
+
+        self.demo_game = ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f8e7", "f1e1", "e8g8", "d2d4", "e5d4", "c2c4", "d7c3", "e4e5", "c3b2", "c1b2", "g8e8", "a4c2", "d7d6", "d1d3", "f7f5", "e5f6", "e7f6", "d3h7", "e8f7", "c2g6"]
         
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
@@ -181,6 +187,9 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["bot_mode"] == True,
                                     after=['init_game', 'update_ui', 'on_board_turn'])
+        
+        self.machine.add_transition(trigger='start_demo_game', source='mainscreen', dest='gamescreen_predefined_game',
+                                    after=['update_ui', 'on_predefined_first_turn'])
 
         
 
@@ -431,6 +440,8 @@ class ChessControlSystem:
         Calculate the distance between two chess squares given in text notation (e.g., 'e2e4').
         Returns the Manhattan distance between the squares.
         """
+
+        self.ingame_message = "Illegal Move detected!"
         if len(move_str) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
         
@@ -543,6 +554,7 @@ class ChessControlSystem:
 
     def on_player_first_turn(self):  
         print("[State] Entering Player Turn")
+        self.ingame_message = "Waiting for Player..."
 
         Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
 
@@ -556,6 +568,9 @@ class ChessControlSystem:
         
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
+
+        self.ingame_message = "Waiting for Player...."
+
 
 
         self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
@@ -633,6 +648,7 @@ class ChessControlSystem:
         #self.compute_engine_move()
 
     def compute_engine_move(self):
+        self.ingame_message = "Engine Thinking.."
         time.sleep(0.2)  # Simulate engine thinking time.
         self.update_ui()
 
@@ -641,6 +657,9 @@ class ChessControlSystem:
                 result = self.engine.play(self.board, chess.engine.Limit(time=self.parameters['engine_time_limit']))
                 move = result.move
                 print(f"[Engine] Engine move: {move}")
+
+                self.ingame_message = "Executing Board Move"
+
 
                 if self.board.turn == chess.WHITE:
                     is_white = True
@@ -701,7 +720,14 @@ class ChessControlSystem:
         print("Game has started with parameters:", self.parameters)
 
         self.game_winner = None
-        self.board.reset_board()
+        self.board.reset()
+        self.ingame_message = "Starting Game"
+
+        self.first_change = None
+        self.second_change = None
+
+        self.legal_moves = None
+        self.game_winner = None
 
         self.rocker.to_white()
 
@@ -799,6 +825,24 @@ class ChessControlSystem:
         Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 5)
 
         self.notify_observers()
+
+    def on_predefined_first_turn(self):
+        self.game_winner = None
+        self.board.reset()
+
+        self.rocker.to_white()
+
+        self.update_ui()
+        
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 3)
+
+    def on_predefined_turn(self):
+
+        for i, move in enumerate(self.demo_game):
+            self.process_board_move(move.uci(),  i % 2 == 0)
+            time.sleep(1)
+ 
+
 
     def toggle_clock(self):
         self.clock_logic.toggle_active_player()

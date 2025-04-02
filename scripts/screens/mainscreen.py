@@ -61,7 +61,7 @@ class MainScreen(Screen):
         custom1.bind(on_release=lambda instance: self.start_custom1())
 
         custom2 = RoundedButton(text="[size=30][b]Play Online?[/b][/size]\n[size=25]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
-        custom2.bind(on_release=lambda instance: self.start_custom2())
+        custom2.bind(on_release=lambda instance: self.contorl_system.start_demo_game())
 
         custom3 = RoundedButton(text="[size=30][b]Bot V Bot[/b][/size]\n[size=25]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom3.bind(on_release=lambda instance: self.start_custom3())

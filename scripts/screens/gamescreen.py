@@ -37,6 +37,7 @@ class GameScreen(Screen):
     def __init__(self, control_system, **kwargs):
         super(GameScreen, self).__init__(**kwargs)
         self.control_system = control_system
+        self.font_size = self.control_system.font_size
         # self.control_system = self.control_system.control_system
         self.clock_logic = self.control_system.clock_logic
 
@@ -69,9 +70,22 @@ class GameScreen(Screen):
         self.move_list = MovesHistory(size_hint=(1, 0.5), control_system=self.control_system)
         self.piece_jail = CapturedPieces(size_hint=(1, 0.3), control_system=self.control_system) 
 
+        if control_system.parameters['bot_mode']:
+            black_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
+            white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
 
-        black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
-        white_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
+        elif control_system.parameters['local_mode']:
+            black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
+            white_board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
+
+        elif control_system.parameters['colour'] == 'white':
+            white_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
+            black_board = Label(Text = self.ingame_message, font_size = 50)
+        else:
+            black_board = ChessBoard(touch_enabled_black=True, touch_enabled_white=False, bottom_colour_white=False, control_system=self.control_system, size_hint=(1, 1))
+            white_board = Label(Text = self.ingame_message, font_size = 50)
+
+    
         
         black_layout.add_widget(black_board)
         black_layout.add_widget(HorizontalLine())
@@ -80,13 +94,13 @@ class GameScreen(Screen):
 
         
         # Middle layout wdigets
-        middle_layout.add_widget(Label(text="Material Possession", font_size=40, size_hint=(1, 0.1)))
+        middle_layout.add_widget(Label(text="Material Possession", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.material_possesion)
         #middle_layout.add_widget(HorizontalLine())
-        middle_layout.add_widget(Label(text="Move History", font_size=40, size_hint=(1, 0.1)))
+        middle_layout.add_widget(Label(text="Move History", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.move_list)
         #middle_layout.add_widget(HorizontalLine())
-        middle_layout.add_widget(Label(text="Piece Jail", font_size=40, size_hint=(1, 0.1)))
+        middle_layout.add_widget(Label(text="Piece Jail", font_size=40, size_hint=(1, 0.1), font_size = self.font_size))
         middle_layout.add_widget(self.piece_jail)
 
         white_layout.add_widget(white_board)  
