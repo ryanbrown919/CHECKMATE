@@ -61,7 +61,7 @@ class MainScreen(Screen):
         custom1.bind(on_release=lambda instance: self.start_custom1())
 
         custom2 = RoundedButton(text="[size=30][b]Demo Game[/b][/size]\n[size=25]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
-        custom2.bind(on_release=lambda instance: self.start_demo_game())
+        custom2.bind(on_release=lambda instance: self.start_demo_mode())
 
         custom3 = RoundedButton(text="[size=30][b]Bot V Bot[/b][/size]\n[size=25]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
         custom3.bind(on_release=lambda instance: self.start_custom3())
@@ -172,7 +172,7 @@ class MainScreen(Screen):
     def start_demo_mode(self):
         self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False, 'demo_mode':True}  # Default parameters to be set by the user 
         self.control_system.start_demo_game()
-        
+
     def start_custom3(self):
         self.control_system.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'local_mode': False, 'demo_mode':True}  # Default parameters to be set by the user 
         self.control_system.start_game()
