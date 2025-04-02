@@ -212,7 +212,7 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['victory_lap','update_ui'])
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['victory_lap','update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
@@ -414,13 +414,13 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        if self.checkmate:
-            self.end_game(self.board.turn)
-
         self.rocker.toggle()
 
         self.notify_observers()
         self.on_player_move_confirmed()
+
+        if self.checkmate:
+            self.end_game(self.board.turn)
 
     def process_illegal_player_move(self, move_str):
 
@@ -529,13 +529,13 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        if self.checkmate:
-            self.end_game(self.board.turn)
-
         self.rocker.toggle()
 
         self.notify_observers()
         self.engine_move_complete()
+
+        if self.checkmate:
+            self.end_game(self.board.turn)
 
         # self.process_legal_player_move(f"{move}")
 
@@ -866,7 +866,7 @@ class ChessControlSystem:
         
 
 
-        init_path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]+dy*25)), (close_x-(init_coords[0]+dx*25), 0)]
+        init_path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]+dy*25)), (close_x-(init_coords[0]dx*25), 0)]
         if close_x == 325:
             if close_y == 325:
                 loop_path = ([(-6*50, 0), (0, -6*50), (6*50, 0), (0, 6*50)])
