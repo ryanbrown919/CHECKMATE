@@ -18,7 +18,7 @@ class EndGameScreen(Screen):
         self.control_system = control_system
         root = BoxLayout(orientation='vertical', padding=10)
 
-        header_layout = headerLayout(menu=False)
+        header_layout = headerLayout(control_system = self.contro0l_system, menu=False)
 
 
         layout = BoxLayout(orientation='horizontal', padding=10)
