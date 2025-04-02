@@ -418,7 +418,7 @@ class ChessControlSystem:
         self.notify_observers()
         self.on_player_move_confirmed()
 
-    def process_illegal_player_move(self, move):
+    def process_illegal_player_move(self, move_str):
 
         # Send piece back to start and rock rocker, then scan for moves again
 
@@ -426,13 +426,16 @@ class ChessControlSystem:
         Calculate the distance between two chess squares given in text notation (e.g., 'e2e4').
         Returns the Manhattan distance between the squares.
         """
-        if len(move) != 4:
+        if len(move_str) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
         
         STEP_MM = 25
 
-        start_square = move[:2]
-        end_square = move[2:]
+        # move = chess.Move.from_uci(move_str)
+
+
+        start_square = move_str[:2]
+        end_square = move_str[2:]
 
         # Calculate Manhattan distance
 
@@ -554,7 +557,7 @@ class ChessControlSystem:
              new_board = self.hall.sense_layer.get_squares_game()
              #print(new_board)
              self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
-             time.sleep(0.3)
+             time.sleep(0.1)
 
         print("Detected_first_piece")
         # self.selected_piece
@@ -653,7 +656,7 @@ class ChessControlSystem:
 
             new_board = self.hall.sense_layer.get_squares_game()
             self.selected_move = self.hall.compare_boards(new_board, initial_board)
-            time.sleep(0.5)
+            time.sleep(0.2)
 
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
