@@ -288,6 +288,7 @@ class ChessControlSystem:
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
         return self.parameters['bot_mode']
+    
     def is_local_mode(self):
         return self.parameters['local_mode']
     
@@ -748,6 +749,7 @@ class ChessControlSystem:
                 else: 
                     is_white = False
 
+
                 self.process_board_move(move, is_white)
 
 
@@ -813,6 +815,7 @@ class ChessControlSystem:
                 api_key = f.read().strip()  # .strip() removes any extra whitespace or newline characters
         elif not self.parameters['online']:
             #Configure offline game 
+            print("Configuring offline game")
 
             if self.engine_path:
                 try:
