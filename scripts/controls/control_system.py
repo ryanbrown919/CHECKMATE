@@ -795,7 +795,7 @@ class ChessControlSystem:
             #find black king, victory lap  
             # 
         self.end_game_processes()
-        self.end_game_screen()  
+        Clock.schedule_once(lambda dt: self.end_game_screen(), 5)
 
         self.notify_observers()
 
@@ -880,7 +880,7 @@ class ChessControlSystem:
 
         
 
-        end_path = ([((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)])
+        end_path = ([((init_coords[0]-dx*25)+close_x, 0), (0, (init_coords[1]+dy*25)-close_y), (-dx*25, -dy*25)])
 
         path = init_path + loop_path + end_path
 
