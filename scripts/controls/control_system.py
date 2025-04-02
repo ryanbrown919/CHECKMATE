@@ -851,9 +851,17 @@ class ChessControlSystem:
 
         path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0)]
         if close_x == 325:
-            path.append([(6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50)])
+            if close_y == 325:
+                path.append([(-6*50, 0), (0, -6*50), (6*50, 0), (0, 6*50)])
+            else:
+                path.append([(-6*50, 0), (0, 6*50), (6*50, 0), (0, 6*50)])
         else:
-            path.append([(-6*50, 0), (0, 6*50), (6*50, 0), (0, 6*50)])
+            if close_y == 325:
+                path.append([(6*50, 0), (0, -6*50), (-6*50, 0), (0, 6*50)])
+            else:
+                path.append([(6*50, 0), (0, 6*50), (-6*50, 0), (0, -6*50)])
+
+        
 
         path.append = [((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
 
