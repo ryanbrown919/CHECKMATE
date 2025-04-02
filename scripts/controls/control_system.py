@@ -421,7 +421,7 @@ class ChessControlSystem:
         self.on_player_move_confirmed()
 
         if self.checkmate:
-            self.end_game(self.board.turn)
+            self.end_game()
 
     def process_illegal_player_move(self, move_str):
 
@@ -494,8 +494,8 @@ class ChessControlSystem:
         
         self.move_history.append(move.uci())
     
-        #if self.is_move_checkmate(self.board, move):
-        if True:
+        if self.is_move_checkmate(self.board, move):
+       # if True:
             self.checkmate = True
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_mate.png'
