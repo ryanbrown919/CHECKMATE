@@ -990,6 +990,9 @@ class GantryControl:
             ## FELIPE DIAZ DO SOME MAGIC HERE
             offset = 25
 
+            self.white_captured = []
+            self.black_captured = []
+
             if is_white:
                 dead_x = self.nextdead_white[0] - dead_coordinates[0]
                 dead_y = self.nextdead_white[1] - dead_coordinates[1]
