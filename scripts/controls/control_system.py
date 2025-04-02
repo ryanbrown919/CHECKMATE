@@ -778,8 +778,7 @@ class ChessControlSystem:
     def end_game(self, turn):
 
         self.game_state = "FINISHED"
-        self.end_game_processes()
-        self.end_game_screen()
+        
 
         if turn == chess.WHITE:
             self.game_winner = "White"
@@ -788,7 +787,10 @@ class ChessControlSystem:
         else:
             self.game_winner = "Black"
             # self.victory_lap('black')
-            #find black king, victory lap    
+            #find black king, victory lap  
+            # 
+        self.end_game_processes()
+        self.end_game_screen()  
 
         self.notify_observers()
 
