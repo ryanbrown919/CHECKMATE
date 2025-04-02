@@ -1,6 +1,8 @@
 import lgpio
 import time
 import threading
+import copy
+
 
 
 class Multiplexer:
@@ -203,7 +205,25 @@ class Hall:
         self.move = None
 
     def board_to_chess_notation(self, row, col):
-        return f"{chr(97 + row)}{8 - col}"
+        # row 0 is rank 1
+
+        # column 0 is file a
+
+        files = "abcdefgh"
+        ranks = "12345678"
+        file = files[col]
+        rank = ranks[row]
+        return f"{file}{rank}"
+
+        # files = "abcdefgh"
+        # # row 0 -> rank 1, row 1 -> rank 2, etc.
+        # rank = row + 1
+        # # col 0 -> 'a', col 1 -> 'b', etc.
+        # file = files[col]
+        # return f"{file}{rank}"
+
+
+        # return f"{chr(96 + row)}{col+2}"
 
     def compare_boards(self, board, reference_board):
         # if self.initial_board is None:
@@ -214,9 +234,11 @@ class Hall:
         # Compare with the reference board
         for row in range(8):
             for col in range(8):
+                # print(f"Checking: {repr(reference_board[row][col])} == {repr(board[row][col])}")
                 if reference_board[row][col] != board[row][col]:
-                    
+                    print("yo these are not the same")
                     change = self.board_to_chess_notation(row, col)
+                    print(change)
                     return change  # Update reference board after first change
 
         return None

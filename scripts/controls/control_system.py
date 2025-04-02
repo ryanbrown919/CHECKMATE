@@ -15,6 +15,7 @@ import time
 import threading
 import sys
 import random
+import copy
 
 import logging
 logging.getLogger('transitions').setLevel(logging.WARNING)
@@ -155,7 +156,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine = None
         
-        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
         self.timer_enabled = False
 
@@ -186,8 +187,8 @@ class ChessControlSystem:
 
         # Nested transitions inside gamescreen.
         # Note: When referring to nested states, use the full path: e.g. gamescreen_player_turn.
-        self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
-        self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
+        # self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
+        # self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
 
 
         self.machine.add_transition(trigger='go_to_first_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='first_piece_detection_poll')
@@ -202,6 +203,13 @@ class ChessControlSystem:
         # Otherwise, transition to player_turn.
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn',
                                     unless='is_auto_engine_mode', after=['on_player_turn', 'notify_observers'])
+        # deal with player move
+        self.machine.add_transition(trigger='player_move_complete', source='gamescreen_player_turn', dest='gamescreen_player_turn',
+                                    conditions='is_local_mode', after=['on_player_turn', 'notify_observers'])
+        # Otherwise, transition to player_turn.
+        self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_player_turn', dest='gamescreen_engine_turn',
+                                    unless='is_local_mode', after=['on_player_turn', 'notify_observers'])
+        
 
 
         self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
@@ -240,6 +248,7 @@ class ChessControlSystem:
         self.first_change = None
         self.second_change = None
 
+        self.legal_moves = None
 
 
 
@@ -279,6 +288,8 @@ class ChessControlSystem:
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
         return self.parameters['bot_mode']
+    def is_local_mode(self):
+        return self.parameters['local_mode']
     
     def register_observer(self, callback):
         """Register a callback that will be called when the board changes."""
@@ -392,6 +403,9 @@ class ChessControlSystem:
 
                 self.checkmate = False
 
+            self.legal_moves = None
+            print("pushoing move:")
+
             self.board.push(move)
             self.notify_observers()
 
@@ -401,7 +415,7 @@ class ChessControlSystem:
             self.rocker.toggle()
 
             self.notify_observers()
-            self.process_move()
+            self.on_player_move_confirmed()
 
     def process_illegal_player_move(self, move):
 
@@ -413,19 +427,19 @@ class ChessControlSystem:
         """
         if len(move) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
+        
+        STEP_MM = 25
 
         start_square = move[:2]
         end_square = move[2:]
 
-        # Convert algebraic notation to board coordinates
-        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
-        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
-
         # Calculate Manhattan distance
-        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
 
         init_coords = self.gantry.square_to_coord(start_square)
         end_coords = self.gantry.square_to_coord(end_square)
+
+        init_coords = (init_coords[0]*STEP_MM, init_coords[1]*STEP_MM)
+        end_coords = (end_coords[0]*STEP_MM, end_coords[1]*STEP_MM)
 
         path = []
         
@@ -438,16 +452,16 @@ class ChessControlSystem:
 
 
 
-        offset = 25
+        offset = STEP_MM
 
         # Add the final position to the path
-        path = [end_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
+        path = [end_coords, (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
 
 
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
-        self.rocker.toggle()
+        # self.rocker.toggle()
         self.notify_observers
 
 
@@ -455,7 +469,58 @@ class ChessControlSystem:
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white)
                 
-        self.process_legal_player_move(f"{move}")
+        # move = chess.Move.from_uci(move_str)
+        if self.board.is_capture(move):
+            # For a normal capture, the captured piece is on the destination square.
+            captured_piece = self.board.piece_at(move.to_square)
+            if captured_piece:
+                self.captured_pieces.append(captured_piece.symbol())
+                # Note: You might need special handling for en passant captures.
+        
+        self.move_history.append(move.uci())
+    
+        if self.board.is_checkmate(move):
+            self.checkmate = True
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_mate.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_mate.png'
+            
+        elif self.board.is_check(move):
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_check.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_check.png'
+            # Make some indication
+
+            self.check = f"{self.board.turn}"
+            self.checkmate = False
+
+        else:
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king.png'
+            
+            self.check = ""
+
+            self.checkmate = False
+
+        self.legal_moves = None
+        print("pushing move:")
+
+        self.board.push(move)
+        self.notify_observers()
+
+        if self.checkmate:
+            self.end_game(self.board.turn)
+
+        self.rocker.toggle()
+
+        self.notify_observers()
+        self.engine_move_complete()
+
+        # self.process_legal_player_move(f"{move}")
 
 
         
@@ -463,29 +528,34 @@ class ChessControlSystem:
     def on_player_turn(self):
         print("[State] Entering Player Turn")
 
-        time.sleep(1)
-
-        
-        self.go_to_first_piece_detection()
+    
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 3)
         # When entering player's turn, immediately begin hall effect polling.
         
         # State transition will stay in this state until a change is detected, then it will go to second state
     def first_piece_detection_poll(self):
 
 
-        self.initial_board = self.hall.sense_layer.get_squares_game()
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
 
-        print("Trying to find first peice")
+        print(self.initial_board)
+
+        print("Trying to find first piece")
         self.selected_piece = None
         while self.selected_piece is None:
-
-             self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+             
+             new_board = self.hall.sense_layer.get_squares_game()
+             #print(new_board)
+             self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
              time.sleep(0.5)
 
         print("Detected_first_piece")
-        self.selected_piece = self.hall.first_change
-        self.select_piece(self.selected_piece)
+        # self.selected_piece
+        
+
         self.notify_observers()
+
+        self.go_to_second_piece_detection()
 
 
 
@@ -569,30 +639,38 @@ class ChessControlSystem:
 
         # # Start checking without blocking
         # Clock.schedule_once(check_for_result, 0.1)
-        
-        self.initial_board = self.hall.sense_layer.get_squares_game()
-
+        print("looking for second move")
+        initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
         while self.selected_move is None:
 
-            self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+            new_board = self.hall.sense_layer.get_squares_game()
+            self.selected_move = self.hall.compare_boards(new_board, initial_board)
             time.sleep(0.5)
 
-        self.selected_move = self.hall.second_change
+        print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
         if self.selected_piece == self.selected_move:
+            print("Piece replaced, finding new move")
             # selected_piece = None
             self.go_to_first_piece_detection()
 
-        move = f"{self.selected_piece}{self.selected_move}"
-
-        legal_moves = list(self.board.legal_moves(move))
+        move_str = f"{self.selected_piece}{self.selected_move}"
         
-        if move in legal_moves:
+        move = chess.Move.from_uci(move_str)
 
-            self.process_legal_player_move(move)
+        legal_moves = [move for move in self.board.legal_moves if move.from_square == chess.parse_square(self.selected_piece)]
+
+        print(legal_moves)
+
+        if move in legal_moves:
+            print("Legal move, executing it")
+
+            self.process_legal_player_move(move_str)
 
         else:
+            print("Illegal move, executing YOU")
+
             self.process_illegal_player_move(move)
             
             # if self.board.is_capture(move):
@@ -688,10 +766,10 @@ class ChessControlSystem:
                 self.board.push(move)
         # Transition back to player's turn.
 
-        self.rocker.toggle()
-        self.notify_observers()
-        self.update_ui()
-        self.engine_move_complete()
+        # self.rocker.toggle()
+        # self.notify_observers()
+        # self.update_ui()
+        # self.engine_move_complete()
 
     def on_game_over(self):
         print("[State] Game Over")
@@ -791,9 +869,13 @@ class ChessControlSystem:
 
         if turn == chess.WHITE:
             self.game_winner = "White"
+            self.victory_lap('white')
+            #find white king, victory lap
         else:
             self.game_winner = "Black"
-        
+            self.victory_lap('black')
+            #find black king, victory lap
+
         self.end_game_screen()
 
         self.notify_observers()
@@ -808,6 +890,123 @@ class ChessControlSystem:
     #################################################################################################################
     # Non-state related functions
     #################################################################################################################
+
+    def victory_lap(self, color):
+
+        white_king_square = self.board.king(chess.WHITE)
+        black_king_square = self.board.king(chess.BLACK)
+
+
+        if color == 'white':
+            start_square = f"{white_king_square}"
+            end_square = f"{black_king_square}"
+        else:
+            start_square = f"{black_king_square}"
+            end_square = f"{white_king_square}"
+
+        # Convert algebraic notation to board coordinates
+        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
+        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
+
+        # Calculate Manhattan distance
+        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
+
+        init_coords = self.gantry.square_to_coord(start_square)
+        end_coords = self.gantry.square_to_coord(end_square)
+
+        # find closest border corner
+        if init_coords[0] > 180:
+            close_x = 325
+            dx = 1 if init_coords[0] != 350 else -1
+        else:
+            close_x = 25
+            dx = -1 if init_coords[0] != 0 else 1
+
+        if init_coords[1] > 180:
+            close_y = 325
+            dy = 1 if init_coords[1] != 350 else -1
+        else:
+            close_y = 25
+            dy = -1 if init_coords[1] != 350 else 1
+
+        
+
+
+
+        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0), (6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50), ((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
+
+
+
+        ###############
+        #Add looping king logic if time
+        ###############
+
+        # path = []
+        
+        # dx = init_coords[0] - end_coords[0]
+        # dy = init_coords[1] - end_coords[1]
+
+        # dx_sign = self.gantry.sign(dx)
+        # dy_sign = self.gantry.sign(dy)
+
+        # dy_flag = 1
+        # dx_flag = 1
+
+        # # deal with logic for going to an inside edge here
+        # if dx_sign == 0:
+        #     dx_flag = -1
+        #     if init_coords[0] > 180:
+        #         dx_sign = -1
+        #     else:
+        #         dx_sign = 1
+            
+        # if dy_sign == 0:
+        #     dy_flag = -1
+        #     if init_coords[1] > 180:
+        #         dy_sign = -1
+        #     else:
+        #         dy_sign = 1
+
+        # offset = 25
+
+        # # Get the king to within 25 mm of the other king
+        # path = [init_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign)]
+
+
+
+        # # Edge cases
+
+
+        # # Should be on the closest corner right now, coming from dx_sign dy_sign direction
+
+
+        # # if dx = 1, dy = 1 : go up, right, down, left x2
+        # # if dx = 1, dy = -1 :
+        # #
+        # #
+        # #
+
+        # # Always start
+        # loop_path = 
+
+        
+        #     # 
+
+        # else: 
+
+
+        # laps = ()
+
+        cmds = self.gantry.movement_to_gcode(path)
+        self.gantry.send_commands(cmds)
+
+        # self.rocker.toggle()
+        self.notify_observers
+
+
+
+
+        pass
 
     def select_piece(self, square):
         # Find legal moves for the selected piece, update any boards with hgihlighted squares
