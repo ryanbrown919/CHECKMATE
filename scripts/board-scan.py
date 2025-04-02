@@ -11,7 +11,7 @@ from gantry import Gantry
 from hall import SenseLayer
 from nfc import NFC
 
-NFC_OFFSET = 42
+NFC_OFFSET = 50
 
 # Map chess squares to physical coordinates (in mm)
 BOARD_TO_PHYSICAL = {
