@@ -162,7 +162,7 @@ class ChessControlSystem:
         
         self.engine = None
 
-        self.demo_game = ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f8e7", "f1e1", "e8g8", "d2d4", "e5d4", "c2c4", "d7c3", "e4e5", "c3b2", "c1b2", "g8e8", "a4c2", "d7d6", "d1d3", "f7f5", "e5f6", "e7f6", "d3h7", "e8f7", "c2g6"]
+        self.demo_game = ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f8e7", "f1e1", "e8g8", "d2d4", "e5d4", "c2c4", "d4c3", "e4e5", "c3b2", "c1b2", "f6e8", "a4c2", "d7d6", "d1d3", "f7f5", "e5f6", "e7f6", "d3h7", "g8f7", "c2g6"]
         
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
@@ -887,6 +887,7 @@ class ChessControlSystem:
         if self.checkmate:
             self.end_game()
 
+
     def on_predefined_first_turn(self):
         self.game_winner = None
         self.board.reset()
@@ -901,6 +902,7 @@ class ChessControlSystem:
 
         for i, move in enumerate(self.demo_game):
             self.process_predefined_board_move(chess.Move.from_uci(move),  i % 2 == 0)
+            self.notify_observers()
             time.sleep(1)
  
 
