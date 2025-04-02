@@ -466,7 +466,9 @@ class ChessControlSystem:
         self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
-        self.notify_observers
+        self.notify_observers()
+
+        self.on_player_turn()
 
 
     def process_board_move(self, move, is_white):
