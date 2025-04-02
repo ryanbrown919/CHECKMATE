@@ -863,7 +863,7 @@ class ChessControlSystem:
 
         
 
-        path.append = [((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
+        path.append([((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)])
 
 
 
