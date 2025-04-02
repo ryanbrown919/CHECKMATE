@@ -882,14 +882,16 @@ class ChessControlSystem:
 
         
 
-        end_path = ([((init_coords[0]-dx*25)+close_x, 0), (0, (init_coords[1]+dy*25)-close_y), (-dx*25, -dy*25)])
+        end_path = ([((init_coords[0]+dx*25)-close_x, 0), (0, (init_coords[1]+dy*25)-close_y), (-dx*25, -dy*25)])
 
         path = init_path + loop_path + end_path
 
 
+        ## Need to put a lil more thought into this
+
         # print(path)
-        cmds = self.gantry.movement_to_gcode(path)
-        self.gantry.send_commands(cmds)
+        # cmds = self.gantry.movement_to_gcode(path)
+        # self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
         self.notify_observers
