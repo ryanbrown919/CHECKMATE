@@ -490,7 +490,8 @@ class ChessControlSystem:
 
         print("Detected_first_piece")
         self.selected_piece = self.hall.first_change
-        self.legal_moves = self.select_piece(self.selected_piece)
+        self.legal_moves = [move for move in self.board.legal_moves if move.from_square == square]
+
         self.notify_observers()
 
         self.go_to_second_piece_detection()
@@ -594,8 +595,8 @@ class ChessControlSystem:
 
         move = f"{self.selected_piece}{self.selected_move}"
 
-        legal_moves = list(self.board.legal_moves(move))
-        
+        legal_moves = [move for move in self.board.legal_moves if move.from_square == {self.selected_piece}]
+
         if move in legal_moves:
 
             self.process_legal_player_move(move)
