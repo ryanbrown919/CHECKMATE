@@ -38,6 +38,7 @@ class GameScreen(Screen):
         super(GameScreen, self).__init__(**kwargs)
         self.control_system = control_system
         self.font_size = self.control_system.font_size
+        self.ingame_message = self.control_system.ingame_message
         # self.control_system = self.control_system.control_system
         self.clock_logic = self.control_system.clock_logic
 
