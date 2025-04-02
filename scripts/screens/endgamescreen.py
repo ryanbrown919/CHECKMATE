@@ -34,7 +34,7 @@ class EndGameScreen(Screen):
         reset_btn.bind(on_release= lambda instance:self.reset_and_return())
 
         layout.add_widget(board)
-        layout.add_widget(endgame_text)
+        layout.add_widget(endgame_label)
 
         root.add_widget(header_layout)
 
