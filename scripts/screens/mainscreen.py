@@ -73,7 +73,7 @@ class MainScreen(Screen):
         quickplay_layout.add_widget(custom4)
 
 
-        play_btn = IconButton(source="assets/Play.png", size_hint=(0.3, 1)
+        play_btn = IconButton(source="assets/Play.png", size_hint=(0.3, 1))
         play_btn.bind(on_release=lambda instance: self.start_custom_game())
         customplay_layout.add_widget(play_btn)
 
