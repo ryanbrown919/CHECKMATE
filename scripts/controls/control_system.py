@@ -573,88 +573,9 @@ class ChessControlSystem:
 
         self.go_to_second_piece_detection()
 
-
-
-
-        # self.first_change = None
-
-        # # Create a new event for this invocation of the state
-        # result_event = threading.Event()
-
-        # # Start test_function on a separate thread, passing the event to signal when done
-        # # scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_first_move(result_event))
-        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_first_board_change(result_event))
-
-        # scanner_thread.start()
-
-        # # Wait until the event is signaled by test_function
-
-        # def check_for_result(dt):
-        #     if result_event.is_set():
-        #         print("scan_for_first_move returned:", self.hall.first_change)
-        #         scanner_thread.join()  # Clean up the thread
-        #         self.selected_piece = self.hall.first_change
-        #         self.select_piece(self.selected_piece)
-        #         self.notify_observers()
-        #         # Optionally trigger a subsequent state transition here
-        #     else:
-        #         # Schedule another check after a short delay
-        #         Clock.schedule_once(check_for_result, 0.1)
-
-        # # Start checking without blocking
-        # Clock.schedule_once(check_for_result, 0.1)
-        # # result_event.wait()
-
-        # print("test_function returned:", self.hall.first_change)
-        # scanner_thread.join()  # Optionally join the thread to clean up
-        
-
-
-        # # self.initial_board = self.hall.sense_layer.get_squares_game()
-
-        # # print("Trying to find first peice")
-        # # self.selected_piece = None
-        # # while self.selected_piece is None:
-
-        # #     self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-        # #     time.sleep(0.5)
-
-        # # print("Detected_first_piece")
-        # self.selected_piece = self.hall.first_change
-        # self.select_piece(self.selected_piece)
-        # self.notify_observers()
-
-        #get second change
     def second_piece_detection_poll(self):
 
-        # self.second_change = None
-
-        # # Create a new event for this invocation of the state
-        # result_event = threading.Event()
-
-        # # Start test_function on a separate thread, passing the event to signal when done
-        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_second_board_change(result_event))
-        # scanner_thread.start()
-
-        # # # Wait until the event is signaled by test_function
-        # # result_event.wait()
-
-        # # print("test_function returned:", self.hall.second_change)
-        # # scanner_thread.join()  # Optionally join the thread to clean up
-
-        # def check_for_result(dt):
-        #     if result_event.is_set():
-        #         print("scan_for_second_move returned:", self.hall.second_change)
-        #         scanner_thread.join()  # Clean up the thread
-        #         self.selected_move = self.hall.second_change
-        #         # self.notify_observers()
-        #         # Optionally trigger a subsequent state transition here
-        #     else:
-        #         # Schedule another check after a short delay
-        #         Clock.schedule_once(check_for_result, 0.1)
-
-        # # Start checking without blocking
-        # Clock.schedule_once(check_for_result, 0.1)
+        
         print("looking for second move")
         initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
@@ -688,52 +609,6 @@ class ChessControlSystem:
             print("Illegal move, executing YOU")
 
             self.process_illegal_player_move(move_str)
-            
-            # if self.board.is_capture(move):
-            #         # For a normal capture, the captured piece is on the destination square.
-            #         captured_piece = self.board.piece_at(move.to_square)
-            #         if captured_piece:
-            #             self.captured_pieces.append(captured_piece.symbol())
-            #             # Note: You might need special handling for en passant captures.
-                
-            # self.move_history.append(move.uci())
-        
-            # if self.board.is_checkmate(move):
-            #     self.checkmate = True
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king_mate.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king_mate.png'
-                
-            # elif self.board.is_check(move):
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king_check.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king_check.png'
-            #     # Make some indication
-
-            #     self.check = f"{self.board.turn}"
-            #     self.checkmate = False
-
-            # else:
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king.png'
-                
-            #     self.check = ""
-
-            #     self.checkmate = False
-
-            # self.board.push(move)
-            # self.notify_observers()
-
-            # if self.checkmate:
-            #     self.end_game(self.board.turn)
-
-
-
-            # self.notify_observers()
 
     def on_player_move_confirmed(self):
         print("[State] Player Move Confirmed")
