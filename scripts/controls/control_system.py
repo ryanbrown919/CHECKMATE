@@ -903,6 +903,8 @@ class ChessControlSystem:
         for i, move in enumerate(self.demo_game):
             self.process_predefined_board_move(chess.Move.from_uci(move),  i % 2 == 0)
             self.notify_observers()
+            self.update_ui()
+
             time.sleep(1)
  
 
