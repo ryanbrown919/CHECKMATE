@@ -9,7 +9,7 @@ import time
 
 from gantry import Gantry
 from hall import SenseLayer
-# from nfc import NFC
+from nfc import NFC
 
 NFC_OFFSET = 42
 
@@ -176,10 +176,11 @@ def main():
     # Create hardware objects
     sense_layer = SenseLayer()
     gantry = Gantry()
-    # nfc_reader = NFC()
+    nfc_reader = NFC()
+    print("Initialized NFC")
     
     gantry.home()
-    # nfc_begin()
+
     
     try:
         while True:
