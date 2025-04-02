@@ -212,7 +212,8 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['victory_lap','update_ui'])
+        self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['victory_lap'])
+        self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
@@ -532,10 +533,11 @@ class ChessControlSystem:
         self.rocker.toggle()
 
         self.notify_observers()
-        self.engine_move_complete()
 
         if self.checkmate:
-            self.end_game(self.board.turn)
+            self.end_game()
+        else:
+            self.engine_move_complete()
 
         # self.process_legal_player_move(f"{move}")
 
@@ -590,7 +592,7 @@ class ChessControlSystem:
 
             new_board = self.hall.sense_layer.get_squares_game()
             self.selected_move = self.hall.compare_boards(new_board, initial_board)
-            time.sleep(0.2)
+            time.sleep(0.1)
 
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
@@ -780,7 +782,7 @@ class ChessControlSystem:
         # Reset board logic here.
         self.to_gameplay()
     
-    def end_game(self, turn):
+    def end_game(self):
 
         self.game_state = "FINISHED"
         
