@@ -578,13 +578,15 @@ class ChessControlSystem:
         # # Start checking without blocking
         # Clock.schedule_once(check_for_result, 0.1)
         
-        self.initial_board = self.hall.sense_layer.get_squares_game()
-
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
         while self.selected_move is None:
 
-            self.selected_move = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
+            new_board = self.hall.sense_layer.get_squares_game()
+            self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
             time.sleep(0.5)
+
+        print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
         self.selected_move = self.hall.second_change
 
