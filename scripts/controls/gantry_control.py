@@ -994,7 +994,7 @@ class GantryControl:
                 dead_y = self.nextdead_white[1] - dead_coordinates[1]
                 #dz_x, dz_y = self.nextdead_white
                 
-                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, dead_y - offset*15)]
+                path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0,  self.nextdead_white[1] - offset*15)]
             
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
