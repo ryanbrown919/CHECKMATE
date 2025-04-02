@@ -23,6 +23,9 @@ class GantryControl:
             self.nextdead_white = (0, 435)
             self.nextdead_black = (350, 435)
 
+            self.white_captured = []
+            self.black_captured = []
+
             self.jog_step = 4
             self.overshoot = 4
             self.magnet_state =  "MOVE MODE"
@@ -990,9 +993,6 @@ class GantryControl:
             ## FELIPE DIAZ DO SOME MAGIC HERE
             offset = 25
 
-            self.white_captured = []
-            self.black_captured = []
-
             if is_white:
                 dead_x = self.nextdead_white[0] - dead_coordinates[0]
                 dead_y = self.nextdead_white[1] - dead_coordinates[1]
@@ -1000,6 +1000,8 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0,  self.nextdead_white[1] - offset*15)]
             
+                self.white_captured[symbol] = (self.nextdead_white)
+
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
                 else:
@@ -1012,6 +1014,8 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, self.nextdead_black[1] - offset*15)]
                 
+                self.black_captured[symbol] = (self.nextdead_black)
+
                 if self.nextdead_black[1] == 435:
                     self.nextdead_black = (self.nextdead_black[0], 410)
                 else:
