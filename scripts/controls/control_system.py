@@ -588,8 +588,6 @@ class ChessControlSystem:
 
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
-        self.selected_move = self.hall.second_change
-
         if self.selected_piece == self.selected_move:
             # selected_piece = None
             self.go_to_first_piece_detection()
