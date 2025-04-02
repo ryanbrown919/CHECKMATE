@@ -28,6 +28,9 @@ class MainScreen(Screen):
 
         self.control_system = control_system
 
+        self.padding = 0
+        self.spacing = 0
+
         # self.gantry_control = gantryControl()
         # self.gantry_control.connect_to_grbl()
         # self.preferred_color = 'White'
@@ -36,11 +39,11 @@ class MainScreen(Screen):
         # Create your main menu layout as before
         root_layout = BoxLayout(orientation='vertical', padding=10, spacing=0)
         header_layout = headerLayout()
-        body_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20)
-        play_layout = BoxLayout(orientation='vertical', padding=20, spacing=20, size_hint=(0.9, 1))
-        quickplay_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20, size_hint=(1, 0.7))
-        customplay_layout = BoxLayout(orientation='horizontal', padding=20, spacing=20, size_hint=(1, 0.3))
-        option_layout = BoxLayout(orientation='vertical', padding=20, spacing=20, size_hint=(0.1, 1))
+        body_layout = BoxLayout(orientation='horizontal', padding=0, spacing=20)
+        play_layout = BoxLayout(orientation='vertical', padding=0, spacing=20, size_hint=(0.9, 1))
+        quickplay_layout = BoxLayout(orientation='horizontal', padding=0, spacing=20, size_hint=(1, 0.7))
+        customplay_layout = BoxLayout(orientation='horizontal', padding=0, spacing=20, size_hint=(1, 0.3))
+        option_layout = BoxLayout(orientation='vertical', padding=0, spacing=20, size_hint=(0.1, 1))
 
         root_layout.add_widget(header_layout)
         root_layout.add_widget(HorizontalLine())
