@@ -534,7 +534,7 @@ class ChessControlSystem:
         print("[State] Entering Player Turn")
 
     
-        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 3)
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
         # When entering player's turn, immediately begin hall effect polling.
         
         # State transition will stay in this state until a change is detected, then it will go to second state
@@ -545,14 +545,16 @@ class ChessControlSystem:
 
         print(self.initial_board)
 
-        print("Trying to find first piece")
+        
         self.selected_piece = None
         while self.selected_piece is None:
+             
+             print("Trying to find first piece")
              
              new_board = self.hall.sense_layer.get_squares_game()
              #print(new_board)
              self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
-             time.sleep(0.5)
+             time.sleep(0.3)
 
         print("Detected_first_piece")
         # self.selected_piece

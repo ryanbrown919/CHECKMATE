@@ -51,7 +51,7 @@ class TestApp(App):
         self.sm.current = 'initscreen'
 
         # Simulate UI flow.
-        Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 6)
+        Clock.schedule_once(lambda dt: self.control_system.finish_loading(), 10)
         #Clock.schedule_once(lambda dt: self.control_system.finish_init(), 2)
         #Clock.schedule_once(lambda dt: self.control_system.start_game(), 10)
 
