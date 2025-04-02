@@ -468,7 +468,7 @@ class ChessControlSystem:
 
     def process_board_move(self, move, is_white):
 
-                
+        captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
             # For a normal capture, the captured piece is on the destination square.
@@ -478,8 +478,6 @@ class ChessControlSystem:
                 captured_symbol = captured_piece.symbol()
 
                 # Note: You might need special handling for en passant captures.
-            else:
-                captured_symbol = None
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
 
