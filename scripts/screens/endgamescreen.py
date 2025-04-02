@@ -40,8 +40,7 @@ class EndGameScreen(Screen):
 
         root.add_widget(layout)
 
-        root.add_widget()
-
+        root.add_widget(reset_btn)
 
         self.add_widget(root)
 
