@@ -212,7 +212,7 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine'])
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine', 'victory_lap'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
@@ -671,7 +671,7 @@ class ChessControlSystem:
         if self.engine:
             print("[Engine] Shutting down engine on game over...")
             self.engine.quit()
-            self.engine_thread.join()
+            # self.engine_thread.join()
             self.engine = None
 
     # Example backend methods:
@@ -780,11 +780,11 @@ class ChessControlSystem:
 
         if turn == chess.WHITE:
             self.game_winner = "White"
-            self.victory_lap('white')
+            # self.victory_lap('white')
             #find white king, victory lap
         else:
             self.game_winner = "Black"
-            self.victory_lap('black')
+            # self.victory_lap('black')
             #find black king, victory lap    
 
         self.notify_observers()
@@ -799,7 +799,9 @@ class ChessControlSystem:
     # Non-state related functions
     #################################################################################################################
 
-    def victory_lap(self, color):
+    def victory_lap(self):
+
+        white_win = (self.game_winner.lower() == 'white')
 
         white_king_square = chess.square_name(self.board.king(chess.WHITE))
         black_king_square = chess.square_name(self.board.king(chess.BLACK))
@@ -807,7 +809,7 @@ class ChessControlSystem:
         print(white_king_square)
 
 
-        if color == 'white':
+        if white_win:
             start_square = f"{white_king_square}"
             end_square = f"{black_king_square}"
         else:
