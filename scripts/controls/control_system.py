@@ -156,7 +156,7 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine = None
         
-        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path}  # Default parameters to be set by the user 
+        self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
         self.timer_enabled = False
 
@@ -187,8 +187,8 @@ class ChessControlSystem:
 
         # Nested transitions inside gamescreen.
         # Note: When referring to nested states, use the full path: e.g. gamescreen_player_turn.
-        self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
-        self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
+        # self.machine.add_transition(trigger='begin_polling', source='gamescreen_player_turn', dest='gamescreen_hall_polling', after='on_hall_polling')
+        # self.machine.add_transition(trigger='move_detected', source='gamescreen_hall_polling', dest='gamescreen_player_move_confirmed', after='on_player_move_confirmed')
 
 
         self.machine.add_transition(trigger='go_to_first_piece_detection', source='gamescreen_player_turn', dest='gamescreen_player_turn', after='first_piece_detection_poll')
@@ -203,6 +203,13 @@ class ChessControlSystem:
         # Otherwise, transition to player_turn.
         self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_engine_turn', dest='gamescreen_player_turn',
                                     unless='is_auto_engine_mode', after=['on_player_turn', 'notify_observers'])
+        # deal with player move
+        self.machine.add_transition(trigger='player_move_complete', source='gamescreen_player_turn', dest='gamescreen_player_turn',
+                                    conditions='is_local_mode', after=['on_player_turn', 'notify_observers'])
+        # Otherwise, transition to player_turn.
+        self.machine.add_transition(trigger='engine_move_complete', source='gamescreen_player_turn', dest='gamescreen_engine_turn',
+                                    unless='is_local_mode', after=['on_player_turn', 'notify_observers'])
+        
 
 
         self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
@@ -281,6 +288,8 @@ class ChessControlSystem:
             # Condition method used for transitions.
     def is_auto_engine_mode(self):
         return self.parameters['bot_mode']
+    def is_local_mode(self):
+        return self.parameters['local_mode']
     
     def register_observer(self, callback):
         """Register a callback that will be called when the board changes."""
@@ -498,7 +507,7 @@ class ChessControlSystem:
             self.checkmate = False
 
         self.legal_moves = None
-        print("pushoing move:")
+        print("pushing move:")
 
         self.board.push(move)
         self.notify_observers()
