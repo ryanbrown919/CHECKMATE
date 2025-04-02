@@ -417,19 +417,19 @@ class ChessControlSystem:
         """
         if len(move) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
+        
+        STEP_MM = 25
 
         start_square = move[:2]
         end_square = move[2:]
 
-        # Convert algebraic notation to board coordinates
-        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
-        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
-
         # Calculate Manhattan distance
-        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
 
         init_coords = self.gantry.square_to_coord(start_square)
         end_coords = self.gantry.square_to_coord(end_square)
+
+        init_coords = (init_coords[0]*STEP_MM, init_coords[1]*STEP_MM)
+        end_coord = (end_coord[0]*STEP_MM, end_coord[1]*STEP_MM)
 
         path = []
         
@@ -442,7 +442,7 @@ class ChessControlSystem:
 
 
 
-        offset = 25
+        offset = STEP_MM
 
         # Add the final position to the path
         path = [end_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
@@ -451,7 +451,7 @@ class ChessControlSystem:
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
-        self.rocker.toggle()
+        # self.rocker.toggle()
         self.notify_observers
 
 
@@ -590,6 +590,7 @@ class ChessControlSystem:
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
         if self.selected_piece == self.selected_move:
+            print("Piece replaced, finding new move")
             # selected_piece = None
             self.go_to_first_piece_detection()
 
@@ -598,10 +599,13 @@ class ChessControlSystem:
         legal_moves = [move for move in self.board.legal_moves if move.from_square == {self.selected_piece}]
 
         if move in legal_moves:
+            print("Legal move, executing it")
 
             self.process_legal_player_move(move)
 
         else:
+            print("Illegal move, executing YOU")
+
             self.process_illegal_player_move(move)
             
             # if self.board.is_capture(move):
