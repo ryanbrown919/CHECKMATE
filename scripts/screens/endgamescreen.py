@@ -25,7 +25,7 @@ class EndGameScreen(Screen):
         # layout.add_widget(Image(source='assets/start_logo.png', size_hint=(1, 1), keep_ratio=True, allow_stretch=True))
 
         board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
-        
+
         endgame_text = "FUCK ME"
 
         endgame_label = Label(text=endgame_text, font_size=40)
@@ -47,8 +47,8 @@ class EndGameScreen(Screen):
 
     def reset_and_return(self):
         
-        self.control_system.go_to_boardresetscreen
-        self.control_system.reset_board_from_game()
+        self.control_system.go_to_mainscreen()
+        #self.control_system.reset_board_from_game()
 
 
 

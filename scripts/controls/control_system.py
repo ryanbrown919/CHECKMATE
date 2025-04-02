@@ -212,8 +212,9 @@ class ChessControlSystem:
         
 
 
-        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen')
+        self.machine.add_transition(trigger='end_game_screen', source=['gamescreen_engine_turn','gamescreen_player_turn'], dest='endgamescreen', after=['update_ui', 'stop_engine'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -522,8 +523,8 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        if self.checkmate:
-            self.end_game(self.board.turn)
+        # if self.checkmate:
+        self.end_game(self.board.turn)
 
         self.rocker.toggle()
 
@@ -573,88 +574,9 @@ class ChessControlSystem:
 
         self.go_to_second_piece_detection()
 
-
-
-
-        # self.first_change = None
-
-        # # Create a new event for this invocation of the state
-        # result_event = threading.Event()
-
-        # # Start test_function on a separate thread, passing the event to signal when done
-        # # scanner_thread = threading.Thread(target=lambda: self.hall.scan_for_first_move(result_event))
-        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_first_board_change(result_event))
-
-        # scanner_thread.start()
-
-        # # Wait until the event is signaled by test_function
-
-        # def check_for_result(dt):
-        #     if result_event.is_set():
-        #         print("scan_for_first_move returned:", self.hall.first_change)
-        #         scanner_thread.join()  # Clean up the thread
-        #         self.selected_piece = self.hall.first_change
-        #         self.select_piece(self.selected_piece)
-        #         self.notify_observers()
-        #         # Optionally trigger a subsequent state transition here
-        #     else:
-        #         # Schedule another check after a short delay
-        #         Clock.schedule_once(check_for_result, 0.1)
-
-        # # Start checking without blocking
-        # Clock.schedule_once(check_for_result, 0.1)
-        # # result_event.wait()
-
-        # print("test_function returned:", self.hall.first_change)
-        # scanner_thread.join()  # Optionally join the thread to clean up
-        
-
-
-        # # self.initial_board = self.hall.sense_layer.get_squares_game()
-
-        # # print("Trying to find first peice")
-        # # self.selected_piece = None
-        # # while self.selected_piece is None:
-
-        # #     self.selected_peice = self.hall.compare_boards(self.hall.sense_layer.get_squares_game(), self.initial_board)
-        # #     time.sleep(0.5)
-
-        # # print("Detected_first_piece")
-        # self.selected_piece = self.hall.first_change
-        # self.select_piece(self.selected_piece)
-        # self.notify_observers()
-
-        #get second change
     def second_piece_detection_poll(self):
 
-        # self.second_change = None
-
-        # # Create a new event for this invocation of the state
-        # result_event = threading.Event()
-
-        # # Start test_function on a separate thread, passing the event to signal when done
-        # scanner_thread = threading.Thread(target=lambda: self.hall.wait_for_second_board_change(result_event))
-        # scanner_thread.start()
-
-        # # # Wait until the event is signaled by test_function
-        # # result_event.wait()
-
-        # # print("test_function returned:", self.hall.second_change)
-        # # scanner_thread.join()  # Optionally join the thread to clean up
-
-        # def check_for_result(dt):
-        #     if result_event.is_set():
-        #         print("scan_for_second_move returned:", self.hall.second_change)
-        #         scanner_thread.join()  # Clean up the thread
-        #         self.selected_move = self.hall.second_change
-        #         # self.notify_observers()
-        #         # Optionally trigger a subsequent state transition here
-        #     else:
-        #         # Schedule another check after a short delay
-        #         Clock.schedule_once(check_for_result, 0.1)
-
-        # # Start checking without blocking
-        # Clock.schedule_once(check_for_result, 0.1)
+        
         print("looking for second move")
         initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
@@ -688,52 +610,6 @@ class ChessControlSystem:
             print("Illegal move, executing YOU")
 
             self.process_illegal_player_move(move_str)
-            
-            # if self.board.is_capture(move):
-            #         # For a normal capture, the captured piece is on the destination square.
-            #         captured_piece = self.board.piece_at(move.to_square)
-            #         if captured_piece:
-            #             self.captured_pieces.append(captured_piece.symbol())
-            #             # Note: You might need special handling for en passant captures.
-                
-            # self.move_history.append(move.uci())
-        
-            # if self.board.is_checkmate(move):
-            #     self.checkmate = True
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king_mate.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king_mate.png'
-                
-            # elif self.board.is_check(move):
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king_check.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king_check.png'
-            #     # Make some indication
-
-            #     self.check = f"{self.board.turn}"
-            #     self.checkmate = False
-
-            # else:
-            #     if self.board.turn == chess.WHITE:
-            #         self.piece_images['k'] = 'assets/black_king.png'
-            #     else:
-            #         self.piece_images['K'] = 'assets/white_king.png'
-                
-            #     self.check = ""
-
-            #     self.checkmate = False
-
-            # self.board.push(move)
-            # self.notify_observers()
-
-            # if self.checkmate:
-            #     self.end_game(self.board.turn)
-
-
-
-            # self.notify_observers()
 
     def on_player_move_confirmed(self):
         print("[State] Player Move Confirmed")
@@ -746,7 +622,7 @@ class ChessControlSystem:
         print("[State] Engine Turn")
         self.update_ui()
         # Process the engine move asynchronously.
-        threading.Thread(target=self.compute_engine_move, daemon=True).start()
+        self.engine_thread = threading.Thread(target=self.compute_engine_move, daemon=True).start()
         #self.compute_engine_move()
 
     def compute_engine_move(self):
@@ -788,14 +664,14 @@ class ChessControlSystem:
         # self.update_ui()
         # self.engine_move_complete()
 
-    def on_game_over(self):
-        print("[State] Game Over")
-        self.update_ui()
+    def end_game_processes(self):
         self.running = False
+
         # Ensure that if an engine is still running, we shut it down.
         if self.engine:
             print("[Engine] Shutting down engine on game over...")
             self.engine.quit()
+            self.engine_thread.join()
             self.engine = None
 
     # Example backend methods:
@@ -899,6 +775,8 @@ class ChessControlSystem:
     def end_game(self, turn):
 
         self.game_state = "FINISHED"
+        self.end_game_processes()
+        self.end_game_screen()
 
         if turn == chess.WHITE:
             self.game_winner = "White"
@@ -907,12 +785,9 @@ class ChessControlSystem:
         else:
             self.game_winner = "Black"
             self.victory_lap('black')
-            #find black king, victory lap
-
-        self.end_game_screen()
+            #find black king, victory lap    
 
         self.notify_observers()
-        
 
     def toggle_clock(self):
         self.clock_logic.toggle_active_player()
@@ -926,8 +801,10 @@ class ChessControlSystem:
 
     def victory_lap(self, color):
 
-        white_king_square = self.board.king(chess.WHITE)
-        black_king_square = self.board.king(chess.BLACK)
+        white_king_square = chess.square_name(self.board.king(chess.WHITE))
+        black_king_square = chess.square_name(self.board.king(chess.BLACK))
+
+        print(white_king_square)
 
 
         if color == 'white':
@@ -937,36 +814,41 @@ class ChessControlSystem:
             start_square = f"{black_king_square}"
             end_square = f"{white_king_square}"
 
-        # Convert algebraic notation to board coordinates
-        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
-        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
-
-        # Calculate Manhattan distance
-        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
-
         init_coords = self.gantry.square_to_coord(start_square)
+
+        #Only used in king lap mode
         end_coords = self.gantry.square_to_coord(end_square)
+
+
+        init_coords = (init_coords[0]*25, init_coords[1]*25)
+        end_coords = (end_coords[0]*25, end_coords[1]*25)
 
         # find closest border corner
         if init_coords[0] > 180:
             close_x = 325
             dx = 1 if init_coords[0] != 350 else -1
         else:
-            close_x = 25
+            close_x = 75
             dx = -1 if init_coords[0] != 0 else 1
 
         if init_coords[1] > 180:
             close_y = 325
             dy = 1 if init_coords[1] != 350 else -1
         else:
-            close_y = 25
+            close_y = 75
             dy = -1 if init_coords[1] != 350 else 1
 
         
+        
 
 
+        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0)]
+        if close_x == 325:
+            path.append([(6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50)])
+        else:
+            path.append([(-6*50, 0), (0, 6*50), (6*50, 0), (0, 6*50)])
 
-        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0), (6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50), ((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
+        path.append = [((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
 
 
 
