@@ -850,14 +850,14 @@ class ChessControlSystem:
             close_x = 325
             dx = 1 if init_coords[0] != 350 else -1
         else:
-            close_x = 75
+            close_x = 25
             dx = -1 if init_coords[0] != 0 else 1
 
         if init_coords[1] > 180:
             close_y = 325
             dy = 1 if init_coords[1] != 350 else -1
         else:
-            close_y = 75
+            close_y = 25
             dy = -1 if init_coords[1] != 0 else 1
 
         # print("passed")
