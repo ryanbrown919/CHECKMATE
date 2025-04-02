@@ -81,6 +81,8 @@ class TestApp(App):
             self.sm.current = 'gamescreen'
         elif state == 'gantryscreen':
             self.sm.current = 'gantryscreen'
+        elif state == 'endgamescreen':
+            self.sm.current = 'endgamescreen'
 
         else:
             print("[App] Unhandled state:", state)
