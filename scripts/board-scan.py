@@ -179,7 +179,7 @@ def main():
     print("Initialized NFC")
     
     gantry.home()
-    gantry.move(150, 150, blocking=True)  # Move to starting position
+    gantry.move(100, 143, blocking=True)  # Move to starting position
 
     return
     
