@@ -838,11 +838,11 @@ class ChessControlSystem:
         init_coords = (init_coords[0]*25, init_coords[1]*25)
         end_coords = (end_coords[0]*25, end_coords[1]*25)
 
-        print("testing")
+        # print("testing")
 
-        print(init_coords)
-        print(init_coords[0])
-        print(init_coords[0] > 180)
+        # print(init_coords)
+        # print(init_coords[0])
+        # print(init_coords[0] > 180)
 
         # find closest border corner
         if init_coords[0] > 180:
@@ -859,13 +859,13 @@ class ChessControlSystem:
             close_y = 75
             dy = -1 if init_coords[1] != 350 else 1
 
-        print("passed")
+        # print("passed")
 
         
         
 
 
-        init_path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0)]
+        init_path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dx*25), 0)]
         if close_x == 325:
             if close_y == 325:
                 loop_path = ([(-6*50, 0), (0, -6*50), (6*50, 0), (0, 6*50)])
