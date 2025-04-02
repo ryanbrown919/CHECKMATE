@@ -45,7 +45,7 @@ class GameScreen(Screen):
         root_layout = BoxLayout(orientation='vertical', padding=10, spacing=0)
 
         # Vertical spacing widgets within root
-        header_layout = headerLayout(menu=True)
+        header_layout = headerLayout(control_system=self.control_system, menu=True)
         playarea_layout = BoxLayout(orientation='horizontal', spacing=20, size_hint=(1, 0.9))
 
         # Horizontal spacing widgets within playarea

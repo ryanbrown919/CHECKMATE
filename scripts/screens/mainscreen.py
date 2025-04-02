@@ -38,7 +38,7 @@ class MainScreen(Screen):
 
         # Create your main menu layout as before
         root_layout = BoxLayout(orientation='vertical', padding=10, spacing=0)
-        header_layout = headerLayout()
+        header_layout = headerLayout(control_system = self.control_system)
         body_layout = BoxLayout(orientation='horizontal', padding=0, spacing=20)
         play_layout = BoxLayout(orientation='vertical', padding=0, spacing=20, size_hint=(0.9, 1))
         quickplay_layout = BoxLayout(orientation='horizontal', padding=0, spacing=20, size_hint=(1, 0.7))
