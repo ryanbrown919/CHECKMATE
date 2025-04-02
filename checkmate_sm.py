@@ -17,6 +17,7 @@ from scripts.screens.initscreen import InitScreen
 from scripts.screens.loadingscreen import LoadingScreen
 from scripts.screens.mainscreen import MainScreen
 from scripts.screens.gantryscreen import GantryControlScreen
+from scripts.screens.endgamescreen import EndGameScreen
 
 # A simple ScreenManager that holds our GameScreen.
 class MainScreenManager(ScreenManager):
@@ -40,12 +41,17 @@ class TestApp(App):
         loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
         mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
         gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
+        endgamescreen = EndGameScreen(control_system=self.control_system, name="endgamescreen")
+
 
         self.sm.add_widget(gamescreen)
         self.sm.add_widget(initscreen)
         self.sm.add_widget(loadingscreen)
         self.sm.add_widget(mainscreen)
         self.sm.add_widget(gantryscreen)
+        self.sm.add_widget(endgamescreen)
+
+
 
         # Start in main menu.
         self.sm.current = 'initscreen'
