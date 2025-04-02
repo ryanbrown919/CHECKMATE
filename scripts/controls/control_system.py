@@ -156,6 +156,8 @@ class ChessControlSystem:
             print("Need to download windows stockfish")
             self.engine = None
         
+        self.engine = None
+        
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
         self.timer_enabled = False
@@ -814,6 +816,8 @@ class ChessControlSystem:
         elif not self.parameters['online']:
             #Configure offline game 
             print("Configuring offline game")
+
+            print(f"Engine: {self.engine_path}")
 
             if self.engine_path:
                 try:
