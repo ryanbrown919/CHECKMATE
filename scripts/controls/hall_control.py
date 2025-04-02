@@ -210,11 +210,16 @@ class Hall:
         # column 0 is file a
 
         files = "abcdefgh"
-        # row 0 -> rank 1, row 1 -> rank 2, etc.
-        rank = row + 1
-        # col 0 -> 'a', col 1 -> 'b', etc.
+        rank = 8 - row
         file = files[col]
         return f"{file}{rank}"
+
+        # files = "abcdefgh"
+        # # row 0 -> rank 1, row 1 -> rank 2, etc.
+        # rank = row + 1
+        # # col 0 -> 'a', col 1 -> 'b', etc.
+        # file = files[col]
+        # return f"{file}{rank}"
 
 
         # return f"{chr(96 + row)}{col+2}"
