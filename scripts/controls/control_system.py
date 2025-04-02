@@ -801,8 +801,8 @@ class ChessControlSystem:
 
     def victory_lap(self, color):
 
-        white_king_square = self.board.king(chess.WHITE)
-        black_king_square = self.board.king(chess.BLACK)
+        white_king_square = chess.square_name(self.board.king(chess.WHITE))
+        black_king_square = chess.square_name(self.board.king(chess.BLACK))
 
         print(white_king_square)
 
@@ -814,36 +814,41 @@ class ChessControlSystem:
             start_square = f"{black_king_square}"
             end_square = f"{white_king_square}"
 
-        # Convert algebraic notation to board coordinates
-        start_file, start_rank = ord(start_square[0]) - ord('a'), int(start_square[1]) - 1
-        end_file, end_rank = ord(end_square[0]) - ord('a'), int(end_square[1]) - 1
-
-        # Calculate Manhattan distance
-        distance = abs(start_file - end_file) + abs(start_rank - end_rank)
-
         init_coords = self.gantry.square_to_coord(start_square)
+
+        #Only used in king lap mode
         end_coords = self.gantry.square_to_coord(end_square)
+
+
+        init_coords = (init_coords[0]*25, init_coords[1]*25)
+        end_coords = (end_coords[0]*25, end_coords[1]*25)
 
         # find closest border corner
         if init_coords[0] > 180:
             close_x = 325
             dx = 1 if init_coords[0] != 350 else -1
         else:
-            close_x = 25
+            close_x = 75
             dx = -1 if init_coords[0] != 0 else 1
 
         if init_coords[1] > 180:
             close_y = 325
             dy = 1 if init_coords[1] != 350 else -1
         else:
-            close_y = 25
+            close_y = 75
             dy = -1 if init_coords[1] != 350 else 1
 
         
+        
 
 
+        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0)]
+        if close_x == 325:
+            path.append([(6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50)])
+        else:
+            path.append([(-6*50, 0), (0, 6*50), (6*50, 0), (0, 6*50)])
 
-        path = [init_coords, (dx*25, dy*25), (0, close_y-(init_coords[1]-dy*25)), (close_x-(init_coords[0]-dy*25), 0), (6*50, 0), (0, 6*50), (-6*50, 0), (0, 6*50), ((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
+        path.append = [((init_coords[0]-dx*25)-close_x, 0), (0, (init_coords[1]-dy*25)-close_y), (-dx*25, -dy*25)]
 
 
 
