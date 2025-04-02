@@ -445,7 +445,7 @@ class ChessControlSystem:
         offset = STEP_MM
 
         # Add the final position to the path
-        path = [end_coords, (dx_sign * offset, dy_sign * offset), (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
+        path = [end_coords, (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
 
 
         cmds = self.gantry.movement_to_gcode(path)
@@ -597,6 +597,8 @@ class ChessControlSystem:
         move = f"{self.selected_piece}{self.selected_move}"
 
         legal_moves = [move for move in self.board.legal_moves if move.from_square == {self.selected_piece}]
+
+        print(legal_moves)
 
         if move in legal_moves:
             print("Legal move, executing it")
