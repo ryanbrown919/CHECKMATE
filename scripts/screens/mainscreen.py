@@ -113,7 +113,7 @@ class MainScreen(Screen):
     def start_custom_game(self):
         #Start game from bottom bar
 
-        self.control_parameters = {'online': False, 'colour': self.preferred_color, 'elo': self.chess_elo, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False}  # Default parameters to be set by the user 
+        self.control_parameters = {'online': False, 'colour': self.preferred_color, 'elo': self.chess_elo, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False}  # Default parameters to be set by the user 
 
         self.control_system.start_game()
 

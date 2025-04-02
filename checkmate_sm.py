@@ -1,3 +1,10 @@
+from kivy.config import Config
+
+# Set full screen mode and hide cursor globally
+Config.set('graphics', 'fullscreen', '1')
+Config.set('graphics', 'show_cursor', '0')
+
+
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition, WipeTransition, FadeTransition
 from kivy.clock import Clock
