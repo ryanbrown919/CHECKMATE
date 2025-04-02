@@ -429,7 +429,7 @@ class ChessControlSystem:
         end_coords = self.gantry.square_to_coord(end_square)
 
         init_coords = (init_coords[0]*STEP_MM, init_coords[1]*STEP_MM)
-        end_coord = (end_coord[0]*STEP_MM, end_coord[1]*STEP_MM)
+        end_coords = (end_coords[0]*STEP_MM, end_coords[1]*STEP_MM)
 
         path = []
         
