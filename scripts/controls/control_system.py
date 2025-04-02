@@ -261,6 +261,7 @@ class ChessControlSystem:
 
         self.legal_moves = None
         self.game_winner = None
+        self.selected_piece = None
 
 
 
