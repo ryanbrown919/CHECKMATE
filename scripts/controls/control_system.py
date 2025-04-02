@@ -487,7 +487,7 @@ class ChessControlSystem:
             else:
                 self.piece_images['K'] = 'assets/white_king_mate.png'
             
-        elif self.board.gives_check():
+        elif self.board.gives_check(move):
             if self.board.turn == chess.WHITE:
                 self.piece_images['k'] = 'assets/black_king_check.png'
             else:
