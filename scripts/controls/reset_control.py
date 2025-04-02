@@ -122,9 +122,19 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
+   
+        
+
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
 
+        # DEAL WITH EXISITING FIRST 
+
+
+        #DEAL WITH DEAD ZONE SECOND 
+
+        # extract symbol and coodrinate of LAST white piece from dictionaory 
+        self.gantry.white_captured
         # for i, val in enumerate(self.control_system.captured_pieces):
 
         #     if val.is_lower():
