@@ -52,8 +52,8 @@ class GantryControl:
             self.send("$H")
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
-            self.send("$120 = 400")
-            self.send("$121 = 400")
+            self.set_velocity(15000)
+            self.set_acceleration(500)
 
         def send(self, command):
             with self.serial_lock:
@@ -1277,12 +1277,8 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append("120=1000") 
-                    gcode_commands.append("121=1000") 
                     gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
-                        gcode_commands.append("120=400") 
-                        gcode_commands.append("121=400") 
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
