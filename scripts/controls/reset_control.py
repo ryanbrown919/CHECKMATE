@@ -26,8 +26,9 @@ class BoardReset:
 
 
 
-    def __init__(self, gantry, hall):    
+    def __init__(self, board, gantry, hall):    
 
+        self.board = board
         self.gantry = gantry
         self.hall = hall
 
