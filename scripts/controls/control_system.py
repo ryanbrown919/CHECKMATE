@@ -1015,7 +1015,7 @@ class ChessControlSystem:
         self.to_gameplay()
 
     def reset_board(self):
-        self.reset_control.full_reset()
+        self.reset_control.full_reset(self.captured_pieces)
         self.done_reset()
     def done_reset(self):
         self.go_to_mainscreen()
