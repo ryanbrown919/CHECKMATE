@@ -537,7 +537,7 @@ class BoardReset:
         """
         occ_dict = {}
         for i, row in enumerate(occ_list):
-            rank = 8 - i  # row 0 -> rank 8, row 7 -> rank 1
+            rank = i + 1 
             for j, val in enumerate(row):
                 file_letter = chr(ord('a') + j)
                 square = file_letter + str(rank)
