@@ -498,7 +498,7 @@ class ChessBoard(Widget):
     
 
     def update_board(self, *args):
-        print('testing updating visuals on piece pickup')
+        print(f'testing updating visuals on piece pickup: {self.control_system.selected_piece}')
         if self.control_system.selected_piece is not None:
             legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
             self.highlight_legal_moves(legal_moves)
