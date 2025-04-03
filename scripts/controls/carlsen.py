@@ -2,9 +2,9 @@ import time
 from gantry_control import GantryControl
 
 def toggle_magnet(gantry_control):
-    gantry.send("M8")
+    gantry_control.send("M8")
     time.sleep(0.2)
-    gantry.send("M9")
+    gantry_control.send("M9")
 
 def magnet_carlsen(gantry_control):
     gantry_control.set_acceleration(1000)
