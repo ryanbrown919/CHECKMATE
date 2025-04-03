@@ -563,6 +563,9 @@ class BoardReset:
         # This will hold our move plans.
         move_plans = {}
 
+        occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+
+
         # Loop until current_mapping is empty (all pieces moved) or no progress can be made.
         progress = True
         while current_mapping and progress:
@@ -593,6 +596,7 @@ class BoardReset:
                     dest_coords = self.square_to_coords_ry(candidate_found)
                     # Generate a natural path (assumed to move through the corners of the square).
                     path = self.generate_natural_path(start_coords, dest_coords)
+                    occupancy[candidate] = 1
                     # Record the move plan.
                     move_plans[square] = {
                         "piece": piece,
