@@ -194,6 +194,7 @@ class BoardReset:
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
+        print(f"Empty squares: {empty_squares}")
 
         # Flip the y-axis to match chess notation (h1 as (0,0), a8 as (7,7))
         empty_squares = empty_squares[::-1]
