@@ -454,10 +454,8 @@ class BoardReset:
             symbol, coords = piece  
             if symbol.isupper():  # White piece
                 self.gantry.white_captured.append((symbol, coords)) 
-                print(f"White piece: {symbol} at {coords}") 
             elif symbol.islower(): # Black piece
                 self.gantry.black_captured.append((symbol, coords))
-                print(f"Black piece: {symbol} at {coords}")
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
