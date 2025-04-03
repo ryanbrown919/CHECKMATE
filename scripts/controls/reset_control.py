@@ -219,11 +219,24 @@ class BoardReset:
             symbol, coords = piece
             x, y = coords
             if x < 75 and y < 375:
-                new_coords=self.symbol_to_valid_coordinates(symbol)
-                #check which of the new cords 
+                reset_coords=self.symbol_to_valid_coordinates(symbol)
+                #check which of those new_cords are already occupied from white_restart_state and remove occupied new_coords
+                # Filter out occupied coordinates from new_coords
+                unoccupied_reset_coords = []
+                for coord in new_coords:
+                    is_occupied = False
+                    for state in white_restart_state:
+                        if state[0] != 0 and state[1] == coord:  # Check if the slot is occupied and matches the coord
+                            is_occupied = True
+                            break
+                    if not is_occupied:
+                        unoccupied_rest_coords.append(coord)
 
-                '''Check jacks function to know where this piece CAN move to'
-                'check white_restart_state to deterine which of those sqaures are free'
+                #find which of the new_cords is closest                
+                move = self.nearest_neighbor(coords, unoccupied_rest_coords)
+                if move[0][0] < 25 :
+                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
+                
                 'Move white to closest free starting square' 
                 'update white_captured list with new coords of piece just moved'
                 'update white_restart_state list with new coords of piece just moved'''
