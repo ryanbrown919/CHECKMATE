@@ -282,10 +282,13 @@ class BoardReset:
                 
     def full_reset(self):
         ''' Felipe's code '''
+        print("[Test] Trying felipe 1")
         self.reset_board_from_game()
         ''' Jack's code '''
+        print("[Test] Trying jack 1")
         self.reset_playing_area_white()
         ''' Felipe's code '''
+        print("[Test] Trying felipe 2")
         self.reset_board_from_game()
 
             
