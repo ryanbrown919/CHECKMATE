@@ -20,13 +20,13 @@ class BoardResetScreen(Screen):
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)
 
-        self.contorl_system = control_system
+        self.control_system = control_system
         layout = BoxLayout(orientation='vertical', padding=10)
         #layout.add_widget(Image(source='assets/start_logo.png', size_hint=(1, 1), keep_ratio=True, allow_stretch=True))
 
    
 
-        custom1 = MatrixWidget(control_system = self.control_system)
+        #custom1 = MatrixWidget(control_system = self.control_system)
 
         reset_btn = RoundedButton(text="Reset Board from FEN")
         reset_btn.bind(on_release=lambda instance: self.control_system.reset_control.full_reset())
@@ -34,7 +34,7 @@ class BoardResetScreen(Screen):
 
 
 
-        layout.add_widget(custom1)
+        #layout.add_widget(custom1)
         layout.add_widget(reset_btn)
         self.add_widget(layout)
 

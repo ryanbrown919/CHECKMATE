@@ -56,6 +56,7 @@ class TestApp(App):
         self.sm.add_widget(self.mainscreen)
         self.sm.add_widget(self.gantryscreen)
         self.sm.add_widget(self.endgamescreen)
+        self.sm.add_widget(self.resetscreen)
 
 
 
