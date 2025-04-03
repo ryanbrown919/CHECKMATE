@@ -610,7 +610,7 @@ class BoardReset:
         #     delta = (curr[0] - prev[0], curr[1] - prev[1])
         #     relative_moves.append(delta)
 
-        return [P0] + exit_corner + move_to_square + entry_corner
+        return [P0, exit_corner] +  move_to_square + [entry_corner]
 
 
     def clamp(self, value, minimum, maximum):
