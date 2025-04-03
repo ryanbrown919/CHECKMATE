@@ -548,7 +548,7 @@ class BoardReset:
         return move_paths
 
 
-    def generate_natural_path(self, start, dest, offset):
+    def generate_natural_path(self, start, dest):
         """
         Generates a natural L-shaped path from the center of the start square to the center of the destination square.
         The piece exits its starting square through the corner in the direction of travel and enters the destination square
