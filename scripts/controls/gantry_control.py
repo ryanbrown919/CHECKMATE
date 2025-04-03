@@ -1198,13 +1198,14 @@ class GantryControl:
                     while response != "ok":
                         # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
-                time.sleep(0.1)
+                self.ser.flushInput()
 
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
                     if '<Idle' in status:
                         self.finished = True
+                        self.ser.flushInput()
                 print("[S] sent commands")
 
             
