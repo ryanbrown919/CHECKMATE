@@ -174,7 +174,7 @@ class ChessControlSystem:
         self.timer_enabled = False
 
         # Create a hierarchical state machine.
-        self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
+        self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen', ignore_invalid_triggers=True)
 
         # Top-level transitions. dj
         
