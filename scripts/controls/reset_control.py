@@ -354,7 +354,7 @@ class BoardReset:
         # Target configuration FEN: swap the white queen and white rook.
         target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
-        path = self.plan_board_reset((current_fen, target_fen, piece_alternatives))
+        moves = self.plan_board_reset((current_fen, target_fen, piece_alternatives))
 
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
