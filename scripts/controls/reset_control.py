@@ -435,7 +435,7 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        returns = self.captured_piece_return()
+        returns = self.captured_piece_return(self.captured_pieces)
 
         for start_square, info in returns.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
