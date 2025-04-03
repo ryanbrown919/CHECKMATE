@@ -761,9 +761,9 @@ class ChessControlSystem:
         # Reset detection variables
         self.selected_piece = None
         self._detection_count = 0  # Track consistent readings
-        self._required_readings = 3  # Number of consistent readings needed
+        self._required_readings = 2  # Reduced from 3 to 2 for faster detection
         
-        # Start polling for the first piece
+        # Start polling for the first piece with faster interval
         self.safe_poll_first(self.on_first_piece_found)
 
     def safe_poll_first(self, callback):
@@ -789,20 +789,20 @@ class ChessControlSystem:
                 self.selected_piece = None
                 self._detection_count = 0
                 
-            # Adjust polling interval based on detection state
-            interval = 0.05 if self._detection_count > 0 else 0.1
+            # Faster polling intervals
+            interval = 0.02 if self._detection_count > 0 else 0.05  # Much faster intervals
             Clock.schedule_once(lambda dt: self.safe_poll_first(callback), interval)
         except Exception as e:
             print(f"Error in piece detection: {e}")
-            # Poll again after a short delay on error
-            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.2)
+            # Poll again after a shorter delay on error
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)  # Reduced from 0.2 to 0.1
 
     def on_first_piece_found(self, selected_piece):
         print(f"First piece confirmed: {selected_piece}")
         self.ingame_message = f"Piece lifted from {selected_piece}"
         self.notify_observers()
-        # Schedule second piece detection with a small delay
-        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.1)
+        # Immediate transition to second piece detection
+        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.02)  # Reduced from 0.1 to 0.02
 
     def second_piece_detection_poll(self):
         print("Looking for destination square...")
@@ -840,13 +840,13 @@ class ChessControlSystem:
                 # No piece detected
                 self._detection_count = 0
                 
-            # Adjust polling interval based on detection state
-            interval = 0.05 if self._detection_count > 0 else 0.1
+            # Faster polling interval
+            interval = 0.02 if self._detection_count > 0 else 0.05  # Much faster intervals
             Clock.schedule_once(lambda dt: self.safe_poll_second(callback), interval)
         except Exception as e:
             print(f"Error in destination detection: {e}")
-            # Poll again after a short delay on error
-            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.2)
+            # Poll again after a shorter delay on error
+            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.1)  # Reduced from 0.2 to 0.1
 
     def on_second_piece_found(self, selected_move):
         print(f"Second piece confirmed: {selected_move}")
@@ -856,7 +856,7 @@ class ChessControlSystem:
         if self.selected_piece == selected_move:
             print("Piece returned to original square")
             self.ingame_message = "Piece returned to original position"
-            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.5)
+            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.25)  # Reduced from 0.5 to 0.25
             return
 
         move_str = f"{self.selected_piece}{selected_move}"
@@ -868,7 +868,7 @@ class ChessControlSystem:
         except Exception as e:
             print(f"Error processing move: {e}")
             self.ingame_message = f"Error: {str(e)[:30]}..."
-            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 1.0)
+            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.5)  # Reduced from 1.0 to 0.5
 
     def go_to_second_piece_detection(self):
         # Call the second piece detection function.
@@ -1327,7 +1327,7 @@ class ChessControlSystem:
 #         settings_btn = Button(text="Settings")
 #         start_game_btn.bind(on_press=self.start_game)
 #         manual_btn.bind(on_press=self.go_manual)
-#         settings_btn.bind(on_press=self.go_settings)
+#         settings_btn.bind(on_press(self.go_settings)
 
 #         layout.add_widget(Label(text="Main Menu"))
 #         layout.add_widget(self.param_input)
