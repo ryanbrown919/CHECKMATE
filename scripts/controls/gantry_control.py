@@ -86,6 +86,28 @@ class GantryControl:
                 
                 return x, y   
             return None, None  
+
+        def is_idle(self):
+            self.send("?")
+            response = self.serial.readline().decode().strip()
+
+            if "Idle" in response:
+                return True
+            else:
+                return False
+
+        def move(self, x, y):
+            ''' Absolute positioning'''
+            self.send(f"G90 X{x} Y{y}")
+            time.sleep(0.05) 
+
+            self.serial.flushInput()
+            while True:
+                if self.is_idle():
+                    self.serial.flushInput()
+                    break
+
+        self.position = (x, y)
     
         def send_jog_command(self, dx, dy):
             """
@@ -1196,7 +1218,6 @@ class GantryControl:
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
-                        # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
                 self.ser.flushInput()
 
@@ -1208,7 +1229,7 @@ class GantryControl:
                         self.ser.flushInput()
                 print("[S] sent commands")
 
-            
+        
 
         def path_to_gcode(self, move_list):
             """
