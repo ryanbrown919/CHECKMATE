@@ -114,7 +114,7 @@ class ChessControlSystem:
         "rocker": True,
         "gantry": True,
         "hall": False,
-        "rfid": False
+        "rfid": True
     }
 
 
@@ -256,6 +256,7 @@ class ChessControlSystem:
         #     print(f"Errorwith halls : {e}")
         # print("Hall Initialized")
 
+        self.nfc = NFC()
         self.rocker = Rocker()
         print("Rocker initialized")
         self.gantry = GantryControl()
@@ -1363,6 +1364,9 @@ class ChessControlSystem:
 
         return legal_moves
     
+    def nfc_test():
+        self.gantry.move(0, 43)
+        return self.nfc.read()
 
     # def on_boardresetscreen(self):
     #     while True:
