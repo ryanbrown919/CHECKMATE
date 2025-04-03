@@ -89,6 +89,7 @@ class MainScreen(Screen):
                                             size_hint=(1, 0.3),
                                             allow_stretch=True,
                                             keep_ratio=True)
+        user_btn.bind(on_release=lambda instance: self.control_system.gantry.magnet_carlsen())
         
         settings_btn = (IconButton(source="assets/settings.png", 
                                             size_hint=(1, 0.3),

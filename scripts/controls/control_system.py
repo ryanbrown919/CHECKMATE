@@ -727,7 +727,7 @@ class ChessControlSystem:
         print("[State] Entering Player Turn")
         self.ingame_message = "Waiting for Player..."
         # Start the first-piece detection after a delay (if needed).
-        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 2)
 
     def on_player_turn(self):
         print("[State] Entering Player Turn")
