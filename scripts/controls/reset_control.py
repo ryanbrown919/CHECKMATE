@@ -435,14 +435,22 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        returns = self.captured_piece_return(self.captured_pieces)
+        white_moves, black_moves = self.captured_piece_return(self.captured_pieces)
 
-        for start_square, info in returns.items():
+        for start_square, info in white_moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
             print(info["path"])
 
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
+
+        for start_square, info in black_moves.items():
+            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+            print(info["path"])
+
+            cmds = self.gantry.path_to_gcode(info["path"])
+            self.gantry.send_commands(cmds)
+
 
     # def reset_board_to_home_recursive(self, current_mapping, moves_so_far=None):
     #     """
