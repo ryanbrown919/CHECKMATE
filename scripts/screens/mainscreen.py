@@ -168,7 +168,7 @@ class MainScreen(Screen):
         if switch:
             self.use_switch = True
         else:
-            False
+            self.use_switch = True
 
 
     def start_custom1(self):
@@ -271,7 +271,10 @@ class ModePopup(Popup):
         self.size_hint = (0.8, 0.5)
         self.auto_dismiss = False
 
-        self.use_switch = False  # Default value for the toggle switch
+        layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
+
+
+        self.selected_switch = False  # Default value for the toggle switch
         # Add a toggle button for the new switch
         toggle_layout = BoxLayout(orientation="horizontal", spacing=10)
         toggle_layout.add_widget(Label(text="Use Switch:", size_hint=(0.4, 1)))
@@ -283,7 +286,6 @@ class ModePopup(Popup):
         self.selected_color = current_color
         self.selected_elo = current_elo
 
-        layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
 
         # Color selection section
         color_layout = BoxLayout(orientation="horizontal", spacing=10)
