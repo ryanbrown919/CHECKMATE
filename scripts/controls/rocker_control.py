@@ -17,13 +17,13 @@ class Rocker():
         self.MAX_WAIT_TIME = 2.0
 
     def begin(self):
-        if not self.get_switch_state():
+        if self.get_switch_state():
             self.to_white()
         else:
             self.home()
 
     def get_switch_state(self):
-        return lgpio.gpio_read(self.handle, self.switch_pin)
+        return not lgpio.gpio_read(self.handle, self.switch_pin)
 
     def home(self):
         self._move_servo(self.CENTER_DUTY)
