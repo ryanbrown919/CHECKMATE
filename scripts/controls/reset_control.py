@@ -280,7 +280,81 @@ class BoardReset:
                 
     def full_reset(self):
 
-        path = self.plan_board_reset()
+        piece_alternatives = {
+        # White pieces alternatives (for demonstration)
+        "a1": ["h1"],
+        "h1": ["a1"],
+        "b1": ["g1"],
+        "g1": ["b1"],
+        "c1": ["f1"],
+        "f1": ["c1"],
+        # Pawns: allow adjacent files on the same rank.
+        "a2": ["b2"],
+        "b2": ["a2", "c2"],
+        "c2": ["b2", "d2"],
+        "d2": ["c2", "e2"],
+        "e2": ["d2", "f2"],
+        "f2": ["e2", "g2"],
+        "g2": ["f2", "h2"],
+        "h2": ["g2"],
+        # Black pieces alternatives (for demonstration)
+        "a8": ["h8"],
+        "h8": ["a8"],
+        "b8": ["g8"],
+        "g8": ["b8"],
+        "c8": ["f8"],
+        "f8": ["c8"],
+        "a7": ["b7"],
+        "b7": ["a7", "c7"],
+        "c7": ["b7", "d7"],
+        "d7": ["c7", "e7"],
+        "e7": ["d7", "f7"],
+        "f7": ["e7", "g7"],
+        "g7": ["f7", "h7"],
+        "h7": ["g7"]
+    }
+
+    def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
+
+        piece_alternatives = {
+        # White pieces alternatives (for demonstration)
+        "a1": ["h1"],
+        "h1": ["a1"],
+        "b1": ["g1"],
+        "g1": ["b1"],
+        "c1": ["f1"],
+        "f1": ["c1"],
+        # Pawns: allow adjacent files on the same rank.
+        "a2": ["b2"],
+        "b2": ["a2", "c2"],
+        "c2": ["b2", "d2"],
+        "d2": ["c2", "e2"],
+        "e2": ["d2", "f2"],
+        "f2": ["e2", "g2"],
+        "g2": ["f2", "h2"],
+        "h2": ["g2"],
+        # Black pieces alternatives (for demonstration)
+        "a8": ["h8"],
+        "h8": ["a8"],
+        "b8": ["g8"],
+        "g8": ["b8"],
+        "c8": ["f8"],
+        "f8": ["c8"],
+        "a7": ["b7"],
+        "b7": ["a7", "c7"],
+        "c7": ["b7", "d7"],
+        "d7": ["c7", "e7"],
+        "e7": ["d7", "f7"],
+        "f7": ["e7", "g7"],
+        "g7": ["f7", "h7"],
+        "h7": ["g7"]
+        }
+
+        current_fen = "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3"
+        # Target configuration FEN: swap the white queen and white rook.
+        target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
+        path = self.plan_board_reset((current_fen, target_fen, piece_alternatives))
         cmds = self.gantry.path_to_gcode(path)
         self.gantry.send_commands(cmds)
         # ''' Felipe's code '''
@@ -431,75 +505,75 @@ class BoardReset:
 
     # Define alternative placements for pieces that might have more than one acceptable target.
     # (These can be applied if needed; keys are current squares and values are lists of alternate squares.)
-    piece_alternatives = {
-        # White pieces alternatives (for demonstration)
-        "a1": ["h1"],
-        "h1": ["a1"],
-        "b1": ["g1"],
-        "g1": ["b1"],
-        "c1": ["f1"],
-        "f1": ["c1"],
-        # Pawns: allow adjacent files on the same rank.
-        "a2": ["b2"],
-        "b2": ["a2", "c2"],
-        "c2": ["b2", "d2"],
-        "d2": ["c2", "e2"],
-        "e2": ["d2", "f2"],
-        "f2": ["e2", "g2"],
-        "g2": ["f2", "h2"],
-        "h2": ["g2"],
-        # Black pieces alternatives (for demonstration)
-        "a8": ["h8"],
-        "h8": ["a8"],
-        "b8": ["g8"],
-        "g8": ["b8"],
-        "c8": ["f8"],
-        "f8": ["c8"],
-        "a7": ["b7"],
-        "b7": ["a7", "c7"],
-        "c7": ["b7", "d7"],
-        "d7": ["c7", "e7"],
-        "e7": ["d7", "f7"],
-        "f7": ["e7", "g7"],
-        "g7": ["f7", "h7"],
-        "h7": ["g7"]
-    }
+    # piece_alternatives = {
+    #     # White pieces alternatives (for demonstration)
+    #     "a1": ["h1"],
+    #     "h1": ["a1"],
+    #     "b1": ["g1"],
+    #     "g1": ["b1"],
+    #     "c1": ["f1"],
+    #     "f1": ["c1"],
+    #     # Pawns: allow adjacent files on the same rank.
+    #     "a2": ["b2"],
+    #     "b2": ["a2", "c2"],
+    #     "c2": ["b2", "d2"],
+    #     "d2": ["c2", "e2"],
+    #     "e2": ["d2", "f2"],
+    #     "f2": ["e2", "g2"],
+    #     "g2": ["f2", "h2"],
+    #     "h2": ["g2"],
+    #     # Black pieces alternatives (for demonstration)
+    #     "a8": ["h8"],
+    #     "h8": ["a8"],
+    #     "b8": ["g8"],
+    #     "g8": ["b8"],
+    #     "c8": ["f8"],
+    #     "f8": ["c8"],
+    #     "a7": ["b7"],
+    #     "b7": ["a7", "c7"],
+    #     "c7": ["b7", "d7"],
+    #     "d7": ["c7", "e7"],
+    #     "e7": ["d7", "f7"],
+    #     "f7": ["e7", "g7"],
+    #     "g7": ["f7", "h7"],
+    #     "h7": ["g7"]
+    # }
 
-    def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
+    # def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
 
-        piece_alternatives = {
-        # White pieces alternatives (for demonstration)
-        "a1": ["h1"],
-        "h1": ["a1"],
-        "b1": ["g1"],
-        "g1": ["b1"],
-        "c1": ["f1"],
-        "f1": ["c1"],
-        # Pawns: allow adjacent files on the same rank.
-        "a2": ["b2"],
-        "b2": ["a2", "c2"],
-        "c2": ["b2", "d2"],
-        "d2": ["c2", "e2"],
-        "e2": ["d2", "f2"],
-        "f2": ["e2", "g2"],
-        "g2": ["f2", "h2"],
-        "h2": ["g2"],
-        # Black pieces alternatives (for demonstration)
-        "a8": ["h8"],
-        "h8": ["a8"],
-        "b8": ["g8"],
-        "g8": ["b8"],
-        "c8": ["f8"],
-        "f8": ["c8"],
-        "a7": ["b7"],
-        "b7": ["a7", "c7"],
-        "c7": ["b7", "d7"],
-        "d7": ["c7", "e7"],
-        "e7": ["d7", "f7"],
-        "f7": ["e7", "g7"],
-        "g7": ["f7", "h7"],
-        "h7": ["g7"]
-        }
+    #     piece_alternatives = {
+    #     # White pieces alternatives (for demonstration)
+    #     "a1": ["h1"],
+    #     "h1": ["a1"],
+    #     "b1": ["g1"],
+    #     "g1": ["b1"],
+    #     "c1": ["f1"],
+    #     "f1": ["c1"],
+    #     # Pawns: allow adjacent files on the same rank.
+    #     "a2": ["b2"],
+    #     "b2": ["a2", "c2"],
+    #     "c2": ["b2", "d2"],
+    #     "d2": ["c2", "e2"],
+    #     "e2": ["d2", "f2"],
+    #     "f2": ["e2", "g2"],
+    #     "g2": ["f2", "h2"],
+    #     "h2": ["g2"],
+    #     # Black pieces alternatives (for demonstration)
+    #     "a8": ["h8"],
+    #     "h8": ["a8"],
+    #     "b8": ["g8"],
+    #     "g8": ["b8"],
+    #     "c8": ["f8"],
+    #     "f8": ["c8"],
+    #     "a7": ["b7"],
+    #     "b7": ["a7", "c7"],
+    #     "c7": ["b7", "d7"],
+    #     "d7": ["c7", "e7"],
+    #     "e7": ["d7", "f7"],
+    #     "f7": ["e7", "g7"],
+    #     "g7": ["f7", "h7"],
+    #     "h7": ["g7"]
+    #     }
         """
         Plans moves to reset the board from a current configuration to a target configuration.
         
@@ -513,6 +587,11 @@ class BoardReset:
         - "final_square": the target square
         - "path": a list starting with the absolute starting coordinate followed by relative moves.
         """
+
+        current_fen = "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3"
+        # Target configuration FEN: swap the white queen and white rook.
+        target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
         current_mapping = self.parse_fen(current_fen)
         target_mapping = self.parse_fen(target_fen)
         
@@ -555,8 +634,8 @@ class BoardReset:
             target_occupancy[chosen] = piece
             
             # Convert current square and chosen target square into physical coordinates.
-            start_coords = self.square_to_coords(square)
-            dest_coords = self.square_to_coords(chosen)
+            start_coords = self.square_to_coords_ryan(square)
+            dest_coords = self.square_to_coords_ryan(chosen)
             
             # Generate the movement path.
             path = self.generate_path(start_coords, dest_coords, offset=25)
