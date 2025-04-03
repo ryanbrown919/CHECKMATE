@@ -529,7 +529,7 @@ class GantryControlScreen(Screen):
 
         self.image_path = self.piece_images[self.piece_symbol]
 
-        Clock.schedule_once(lambda dt: self.nfc_button.change_image(self.image_path, 0.5))
+        Clock.schedule_once(lambda dt: self.nfc_icon.change_image(self.image_path, 0.5))
 
 
     def send_command(self):
