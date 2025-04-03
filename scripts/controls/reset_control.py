@@ -3,7 +3,7 @@ import time
 
 
 class BoardReset:
-    def __init__(self, gantry, board, hall):    
+    def __init__(self, board, gantry, hall):    
         self.gantry = gantry
         self.board = board
         self.hall = hall
