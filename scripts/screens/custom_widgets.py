@@ -91,12 +91,16 @@ class headerLayout(BoxLayout):
             self.add_widget(Label(text="Check-M.A.T.E", font_size=self.font_size, size_hint=(0.4, 1)))
 
             self.add_widget(Widget(size_hint_x=0.3))
-            self.add_widget(IconButton(source="assets/hamburgMenu.png", 
+            back_btn = IconButton(source="assets/back_arrow.png", 
                                                 size_hint=(0.1, 1),  # Disable relative sizing
                                                         # Set explicit dimensions
                                                 allow_stretch=True,      # Allow the image to stretch to fill the widget
                                                 keep_ratio=True          # Maintain the image's aspect ratio
-                                                ))
+                                                )
+            back_btn.bind(on_release = lambda instace: self.control_system.go_to_mainscreen)
+            self.add_widget(back_btn)
+            icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
+
             self.add_widget(icon)
 
         else:

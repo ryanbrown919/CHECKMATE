@@ -26,7 +26,7 @@ class EndGameScreen(Screen):
 
         board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
 
-        endgame_text = "FUCK ME"
+        endgame_text = self.control_system.endgame_message
 
         endgame_label = Label(text=endgame_text, font_size=40)
 

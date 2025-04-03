@@ -232,6 +232,10 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen'], dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='end_game_screen', after=['early_exit', 'update_ui'])
+
+
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_boardreset', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
         
@@ -324,6 +328,11 @@ class ChessControlSystem:
     # def start_game(self):
     #     self.to_gamescreen()
     #     pass
+
+    def early_exit(self):
+
+        self.endgame_message = "Game Abandoned"
+
 
 
 
@@ -908,7 +917,7 @@ class ChessControlSystem:
     def on_predefined_turn(self):
 
         
-        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress])),  self.demo_progress % 2 == 0)
+        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
         self.notify_observers()
         self.update_ui()
         self.demo_progress += 1
