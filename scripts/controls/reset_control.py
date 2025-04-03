@@ -423,7 +423,7 @@ class BoardReset:
 
         self.captured_pieces=['P']
 
-        moves = self.reset_board_to_home_recursive(current_fen)
+        moves = self.simple_reset_to_home(current_fen)
 
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
@@ -519,6 +519,95 @@ class BoardReset:
                     del current_mapping[sq]
             # Recurse on the remaining pieces.
             return self.reset_board_to_home_recursive(current_mapping, moves_so_far)
+        
+    def simple_reset_to_home(self, fen):
+        """
+        Simple function to move pieces from their current positions (parsed from the FEN)
+        to their standard home squares.
+
+        It works as follows:
+        1. Parses the FEN string into a mapping of square -> piece.
+        2. For each piece, checks its list of home squares (from a hard-coded dictionary)
+            by polling current occupancy (using self.hall.sense_layer.get_squares_game() and 
+            occupancy_list_to_dict).
+        3. If a candidate home square is free (occupancy == 0), it generates a natural path
+            from the current square to that home square using generate_natural_path.
+        4. It then "moves" the piece (removing it from the list) and records the move plan.
+        5. This process repeats until all pieces have been moved (or no progress can be made).
+        
+        Returns a dictionary mapping the original square of each moved piece to its move plan.
+        Each move plan is a dictionary with:
+        - "piece": the piece symbol,
+        - "final_square": the chosen home square,
+        - "path": a list starting with the absolute starting coordinate, then relative moves.
+        """
+        # Define the standard home (starting) positions.
+        starting_positions = {
+            "K": ["e1"],
+            "Q": ["d1"],
+            "R": ["a1", "h1"],
+            "B": ["c1", "f1"],
+            "N": ["b1", "g1"],
+            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+            "k": ["e8"],
+            "q": ["d8"],
+            "r": ["a8", "h8"],
+            "b": ["c8", "f8"],
+            "n": ["b8", "g8"],
+            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+        }
+
+        # Parse the FEN to get a dictionary of current positions.
+        current_mapping = self.parse_fen(fen)
+        
+        # This will hold our move plans.
+        move_plans = {}
+
+        # Loop until current_mapping is empty (all pieces moved) or no progress can be made.
+        progress = True
+        while current_mapping and progress:
+            progress = False
+            # Get current occupancy from the hall sensors.
+            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            # Use a copy of the current mapping so we can modify it during iteration.
+            for square, piece in list(current_mapping.items()):
+                # If the piece is already at one of its home squares, remove it.
+                if square in starting_positions.get(piece, []):
+                    del current_mapping[square]
+                    continue
+
+                # Look for a free home square candidate.
+                candidates = starting_positions.get(piece, [])
+                candidate_found = None
+                for candidate in candidates:
+                    # Check occupancy: free if the value is 0.
+                    if occupancy.get(candidate, 0) == 0:
+                        candidate_found = candidate
+                        break
+
+                if candidate_found:
+                    # Get physical coordinates for the current square and candidate square.
+                    start_coords = self.square_to_coords_ry(square)
+                    dest_coords = self.square_to_coords_ry(candidate_found)
+                    # Generate a natural path (assumed to move through the corners of the square).
+                    path = self.generate_natural_path(start_coords, dest_coords)
+                    # Record the move plan.
+                    move_plans[square] = {
+                        "piece": piece,
+                        "final_square": candidate_found,
+                        "path": path
+                    }
+                    # "Move" the piece by removing it from current_mapping.
+                    del current_mapping[square]
+                    progress = True
+            # If no progress was made during this iteration, break the loop.
+            if not progress:
+                print("No further progress can be made. The following pieces remain unmoved:", current_mapping)
+                break
+
+        return move_plans
+
+
 
 
 
