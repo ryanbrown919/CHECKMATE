@@ -194,14 +194,18 @@ class BoardReset:
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
-        for i in range(len(empty_squares)):
-            for j in range(len(empty_squares[i])):
-                empty_squares[i][j] *= 50
-
-        print(f"Empty squares: {empty_squares}")
-        
-        # Flip the y-axis to match chess notation (h1 as (0,0), a8 as (7,7))
+        print(f"[Test] Untransformed Empty squares: {empty_squares}")
         empty_squares = empty_squares[::-1]
+        print(f"[Test] Transformed Empty squares: {empty_squares}")
+
+        empty_targets = []
+        for i in range(len(empty_squares)):
+            for j in range(len(empty_squares[i])): 
+                if empty_squares[i][j] == 1:
+                    empty_targets.append((j*50, i*50))  
+        
+        print(f"[Test] Empty targets: {empty_targets}")
+                
 
         # Initialize white_restart_state with 16 slots
         # white_restart_state = [(0, (0, 0)) for _ in range(16)]
