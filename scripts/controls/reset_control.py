@@ -806,7 +806,7 @@ class BoardReset:
 
         move_to_square = [(dx -50 * sign_x, 0), (0, dy -  50 * sign_y)]
         # Entry corner for the destination square: offset from the destination center.
-        entry_corner = ( 25 * temp_x[0], 25 * temp_y[1])
+        entry_corner = (25 * temp_x[1], 25 * temp_y[1])
 
         # # Define waypoints:
         P0 = (start_x, start_y)        # Start center.
