@@ -58,6 +58,34 @@ class GantryControl:
         def send(self, command):
             with self.serial_lock:
                 self.ser.write(str.encode(command + "\n"))
+        
+        def set_velocity(self, velocity):
+            self.send(f"$110={velocity}")
+            self.send(f"$111={velocity}")
+        
+        def set_acceleration(self, acceleration):
+            self.send(f"$120={acceleration}")
+            self.send(f"$121={acceleration}")
+        
+        def get_position(self, max_attempts=10, delay=0.1):
+        for _ in range(max_attempts):
+            self.send("?")
+            response = self.serial.readline().decode().strip()
+            
+            if 'MPos:' in response:
+                pos_part = response.split('MPos:')[1].split('|')[0]
+                coords = pos_part.split(',')
+            elif 'WPos:' in response:
+                pos_part = response.split('WPos:')[1].split('|')[0]
+                coords = pos_part.split(',')
+            else:
+                continue 
+                
+            x = int(float(coords[0]) + 475)
+            y = int(float(coords[1]) + 486)
+            
+            return x, y   
+        return None, None  
     
         def send_jog_command(self, dx, dy):
             """
