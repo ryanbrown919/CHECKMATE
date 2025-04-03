@@ -604,7 +604,7 @@ class ChessControlSystem:
             #  #print(new_board)
             #  self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
             #  time.sleep(0.1)
-        self.safe_poll_first()
+        # self.safe_poll_first()
 
 
         # Start the polling process:
