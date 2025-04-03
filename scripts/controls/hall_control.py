@@ -344,9 +344,7 @@ class Hall:
             poll_interval: Delay in seconds between polls.
         """
         with self.lock:
-            time.sleep(0.5)
             initial_board = self.sense_layer.get_squares()
-            time.sleep(0.5)
 
             for y in range(7, -1, -1):
                 row_str = f"{y+1}|"
@@ -363,7 +361,7 @@ class Hall:
             while True:
                 # Obtain the current board state.
                 new_board = self.sense_layer.get_squares()
-                time.sleep(0.5)
+                # time.sleep(0.5)
 
                 print("Polling new board state:", new_board)
 
@@ -407,7 +405,6 @@ class Hall:
             while True:
                 # Obtain the current board state.
                 new_board = self.sense_layer.get_squares()
-                time.sleep(0.5)
 
                 print("Polling new board state:", new_board)
 
