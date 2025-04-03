@@ -563,6 +563,9 @@ class BoardReset:
         Returns:
         A list where the first element is the absolute starting coordinate and subsequent elements are relative moves.
         """
+
+        print(start)
+        print(dest)
         start_x, start_y = start
         dest_x, dest_y = dest
 
