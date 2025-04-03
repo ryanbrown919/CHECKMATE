@@ -3,7 +3,9 @@ from gantry import Gantry
 
 def toggle_magnet(gantry):
     gantry.send("M8")
+    time.sleep(0.1)
     gantry.send("M9")
+    time.sleep(0.1)
 
 def carlsen(gantry):
     for i in range(8):
