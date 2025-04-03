@@ -6,8 +6,9 @@ def toggle_magnet(gantry):
     time.sleep(0.2)
     gantry.send("M9")
 
-def carlsen(gantry):
+def magnet_carlsen(gantry):
     gantry.set_acceleration(1000)
+    toggle_magnet(gantry)
 
     for i in range(8):
         gantry.move(0, i*50, blocking=True)
@@ -30,5 +31,5 @@ def carlsen(gantry):
 if __name__ == "__main__":
     gantry = Gantry()
     gantry.home()
-    carlsen(gantry)
+    magnet_carlsen(gantry)
     
