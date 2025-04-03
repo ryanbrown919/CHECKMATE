@@ -236,7 +236,7 @@ class ChessControlSystem:
 
 
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen'], dest='mainscreen', after='update_ui')
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='end_game_screen', after=['early_exit', 'update_ui'])
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -335,6 +335,8 @@ class ChessControlSystem:
     def early_exit(self):
 
         self.endgame_message = "Game Abandoned"
+        if self.engine:
+            self.engine.quit()
 
 
 
