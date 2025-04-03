@@ -30,7 +30,7 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from rocker_control import Rocker
     from hall_control import Hall
-    from reset_control import BoardReset
+    # from reset_control import BoardReset
     from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
