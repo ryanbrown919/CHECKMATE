@@ -469,7 +469,7 @@ class ChessControlSystem:
             self.checkmate = False
 
         self.legal_moves = None
-        print("pushoing move:")
+        print("pushing move:")
 
         self.board.push(move)
         self.notify_observers()
@@ -1039,12 +1039,11 @@ class ChessControlSystem:
       
 
         self.game_winner = None
-        self.board.reset()
 
         self.rocker.reset()
         self.selected_piece = None
+        
         self.notify_observers()
-
         self.update_ui()
 
 
