@@ -886,6 +886,8 @@ class BoardReset:
                 file_letter = chr(ord('a') + j)
                 square = file_letter + str(rank)
                 occ_dict[square] = val
+
+        print(f"Occ list: {occ_dict}")
         return occ_dict
 
                 
