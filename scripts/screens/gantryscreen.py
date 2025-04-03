@@ -468,7 +468,7 @@ class GantryControlScreen(Screen):
         self.gantry_controls.add_widget(commandButton)
 
         nfc_layout = ColoredBoxLayout(orientation='horizontal')
-        nfc_icon = Image(source=self.piece_images[self.piece_symbol], allow_stretch=True, keep_ratio=True, size_hint = (1,1))
+        nfc_icon = Image(source=f"{self.piece_images[self.piece_symbol]}", allow_stretch=True, keep_ratio=True, size_hint = (1,1))
         nfc_button = Button(text="Scan NFC", font_size = self.font_size)
         nfc_button.bind(on_release= lambda instance: self.read_nfc())
 
