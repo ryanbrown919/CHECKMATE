@@ -10,19 +10,19 @@ def magnet_carlsen(gantry_control):
     gantry_control.set_acceleration(1000)
 
     for i in range(8):
-        gantry_control.send_commands(f"G90 X0 Y{i*50}")
+        gantry_control.move(0, i*50)
         toggle_magnet(gantry_control)
     
     for i in range(7, -1, -1):
-        gantry_control.send_commands(f"G90 X50 Y{i*50}")
+        gantry_control.move(50, i*50)
         toggle_magnet(gantry_control)
 
     for i in range(8):
-        gantry_control.send_commands(f"G90 X300 Y{i*50}")
+        gantry_control.move(300, i*50)
         toggle_magnet(gantry_control)
     
     for i in range(7, -1, -1):
-        gantry_control.send_commands(f"G90 X350 Y{i*50}")
+        gantry_control.move(350, i*50)
         toggle_magnet(gantry_control)
 
     gantry_control.set_acceleration(400)
