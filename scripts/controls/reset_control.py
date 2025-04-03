@@ -1,7 +1,7 @@
 import math
 import time
 
-from hall_control import HallControl
+from hall_control import Hall
 from gantry_control import GantryControl
 
 class BoardReset:
