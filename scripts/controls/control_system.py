@@ -423,7 +423,6 @@ class ChessControlSystem:
                 captured_piece = self.board.piece_at(move.to_square)
                 
             # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 # Note: You might need special handling for en passant captures.
@@ -569,7 +568,7 @@ class ChessControlSystem:
                 captured_piece = self.board.piece_at(move.to_square)
 
             # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
+            # captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 captured_symbol = captured_piece.symbol()
