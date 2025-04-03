@@ -321,14 +321,6 @@ class BoardReset:
 
 
 
-if __name__ = = "__main__":
-    # Example usage
-    control_system = None  # Replace with actual control system instance
-    board_reset = BoardReset(control_system)
-
-    # Call the reset_board_from_game method to reset the board
-    board_reset.reset_board_from_game()
-
 
 
 
