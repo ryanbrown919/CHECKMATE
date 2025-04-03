@@ -26,7 +26,7 @@ def magnet_carlsen(gantry_control):
     
     for i in range(7, -1, -1):
         gantry_control.move(50, i*50 - 5)
-       magnet_on(gantry_control)
+        magnet_on(gantry_control)
         time.sleep(0.3)
         gantry_control.send(f"G3 X50 Y{i*50 + 5} I-5 J0")
         gantry_control.send(f"G3 X50 Y{i*50 - 5} I5 J0")
