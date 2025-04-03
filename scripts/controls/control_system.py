@@ -1231,11 +1231,12 @@ class ChessControlSystem:
 
     def on_predefined_turn(self):
 
-        
-        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-        #self.notify_observers()
-        #self.update_ui()
-        self.demo_progress += 1
+        if self.demo_progress < len(self.demo_progress):
+            self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
+            self.notify_observers()
+            #self.update_ui()
+            self.demo_progress += 1
+            Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
 
         else:
            #Don't love this...
