@@ -402,6 +402,12 @@ class ChessControlSystem:
         move = chess.Move.from_uci(move_str)
 
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -520,6 +526,11 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -1041,6 +1052,12 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -1048,6 +1065,8 @@ class ChessControlSystem:
                 captured_symbol = captured_piece.symbol()
 
                 # Note: You might need special handling for en passant captures.
+
+        self.notify_observers()
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
 
@@ -1092,6 +1111,7 @@ class ChessControlSystem:
 
         self.board.push(move)
         self.notify_observers()
+        self.update_ui()
 
         self.rocker.toggle()
 
@@ -1121,7 +1141,7 @@ class ChessControlSystem:
 
         
         self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-        #self.notify_observers()
+        self.notify_observers()
         #self.update_ui()
         self.demo_progress += 1
 
