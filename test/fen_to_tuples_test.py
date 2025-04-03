@@ -46,7 +46,7 @@ def fen_to_coords(fen):
 def test_fen_to_squares():
     test_fens = {
         "Starting Position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        "Few Pieces": "8/8/8/3k4/8/4Q3/8/8 w - - 0 1",
+        "Few Pieces": "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3",
         "Empty Board": "8/8/8/8/8/8/8/8 w - - 0 1"
     }
 
