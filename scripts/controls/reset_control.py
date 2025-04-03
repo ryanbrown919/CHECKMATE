@@ -3,6 +3,26 @@ import time
 
 
 class BoardReset:
+
+
+
+    starting_positions = {
+    "K": ["e1"],                  # White King
+    "Q": ["d1"],                  # White Queen
+    "R": ["a1", "h1"],            # White Rooks
+    "B": ["c1", "f1"],            # White Bishops
+    "N": ["b1", "g1"],            # White Knights
+    "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],  # White Pawns
+
+    "k": ["e8"],                  # Black King
+    "q": ["d8"],                  # Black Queen
+    "r": ["a8", "h8"],            # Black Rooks
+    "b": ["c8", "f8"],            # Black Bishops
+    "n": ["b8", "g8"],            # Black Knights
+    "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]   # Black Pawns
+}
+
+
     def __init__(self, board, gantry, hall, captured_pieces):    
         self.gantry = gantry
         self.board = board
@@ -318,78 +338,78 @@ class BoardReset:
 
          # # Define alternatives for pieces that might have more than one acceptable target.
             # For non-pawn pieces (example for rooks, knights, bishops):
-        piece_alternatives = {
-            # White pieces alternatives
-            "a1": ["h1"],
-            "h1": ["a1"],
-            "b1": ["g1"],
-            "g1": ["b1"],
-            "c1": ["f1"],
-            "f1": ["c1"],
-            # Black pieces alternatives
-            "a8": ["h8"],
-            "h8": ["a8"],
-            "b8": ["g8"],
-            "g8": ["b8"],
-            "c8": ["f8"],
-            "f8": ["c8"],
-        }
+        # piece_alternatives = {
+        #     # White pieces alternatives
+        #     "a1": ["h1"],
+        #     "h1": ["a1"],
+        #     "b1": ["g1"],
+        #     "g1": ["b1"],
+        #     "c1": ["f1"],
+        #     "f1": ["c1"],
+        #     # Black pieces alternatives
+        #     "a8": ["h8"],
+        #     "h8": ["a8"],
+        #     "b8": ["g8"],
+        #     "g8": ["b8"],
+        #     "c8": ["f8"],
+        #     "f8": ["c8"],
+        # }
 
-        # Automatically fill out pawn alternatives for all possible pawn squares.
-        white_pawn_squares = ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]
-        black_pawn_squares = ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+        # # Automatically fill out pawn alternatives for all possible pawn squares.
+        # white_pawn_squares = ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]
+        # black_pawn_squares = ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
 
-        for square in white_pawn_squares:
-            piece_alternatives[square] = [s for s in white_pawn_squares if s != square]
+        # for square in white_pawn_squares:
+        #     piece_alternatives[square] = [s for s in white_pawn_squares if s != square]
 
-        for square in black_pawn_squares:
-            piece_alternatives[square] = [s for s in black_pawn_squares if s != square]
+        # for square in black_pawn_squares:
+        #     piece_alternatives[square] = [s for s in black_pawn_squares if s != square]
 
-        print(piece_alternatives)
+        # print(piece_alternatives)
 
-        occupancy = self.hall.sense_layer.get_squares_game()
-        print(occupancy)
+        # occupancy = self.hall.sense_layer.get_squares_game()
+        # print(occupancy)
 
-        occ_dict = self.occupancy_list_to_dict(occupancy)
-        print(occ_dict)
+        # occ_dict = self.occupancy_list_to_dict(occupancy)
+        # print(occ_dict)
 
-        # current_fen = "r1bqnr2/1pp2kpQ/p1np1bB1/8/8/5N2/PB1P2PP/RN2R1K1"
-        # current_fen = self.board.fen().split()[0]
-        current_fen  = "rnbqkbnr/ppp1pppp/3p4/8/8/8/PPPP1PPP/RNBQKBNR"
+        # # current_fen = "r1bqnr2/1pp2kpQ/p1np1bB1/8/8/5N2/PB1P2PP/RN2R1K1"
+        # # current_fen = self.board.fen().split()[0]
+        # current_fen  = "rnbqkbnr/ppp1pppp/3p4/8/8/8/PPPP1PPP/RNBQKBNR"
 
-        self.captured_pieces=['P']
-
-
-        # Target configuration FEN: swap the white queen and white rook.
-        target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-
-        moves = self.plan_board_reset(current_fen, target_fen, piece_alternatives)
-
-        for start_square, info in moves.items():
-            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
-            print(info["path"])
-
-            cmds = self.gantry.path_to_gcode(info["path"])
-            self.gantry.send_commands(cmds)
+        # self.captured_pieces=['P']
 
 
-        # occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+        # # Target configuration FEN: swap the white queen and white rook.
+        # target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
-        white_recovery, black_recovery = self.plan_captured_piece_recovery(self.captured_pieces)
+        # moves = self.plan_board_reset(current_fen, target_fen, piece_alternatives)
 
-        for idx, info in white_recovery.items():
-            print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
-            print(info["path"])
+        # for start_square, info in moves.items():
+        #     print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+        #     print(info["path"])
 
-            cmds = self.gantry.path_to_gcode(info["path"])
-            self.gantry.send_commands(cmds)
+        #     cmds = self.gantry.path_to_gcode(info["path"])
+        #     self.gantry.send_commands(cmds)
 
-        for idx, info in black_recovery.items():
-            print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
-            print(info["path"])
 
-            cmds = self.gantry.path_to_gcode(info["path"])
-            self.gantry.send_commands(cmds)
+        # # occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+
+        # white_recovery, black_recovery = self.plan_captured_piece_recovery(self.captured_pieces)
+
+        # for idx, info in white_recovery.items():
+        #     print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
+        #     print(info["path"])
+
+        #     cmds = self.gantry.path_to_gcode(info["path"])
+        #     self.gantry.send_commands(cmds)
+
+        # for idx, info in black_recovery.items():
+        #     print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
+        #     print(info["path"])
+
+        #     cmds = self.gantry.path_to_gcode(info["path"])
+        #     self.gantry.send_commands(cmds)
 
 
         # ''' Felipe's code '''
@@ -398,6 +418,144 @@ class BoardReset:
         # self.reset_playing_area_white()
         # ''' Felipe's code '''
         # self.reset_board_from_game()
+
+        current_fen  = "rnbqkbnr/ppp1pppp/3p4/8/8/8/PPPP1PPP/RNBQKBNR"
+
+        self.captured_pieces=['P']
+
+        moves = self.reset_board_to_home(current_fen)
+        for start_square, info in moves.items():
+            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+            print(info["path"])
+
+            cmds = self.gantry.path_to_gcode(info["path"])
+            self.gantry.send_commands(cmds)
+
+    def reset_board_to_home(self, current_fen):
+        """
+        Resets the board from the current configuration (given by current_fen) to the standard starting positions.
+        
+        Methodology:
+        1. Parse the current FEN to obtain a mapping of squares to pieces.
+        2. For each piece, look up its home (starting) squares using a hard-coded dictionary.
+        3. For each candidate home square, re-read the board occupancy by calling
+            self.hall.sense_layer.get_squares_game() and converting it with occupancy_list_to_dict.
+            If a candidate square is empty (occupancy value 0), generate a safe path from the piece's current square
+            (converted to physical coordinates) to the candidate square.
+        4. If no candidate is free for a piece, delay that piece's move.
+        5. Reprocess delayed moves repeatedly until no further progress is made.
+        
+        Returns:
+        A dictionary mapping the original square (of moved pieces) to a move plan. Each move plan is a dictionary with:
+            - "piece": the piece symbol,
+            - "final_square": the chosen home square,
+            - "path": a list starting with the absolute starting coordinate followed by relative moves.
+        """
+        # Define the standard starting positions for each piece.
+        starting_positions = {
+            "K": ["e1"],
+            "Q": ["d1"],
+            "R": ["a1", "h1"],
+            "B": ["c1", "f1"],
+            "N": ["b1", "g1"],
+            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+            "k": ["e8"],
+            "q": ["d8"],
+            "r": ["a8", "h8"],
+            "b": ["c8", "f8"],
+            "n": ["b8", "g8"],
+            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+        }
+        
+        # Parse the current FEN.
+        current_mapping = self.parse_fen(current_fen)
+        
+        # Build a full list of board squares ("a8", "b8", ..., "h1").
+        board_squares = [file_letter + str(rank) 
+                        for rank in range(8, 0, -1) 
+                        for file_letter in "abcdefgh"]
+        
+        # Create an occupancy dictionary by reading the sensor data.
+        # We call occupancy_list_to_dict each time we check a candidate square,
+        # so here we just initialize it once.
+        occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+        for sq in board_squares:
+            # If a square is not in current_mapping, assume it is empty (0).
+            if sq not in occupancy:
+                occupancy[sq] = 0
+        
+        move_paths = {}      # Maps original square -> move plan.
+        delayed_moves = {}   # Maps original square -> piece symbol for moves that cannot yet be done.
+        
+        progress = True
+        # Continue looping until no further moves can be made.
+        while progress:
+            progress = False
+            # Process each piece currently on the board.
+            for square, piece in list(current_mapping.items()):
+                # If the piece is already at one of its home squares, skip it.
+                if square in starting_positions.get(piece, []):
+                    continue
+                
+                # Get candidate home squares for this piece.
+                candidates = starting_positions.get(piece, [])
+                available = None
+                # For each candidate, re-read occupancy to see if it is empty.
+                for candidate in candidates:
+                    occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+                    if occ.get(candidate, 0) == 0:
+                        available = candidate
+                        break
+                if available:
+                    start_coords = self.square_to_coords_ry(square)
+                    dest_coords = self.square_to_coords_ry(available)
+                    path = self.generate_path(start_coords, dest_coords, offset=25)
+                    move_paths[square] = {
+                        "piece": piece,
+                        "final_square": available,
+                        "path": path
+                    }
+                    # Update occupancy: mark the candidate as occupied and clear the original square.
+                    occupancy[available] = piece
+                    occupancy[square] = 0
+                    # Update current_mapping.
+                    current_mapping[available] = piece
+                    del current_mapping[square]
+                    progress = True
+                else:
+                    # No candidate free now; delay this move.
+                    delayed_moves[square] = piece
+            
+            # Process delayed moves.
+            for square, piece in list(delayed_moves.items()):
+                candidates = starting_positions.get(piece, [])
+                available = None
+                for candidate in candidates:
+                    occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+                    if occ.get(candidate, 0) == 0:
+                        available = candidate
+                        break
+                if available:
+                    start_coords = self.square_to_coords_ry(square)
+                    dest_coords = self.square_to_coords_ry(available)
+                    path = self.generate_path(start_coords, dest_coords, offset=25)
+                    move_paths[square] = {
+                        "piece": piece,
+                        "final_square": available,
+                        "path": path
+                    }
+                    occupancy[available] = piece
+                    occupancy[square] = 0
+                    current_mapping[available] = piece
+                    del current_mapping[square]
+                    del delayed_moves[square]
+                    progress = True
+            # Loop repeats until no moves are made.
+        
+        if delayed_moves:
+            print("The following moves remain delayed (no home square free):", delayed_moves)
+        
+        return move_paths
 
 
 
@@ -567,10 +725,10 @@ class BoardReset:
         current_mapping = self.parse_fen(current_fen)
         target_mapping = self.parse_fen(target_fen)
         
-        # Build a dictionary: piece letter -> list of target squares from target configuration.
-        target_positions = {}
-        for square, piece in target_mapping.items():
-            target_positions.setdefault(piece, []).append(square)
+        # # Build a dictionary: piece letter -> list of target squares from target configuration.
+        # target_positions = {}
+        # for square, piece in target_mapping.items():
+        #     target_positions.setdefault(piece, []).append(square)
         
         # Get occupancy from the hall-effect sensors and convert to dictionary.
         target_occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
