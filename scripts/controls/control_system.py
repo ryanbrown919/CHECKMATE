@@ -1022,7 +1022,7 @@ class ChessControlSystem:
         self.board.reset()
 
         self.rocker.reset()
-        
+        self.selected_piece = None
         self.notify_observers()
 
         self.update_ui()
@@ -1122,6 +1122,12 @@ class ChessControlSystem:
         self.notify_observers()
 
     def process_predefined_board_move(self, move, is_white):
+
+#         if self.board.is_en_passant(move):
+#     captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+#     captured_piece = self.board.piece_at(captured_square)
+# else:
+#     captured_piece = self.board.piece_at(move.to_square)
 
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
