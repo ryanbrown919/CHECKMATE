@@ -1160,7 +1160,7 @@ class GantryControl:
                 time.sleep(2)
                 print(f"Sent commands")
             else:
-                
+                print("[S] sending commands")
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
@@ -1170,16 +1170,14 @@ class GantryControl:
                     while response != "ok":
                         # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
 
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
-                    print(f"Status: {status}")
                     if '<Idle' in status:
                         self.finished = True
-                print("Finished Sending commands")
+                print("[S] sent commands")
 
             
 
