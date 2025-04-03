@@ -848,7 +848,7 @@ class BoardReset:
             occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
             candidate_coord = (target_x, candidate_y)
             square_candidate = self.coords_to_square_ry(candidate_coord)
-            if occupancy.get(square_candidate) is None:
+            if occupancy.get(square_candidate) == 0:
                 final_coord = candidate_coord
                 final_square = square_candidate
                 break
@@ -1269,7 +1269,7 @@ class BoardReset:
         while candidate_y >= 0:
             candidate_coord = (target_x, candidate_y)
             square_candidate = self.coords_to_square_ry(candidate_coord)
-            if occupancy.get(square_candidate) is None:
+            if occupancy.get(square_candidate) == 0:
                 final_coord = candidate_coord
                 final_square = square_candidate
                 break
