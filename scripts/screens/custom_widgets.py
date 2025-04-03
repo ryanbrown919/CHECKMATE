@@ -514,18 +514,34 @@ class ChessBoard(Widget):
         rank = int(square_str[1]) - 1
         return file + rank * 8
     
+    def highlight_legal_moves_from_notation(self, square_str):
+        """
+        Highlights legal moves for a given selected square specified in algebraic notation (e.g., 'a2').
+
+        This function:
+        1. Converts the provided notation (like 'a2') to a board index.
+        2. Retrieves the legal moves for that square from the control system.
+        3. Updates the widget's internal list of legal moves.
+        4. Calls the canvas update method to redraw the highlights.
+        """
+        if square_str is not None:
+            # Convert algebraic notation (e.g., 'a2') to a board index.
+            square_index = self.notation_to_index(square_str)
+            
+            # Retrieve legal moves from the control system using this index.
+            self.legal_moves = self.control_system.select_piece(square_index)
+            
+            # Optionally set the selected piece in the control system.
+            self.control_system.selected_piece = square_index
+
+            # Refresh the canvas to update the highlights.
+            self._update_canvas()
+        
+
 
     def update_board(self, *args):
-        print(f'testing updating visuals on piece pickup: {self.control_system.selected_piece}')
-        if self.control_system.selected_piece is not None:
-            print("Highlighting squares")
-            self.legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
-                # You might call control_system.select_piece to update legal moves.
-            self.clear_highlights()
-            # if self.control_system.legal_moves is not None:
-            self.highlight_legal_moves(self.legal_moves)
+        self.highlight_legal_moves_from_notation(self.control_system.selected_piece)
 
-        
         # Remove old chess pieces.
         pieces_to_remove = [child for child in self.children if isinstance(child, ChessPiece)]
         for piece in pieces_to_remove:
