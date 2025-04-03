@@ -272,10 +272,10 @@ class BoardReset:
 
                         
             # print(f"arranging white in rank 1 & 2: {path}")
-            movements = self.gantry.parse_path_to_movement(path)
-            commands = self.gantry.movement_to_gcode(movements)
-            print(f"Last move: {commands}")
-            self.gantry.send_commands(commands)
+                movements = self.gantry.parse_path_to_movement(path)
+                commands = self.gantry.movement_to_gcode(movements)
+                print(f"Last move: {commands}")
+                self.gantry.send_commands(commands)
             
                 
     def full_reset(self):
