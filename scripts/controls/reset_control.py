@@ -494,18 +494,16 @@ class BoardReset:
 
                 # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
                 move = self.nearest_neighbor(coords, filtered_empty_squares) 
-                vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
-                path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25)]
+                final_cords = (move[0][0] + move[1][0], move[0][1] + move[1][1])
+                path = [move[0], (0, 25), (move[1][0]-25, 0), (0, move[1][1] - 25), (25, 0)]
 
                 # Update the black_captured list with the new coordinates
                 self.gantry.black_captured.remove(piece) # me no likey
-                self.gantry.black_captured.append((symbol, move[1]))
+                self.gantry.black_captured.append((symbol, final_cords))
 
-                # Update the empty_squares matrix
-                old_rank, old_file = coords[1] // 50, coords[0] // 50  # Convert old coords to matrix indices
-                new_rank, new_file = move[1][0] // 50, move [1][1] // 50  # Convert new coords to matrix indices
-                empty_squares[old_rank][old_file] = 0  # Mark the old square as empty
-                empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
+                # Update the empty_targets
+                empty_targets.remove(final_cords)
+                empty_targets.append(move[0])
 
                 # Execute the movement using the gantry
                 print(f"[Test] Moving black piece {symbol} from {move[0]} to {move[1]} via path: {path}")
@@ -534,6 +532,7 @@ class BoardReset:
 
                 #find which of the new_cords is closest                
                 move = self.nearest_neighbor(coords, unoccupied_reset_coords)
+                final_cords = (move[0][0] + move[1][0], move[0][1] + move[1][1])
                 if move[0][0] < 25 :
                     path = [move[0], (25, 0), (0, move[1][1]), (move[1][0] - 25, 0)]
                 else:
@@ -543,14 +542,11 @@ class BoardReset:
 
                 # Update white_captured list with new coordinates of the piece just moved
                 self.gantry.white_captured.remove(piece)  # Remove the old entry
-                self.gantry.white_captured.append((symbol, move[1]))  # Add the updated entry with new coordinates
+                self.gantry.white_captured.append((symbol, final_cords))  # Add the updated entry with new coordinates
 
-                # Update the empty_squares matrix
-                old_rank, old_file = coords[1] // 50, coords[0] // 50  # Convert old coords to matrix indices
-                new_rank, new_file = move[1][0] // 50, move [1][1] // 50  # Convert new coords to matrix indices
-                empty_squares[old_rank][old_file] = 0  # Mark the old square as empty
-                empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
-
+                # Update the empty_targets matrix
+                empty_targets.remove(final_cords)
+                empty_targets.append(move[0])
                         
                 # print(f"arranging white in rank 1 & 2: {path}")
                 movements = self.gantry.parse_path_to_movement(path)
