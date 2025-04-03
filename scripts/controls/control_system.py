@@ -143,7 +143,7 @@ class ChessControlSystem:
 
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
-        self.endgame_message = "Jobs not finished"
+        self.endgame_message = ""
         self.checkmate = False
 
         self.font_size = 40
@@ -454,7 +454,7 @@ class ChessControlSystem:
         if not self.use_switch:
             self.rocker.toggle()
 
-        self.notify_observers()
+        # self.notify_observers()
         self.on_player_move_confirmed()
 
         if self.checkmate:
@@ -510,7 +510,7 @@ class ChessControlSystem:
         self.gantry.send_commands(cmds)
 
         self.rocker.toggle()
-        self.notify_observers()
+        # self.notify_observers()
 
         self.on_player_turn()
 
@@ -576,7 +576,7 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        self.notify_observers()
+        # self.notify_observers()
 
         if self.checkmate:
             self.end_game()
@@ -931,6 +931,8 @@ class ChessControlSystem:
         self.legal_moves = None
         self.game_winner = None
 
+        self.captured_pieces = []
+        self.move_history = []
 
       
 
@@ -966,9 +968,6 @@ class ChessControlSystem:
                     self.engine = None
             else:
                 self.engine = None
-
-            
-
 
 
             pass
@@ -1020,6 +1019,9 @@ class ChessControlSystem:
     def end_game(self):
 
         self.game_state = "FINISHED"
+
+        self.endgame_message = f"{self.game_winner} won the game!"
+
         
 
         # if turn == chess.WHITE:
@@ -1032,7 +1034,7 @@ class ChessControlSystem:
             #find black king, victory lap  
             # 
         self.end_game_processes()
-        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 5)
+        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 4)
 
         self.notify_observers()
 
@@ -1108,6 +1110,8 @@ class ChessControlSystem:
         self.demo_progress = 0
         self.game_winner = None
         self.board.reset()
+        self.captured_pieces = []
+        self.move_history = []
 
         self.rocker.reset()
         
@@ -1222,7 +1226,8 @@ class ChessControlSystem:
         self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
-        self.notify_observers
+        self.notify_observers()
+        self.update_ui()
 
 
 
@@ -1239,10 +1244,10 @@ class ChessControlSystem:
         return legal_moves
     
 
-    def on_boardresetscreen(self):
-        while True:
-            self.notify_observers()
-            self.sleep(0.5)
+    # def on_boardresetscreen(self):
+    #     while True:
+    #         self.notify_observers()
+    #         self.sleep(0.5)
         
 
 

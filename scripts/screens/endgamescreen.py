@@ -22,6 +22,8 @@ class EndGameScreen(Screen):
 
 
         layout = BoxLayout(orientation='horizontal', padding=10)
+
+        right_layout = BoxLayout(orientation='vertical')
         # layout.add_widget(Image(source='assets/start_logo.png', size_hint=(1, 1), keep_ratio=True, allow_stretch=True))
 
         board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
@@ -30,24 +32,41 @@ class EndGameScreen(Screen):
 
         endgame_label = Label(text=endgame_text, font_size=40)
 
-        reset_btn = RoundedButton(text= "Reset Board and Return to Menu", font_size = 40)
+        reset_btn = RoundedButton(text= "Reset Board", font_size = 40)
         reset_btn.bind(on_release= lambda instance:self.reset_and_return())
 
-        layout.add_widget(board)
-        layout.add_widget(endgame_label)
+        home_btn = RoundedButton(text= "Return to Menu", font_size = 40)
+        home_btn.bind(on_release= lambda instance:self.return_to_menu())
+
+        
+
+        
+        right_layout.add_widget(endgame_label)
+        right_layout.add_widget(reset_btn)
+        right_layout.add_widget(home_btn)
 
         root.add_widget(header_layout)
+        layout.add_widget(board)
+
+        layout.add_widget(right_layout)
+
 
         root.add_widget(layout)
 
-        root.add_widget(reset_btn)
+        layout.add_widget(reset_btn)
 
         self.add_widget(root)
 
     def reset_and_return(self):
         
+        # self.control_system.go_to_mainscreen()
+        self.control_system.resetboard()
+
+    def return_home(self):
+
         self.control_system.go_to_mainscreen()
-        #self.control_system.reset_board_from_game()
+
+
 
 
 
