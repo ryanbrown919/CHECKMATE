@@ -30,7 +30,7 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from rocker_control import Rocker
     from hall_control import Hall
-    # from reset_control import BoardReset
+    from reset_control import BoardReset
     from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
@@ -39,7 +39,7 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
-    # from scripts.controls.reset_control import BoardReset
+    from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
 
 
