@@ -143,7 +143,7 @@ class ChessControlSystem:
 
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
-        self.endgame_message = "Jobs not finished"
+        self.endgame_message = ""
         self.checkmate = False
 
         self.font_size = 40
@@ -174,7 +174,7 @@ class ChessControlSystem:
         self.timer_enabled = False
 
         # Create a hierarchical state machine.
-        self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen')
+        self.machine = Machine(model=self, states=ChessControlSystem.states, initial='initscreen', ignore_invalid_triggers=True)
 
         # Top-level transitions. dj
         
@@ -231,17 +231,20 @@ class ChessControlSystem:
 
         # self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen')
         self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['update_ui'])
-        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
+        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='mainscreen', after=['update_ui', 'reset_board'])
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after='update_ui')
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['early_exit', 'update_ui'])
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game', 'first_piece_detection',
+            'second_piece_detection'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_boardreset', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
-        
+
+        self.machine.add_transition(trigger='end_game', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
+
 
         # print("trying to init hall")
         # try:
@@ -267,7 +270,9 @@ class ChessControlSystem:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
-        # self.reset_control = BoardReset(self.board, self.gantry, self.hall)
+
+        self.reset_control = BoardReset(self.board, self.gantry, self.hall)
+
 
         self.first_change = None
         self.second_change = None
@@ -454,7 +459,7 @@ class ChessControlSystem:
         if not self.use_switch:
             self.rocker.toggle()
 
-        self.notify_observers()
+        # self.notify_observers()
         self.on_player_move_confirmed()
 
         if self.checkmate:
@@ -527,9 +532,11 @@ class ChessControlSystem:
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
+
         if self.use_switch:
             self.rocker.toggle()
         self.notify_observers()
+
 
         self.on_player_turn()
 
@@ -595,7 +602,7 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        self.notify_observers()
+        # self.notify_observers()
 
         if self.checkmate:
             self.end_game()
@@ -998,6 +1005,8 @@ class ChessControlSystem:
         self.legal_moves = None
         self.game_winner = None
 
+        self.captured_pieces = []
+        self.move_history = []
 
       
 
@@ -1033,9 +1042,6 @@ class ChessControlSystem:
                     self.engine = None
             else:
                 self.engine = None
-
-            
-
 
 
             pass
@@ -1079,14 +1085,18 @@ class ChessControlSystem:
         # Transition back to gameplay after setup.
         self.to_gameplay()
 
-    def reset_board_fn(self):
-        print("Resetting board...")
-        # Reset board logic here.
-        self.to_gameplay()
+    def reset_board(self):
+        self.reset_control.full_reset(self.captured_pieces)
+        self.done_reset()
+    def done_reset(self):
+        self.go_to_mainscreen()
     
     def end_game(self):
 
         self.game_state = "FINISHED"
+
+        self.endgame_message = f"{self.game_winner} won the game!"
+
         
 
         # if turn == chess.WHITE:
@@ -1099,7 +1109,7 @@ class ChessControlSystem:
             #find black king, victory lap  
             # 
         self.end_game_processes()
-        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 5)
+        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 3)
 
         self.notify_observers()
 
@@ -1154,15 +1164,15 @@ class ChessControlSystem:
 
             self.checkmate = False
 
-        self.legal_moves = None
-        print("pushing move:")
+        # self.legal_moves = None
+        # print("pushing move:")
 
         self.board.push(move)
         self.notify_observers()
 
         self.rocker.toggle()
 
-        # self.notify_observers()
+        self.notify_observers()
 
         if self.checkmate:
             self.end_game()
@@ -1175,6 +1185,8 @@ class ChessControlSystem:
         self.demo_progress = 0
         self.game_winner = None
         self.board.reset()
+        self.captured_pieces = []
+        self.move_history = []
 
         self.rocker.reset()
         
@@ -1182,17 +1194,21 @@ class ChessControlSystem:
 
         self.update_ui()
         
-        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 3)
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 4)
 
     def on_predefined_turn(self):
 
-        
-        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-        #self.notify_observers()
-        #self.update_ui()
-        self.demo_progress += 1
+        if not self.demo_progress == len(self.demo_game):
 
-        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
+            self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
+            self.notify_observers()
+            self.update_ui()
+            self.demo_progress += 1
+            Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.2)
+
+        else:
+           #Don't love this...
+           pass
 
 
 
@@ -1289,7 +1305,8 @@ class ChessControlSystem:
         self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
-        self.notify_observers
+        self.notify_observers()
+        self.update_ui()
 
 
 
@@ -1306,10 +1323,10 @@ class ChessControlSystem:
         return legal_moves
     
 
-    def on_boardresetscreen(self):
-        while True:
-            self.notify_observers()
-            self.sleep(0.5)
+    # def on_boardresetscreen(self):
+    #     while True:
+    #         self.notify_observers()
+    #         self.sleep(0.5)
         
 
 
