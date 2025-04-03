@@ -144,6 +144,32 @@ class GantryControl:
                     break
                 time.sleep(0.5)
 
+        def toggle_magnet(self):
+            self.send("M8")
+            time.sleep(0.2)
+            self.send("M9")
+
+        def magnet_carlsen(self):
+            self.set_acceleration(1000)
+
+            for i in range(8):
+                self.move(0, i*50)
+                self.toggle_magnet(gantry_control)
+    
+            for i in range(7, -1, -1):
+                self.move(50, i*50)
+                self.toggle_magnet(gantry_control)
+
+            for i in range(8):
+                self.move(300, i*50)
+                self.toggle_magnet(gantry_control)
+    
+            for i in range(7, -1, -1):
+                self.move(350, i*50)
+                self.toggle_magnet(gantry_control)
+
+            self.set_acceleration(400)
+
 
         def on_step_change(self, instance, value):
             """
