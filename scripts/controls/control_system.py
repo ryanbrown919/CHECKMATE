@@ -686,11 +686,14 @@ class ChessControlSystem:
 
         self.selected_move = None
 
-
+        print('switch')
+        print(self.servo.get_switch_state())
         if self.use_switch:
             print("waiting for switch")
             while self.servo.get_switch_state():
                 time.sleep(0.1)
+
+            print('switch passed')
 
         
         move = chess.Move.from_uci(move_str)
