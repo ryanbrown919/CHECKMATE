@@ -703,7 +703,7 @@ class BoardReset:
         current_fen = self.board.fen()
         current_fen = current_fen.split()[0]
 
-        # self.captured_pieces=['P', 'P', 'P', 'P']
+        # self.captured_pieces=['P', 'P', 'N', 'B', 'p', 'p', 'n', 'b']
 
         moves = self.simple_reset_to_home(current_fen)
 
@@ -714,7 +714,7 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        self.recover_captured_pieces(['P', 'p', 'p', 'P'])
+        self.recover_captured_pieces(['P', 'P', 'N', 'B', 'p', 'p', 'n', 'b'])
 
         # white_moves = self.captured_piece_return(self.captured_pieces)
         # print("Assignments")
