@@ -260,6 +260,8 @@ class BoardReset:
                 else:
                     path = [move[0], (-25, 0), (0, move[1][1]), (move[1][0] + 25, 0)]
         
+                print(f"[Test] Moving white piece {symbol} from {move[0]} to {move[1]} via path: {path}")
+
                 # Update white_captured list with new coordinates of the piece just moved
                 self.gantry.white_captured.remove(piece)  # Remove the old entry
                 self.gantry.white_captured.append((symbol, move[1]))  # Add the updated entry with new coordinates
