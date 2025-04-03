@@ -832,9 +832,9 @@ class BoardReset:
                     # Generate path to the closest square
                     target_coords = self.square_to_coords_ry(closest_square)
                     if closest_square[1] == '2':
-                        path_end =  [(0, 375 - (target_coords[1] + 25)), (+25, -25)]
+                        path_end =  [(0, (target_coords[1] + 25) - 375), (+25, -25)]
                     else:
-                        path_end = [(0, 375 - (target_coords[1] + 25)), (-25, -25)]
+                        path_end = [(0, (target_coords[1] + 25) - 375), (-25, -25)]
                     
                     # Update occupancy and move the piece
                     occ[closest_square] = 1
@@ -859,9 +859,9 @@ class BoardReset:
                     # Generate path to the closest square
                     target_coords = self.square_to_coords_ry(closest_square)
                     if closest_square[1] == '7':
-                        path_end =  [(0, 375 - (target_coords[1] + 25)), (- 25, -25)]
+                        path_end =  [(0, (target_coords[1] + 25) - 375), (- 25, -25)]
                     else:
-                        path_end = [(0, 375 - (target_coords[1] + 25)), (+ 25, -25)]
+                        path_end = [(0, (target_coords[1] + 25)-375), (+ 25, -25)]
                     
                     # Update occupancy and move the piece
                     occ[closest_square] = 1
