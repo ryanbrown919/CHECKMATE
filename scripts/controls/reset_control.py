@@ -150,9 +150,83 @@ class BoardReset:
 
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
-
         # DEAL WITH EXISITING FIRST 
 
+        # Parse the FEN string to extract list of pieces and their coordinates
+        board_state = self.fen_to_coords(self.control_system.board.fen())
+    
+        ## White captured and black captured are current coords of all pieces after end of game
+        # Filter and append all pieces to self.gantry.white_captured or self.gantry.black_captured
+        for piece in board_state:
+            symbol, coords = piece  # Unpack the tuple
+            if symbol.isupper():  # Check if the symbol is uppercase (white piece)
+                self.gantry.white_captured.append((symbol, coords))  # Append to white_captured
+            elif symbol.islower():
+                self.gantry.black_captured.append((symbol, coords))\
+                
+        # Poll hall for empty squares and create an 8x8 matrix
+        empty_squares = self.control_system.hall.sense_layer.get_squares_game()
+
+        # Flip the y-axis to match chess notation (h1 as (0,0), a8 as (7,7))
+        empty_squares = empty_squares[::-1]
+
+        # Initialize white_restart_state with 16 slots
+        white_restart_state = [(0, (0, 0)) for _ in range(16)]
+
+        ##moveblack piece out of white endzone    
+        for piece in self.gantry.black_captured:
+            symbol, coords = piece
+            x, y = coords
+            if x < 75 and y < 375:
+                # move is contains initial and final cords of black piece
+                move = self.nearest_neighbor(coords, empty_squares)
+                vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
+                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
+
+                # Update the black_captured list with the new coordinates
+                self.gantry.black_captured.remove(piece)
+                self.gantry.black_captured.append((symbol, move[1]))
+
+                # Update the empty_squares matrix
+                old_rank, old_file = coords[1] // 50, coords[0] // 50  # Convert old coords to matrix indices
+                new_rank, new_file = move[1][0] // 50, move [1][1] // 50  # Convert new coords to matrix indices
+                empty_squares[old_rank][old_file] = 0  # Mark the old square as empty
+                empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
+
+                # Execute the movement using the gantry
+                print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
+                movements = self.parse_path_to_movement(path)
+                commands = self.movement_to_gcode(movements)
+                print(f"Last move: {commands}")
+                self.send_commands(commands)
+
+        for piece in self.gantry.white_captured:
+            symbol, coords = piece
+            x, y = coords
+            if x < 75 and y < 375:
+                new_coords=self.symbol_to_valid_coordinates(symbol)
+                #check which of the new cords 
+
+                '''Check jacks function to know where this piece CAN move to'
+                'check white_restart_state to deterine which of those sqaures are free'
+                'Move white to closest free starting square' 
+                'update white_captured list with new coords of piece just moved'
+                'update white_restart_state list with new coords of piece just moved'''
+
+        
+            print(f"arranging white in rank 1 & 2: {path}")
+
+            movements = self.parse_path_to_movement(path)
+            commands = self.movement_to_gcode(movements)
+            print(f"Last move: {commands}")
+            self.send_commands(commands)
+            
+                
+                
+            
+
+         
+        
 
         #DEAL WITH DEAD ZONE SECOND 
 
