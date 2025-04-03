@@ -424,7 +424,7 @@ class BoardReset:
         # current_fen = self.board.fen()
         # current_fen = current_fen.split()[0]
 
-        self.captured_pieces=['P']
+        self.captured_pieces=['P', 'n']
 
         moves = self.simple_reset_to_home(current_fen)
 
@@ -435,21 +435,23 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        white_moves, black_moves = self.captured_piece_return(self.captured_pieces)
+        white_moves = self.captured_piece_return(self.captured_pieces)
+        print("Assignments")
+        print(white_moves)
 
-        for start_square, info in white_moves.items():
-            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
-            print(info["path"])
+        # for start_square, info in white_moves.items():
+        #     print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+        #     print(info["path"])
 
-            cmds = self.gantry.path_to_gcode(info["path"])
-            self.gantry.send_commands(cmds)
+        #     cmds = self.gantry.path_to_gcode(info["path"])
+        #     self.gantry.send_commands(cmds)
 
-        for start_square, info in black_moves.items():
-            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
-            print(info["path"])
+        # for start_square, info in black_moves.items():
+        #     print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+        #     print(info["path"])
 
-            cmds = self.gantry.path_to_gcode(info["path"])
-            self.gantry.send_commands(cmds)
+        #     cmds = self.gantry.path_to_gcode(info["path"])
+        #     self.gantry.send_commands(cmds)
 
 
     # def reset_board_to_home_recursive(self, current_mapping, moves_so_far=None):
@@ -633,43 +635,58 @@ class BoardReset:
 
         return move_plans
     
-    def captured_piece_return(self, captured_pieces):
+    def recover_captured_pieces(self, captured_pieces):
+        """
+        Processes a list of captured pieces and assigns each one a home coordinate
+        based on its color using a LIFO (stack) order (the last captured piece is processed first).
 
-
-
-        white_pattern = [(350, 435), (350, 410), (325, 435), (325, 410), (300, 435), (300, 410), (275, 435), (275, 410), (250, 435), (250, 410), (225, 435), (225, 410), (200, 435), (200, 410), (175, 435), (175, 410)]
-        black_pattern = [(0, 435), (0, 410), (25, 435), (25, 410), (50, 435), (50, 410), (75, 435), (75, 410), (100, 435), (100, 410), (125, 435), (125, 410), (150, 435), (150, 410), (175, 435), (175, 410)]
+        It works as follows:
+        1. Two candidate coordinate patterns (for white and black) are defined.
+        2. Current board occupancy is obtained from self.hall.sense_layer.get_squares_game()
+            and converted to a dictionary using occupancy_list_to_dict.
+        3. The captured_pieces list is iterated in reverse order.
+        4. For each captured piece, the function checks the candidate coordinates in order.
+            The first candidate found with occupancy value 0 (free) is assigned.
+        5. The occupancy dictionary is updated immediately so that no two pieces are assigned to the same square.
         
+        Returns:
+        A dictionary mapping the assignment order (0 for the first piece processed, etc.)
+        to a dictionary with the piece symbol and its assigned coordinate.
+        """
+        # Define candidate coordinate patterns.
+        white_pattern = [
+            (350,435), (350,410), (325,435), (325,410),
+            (300,435), (300,410), (275,435), (275,410),
+            (250,435), (250,410), (225,435), (225,410),
+            (200,435), (200,410), (175,435), (175,410)
+        ]
+        black_pattern = [
+            (0,435), (0,410), (25,435), (25,410),
+            (50,435), (50,410), (75,435), (75,410),
+            (100,435), (100,410), (125,435), (125,410),
+            (150,435), (150,410), (175,435), (175,410)
+        ]
+        
+        # Get current occupancy.
+        occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+        
+        assignments = {}
+        
+        # Process captured pieces in reverse order (LIFO: newest first).
+        for i, piece in enumerate(reversed(captured_pieces)):
+            pattern = white_pattern if piece.isupper() else black_pattern
+            assigned_coord = None
+            for candidate in pattern:
+                square_name = self.coords_to_square_ry(candidate)
+                if occ.get(square_name, 0) == 0:
+                    assigned_coord = candidate
+                    occ[square_name] = 1  # Mark the candidate as occupied.
+                    break
+            assignments[i] = {"piece": piece, "assigned_coord": assigned_coord}
+        
+        return assignments
+    
 
-        white_moves = {}
-        black_moves = {}
-        white_index = 0
-        black_index = 0
-        
-        for i, piece in enumerate(captured_pieces):
-            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-            if piece.isupper():
-                stored_coord = white_pattern[white_index % len(white_pattern)]
-                white_index += 1
-                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
-                white_moves[i] = {
-                    "piece": piece,
-                    "start_coord": stored_coord,
-                    "final_square": final_square,
-                    "path": path
-                }
-            else:
-                stored_coord = black_pattern[black_index % len(black_pattern)]
-                black_index += 1
-                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
-                black_moves[i] = {
-                    "piece": piece,
-                    "start_coord": stored_coord,
-                    "final_square": final_square,
-                    "path": path
-                }
-        
-        return white_moves, black_moves
     
     def recover_captured_piece_path(self, captured_coord, piece, occupancy):
         """
