@@ -58,21 +58,17 @@ class MainScreen(Screen):
         play_layout.add_widget(customplay_layout)
 
         # When "Play Game" is pressed, go to the loading screen
-        custom1 = RoundedButton(text="[size=60][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom1 = RoundedButton(text="[size=50][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom1.bind(on_release=lambda instance: self.start_custom1())
-        custom1.text_size = custom1.size
 
-        custom2 = RoundedButton(text="[size=60][b]Demo Game[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom2 = RoundedButton(text="[size=50][b]Demo Game[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom2.bind(on_release=lambda instance: self.start_demo_mode())
-        custom2.text_size = custom1.size
 
-        custom3 = RoundedButton(text="[size=60][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom3 = RoundedButton(text="[size=50][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom3.bind(on_release=lambda instance: self.start_custom3())
-        custom3.text_size = custom1.size
 
-        custom4 = RoundedButton(text="[size=60][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom4 = RoundedButton(text="[size=50][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom4.bind(on_release=lambda instance: self.start_custom4())
-        custom4.text_size = custom1.size
 
 
         quickplay_layout.add_widget(custom1)
