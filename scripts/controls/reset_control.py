@@ -1,55 +1,10 @@
 import math
-# from gantry import Gantry
-# from nfc import NFC
 import time
 
-# gantry = Gantry()
-# nfc = NFC()
-
-NFC_OFFSET = 43  
-BOARD_TO_PHYSICAL = {
-    # Rank 1 (x = 0)
-    "H1": (0, 0   + NFC_OFFSET), "G1": (0, 50  + NFC_OFFSET), "F1": (0, 100 + NFC_OFFSET), "E1": (0, 150 + NFC_OFFSET),
-    "D1": (0, 200 + NFC_OFFSET), "C1": (0, 250 + NFC_OFFSET), "B1": (0, 300 + NFC_OFFSET), "A1": (0, 350 + NFC_OFFSET),
-
-    # Rank 2 (x = 50)
-    "H2": (50, 0   + NFC_OFFSET), "G2": (50, 50  + NFC_OFFSET), "F2": (50, 100 + NFC_OFFSET), "E2": (50, 150 + NFC_OFFSET),
-    "D2": (50, 200 + NFC_OFFSET), "C2": (50, 250 + NFC_OFFSET), "B2": (50, 300 + NFC_OFFSET), "A2": (50, 350 + NFC_OFFSET),
-
-    # Rank 3 (x = 100)
-    "H3": (100, 0   + NFC_OFFSET), "G3": (100, 50  + NFC_OFFSET), "F3": (100, 100 + NFC_OFFSET), "E3": (100, 150 + NFC_OFFSET),
-    "D3": (100, 200 + NFC_OFFSET), "C3": (100, 250 + NFC_OFFSET), "B3": (100, 300 + NFC_OFFSET), "A3": (100, 350 + NFC_OFFSET),
-
-    # Rank 4 (x = 150)
-    "H4": (150, 0   + NFC_OFFSET), "G4": (150, 50  + NFC_OFFSET), "F4": (150, 100 + NFC_OFFSET), "E4": (150, 150 + NFC_OFFSET),
-    "D4": (150, 200 + NFC_OFFSET), "C4": (150, 250 + NFC_OFFSET), "B4": (150, 300 + NFC_OFFSET), "A4": (150, 350 + NFC_OFFSET),
-
-    # Rank 5 (x = 200)
-    "H5": (200, 0   + NFC_OFFSET), "G5": (200, 50  + NFC_OFFSET), "F5": (200, 100 + NFC_OFFSET), "E5": (200, 150 + NFC_OFFSET),
-    "D5": (200, 200 + NFC_OFFSET), "C5": (200, 250 + NFC_OFFSET), "B5": (200, 300 + NFC_OFFSET), "A5": (200, 350 + NFC_OFFSET),
-
-    # Rank 6 (x = 250)
-    "H6": (250, 0   + NFC_OFFSET), "G6": (250, 50  + NFC_OFFSET), "F6": (250, 100 + NFC_OFFSET), "E6": (250, 150 + NFC_OFFSET),
-    "D6": (250, 200 + NFC_OFFSET), "C6": (250, 250 + NFC_OFFSET), "B6": (250, 300 + NFC_OFFSET), "A6": (250, 350 + NFC_OFFSET),
-
-    # Rank 7 (x = 300)
-    "H7": (300, 0   + NFC_OFFSET), "G7": (300, 50  + NFC_OFFSET), "F7": (300, 100 + NFC_OFFSET), "E7": (300, 150 + NFC_OFFSET),
-    "D7": (300, 200 + NFC_OFFSET), "C7": (300, 250 + NFC_OFFSET), "B7": (300, 300 + NFC_OFFSET), "A7": (300, 350 + NFC_OFFSET),
-
-    # Rank 8 (x = 350)
-    "H8": (350, 0   + NFC_OFFSET), "G8": (350, 50  + NFC_OFFSET), "F8": (350, 100 + NFC_OFFSET), "E8": (350, 150 + NFC_OFFSET),
-    "D8": (350, 200 + NFC_OFFSET), "C8": (350, 250 + NFC_OFFSET), "B8": (350, 300 + NFC_OFFSET), "A8": (350, 350 + NFC_OFFSET),
-}
 
 class BoardReset:
-    def __init__(self, control_system):
-        
+    def __init__(self, control_system):    
         self.control_system = control_system
-        self.gantry = self.control_system.gantry
-        self.nfc = self.control_system.nfc
-
-        self.nfc.begin()
-
 
     def distance(self, x, y):
         """Calculate the Manhattan distance between two board coordinates."""
@@ -83,12 +38,6 @@ class BoardReset:
             current = nearest
 
         return path
-
-
-    # def setup():
-    #     nfc.begin()
-    #     time.sleep(2)
-    #     gantry.home()
 
     def square_to_coord(self, square):
             """
@@ -238,9 +187,9 @@ class BoardReset:
         for piece in board_state:
             symbol, coords = piece  # Unpack the tuple
             if symbol.isupper():  # Check if the symbol is uppercase (white piece)
-                self.gantry.white_captured.append((symbol, coords))  # Append to white_captured
+                self.control_system.gantry.white_captured.append((symbol, coords))  # Append to white_captured
             elif symbol.islower():
-                self.gantry.black_captured.append((symbol, coords))\
+                self.control_system.gantry.black_captured.append((symbol, coords))\
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.control_system.hall.sense_layer.get_squares_game()
@@ -252,7 +201,7 @@ class BoardReset:
         white_restart_state = [(0, (0, 0)) for _ in range(16)]
 
         ##moveblack piece out of white endzone    
-        for piece in self.gantry.black_captured:
+        for piece in self.control_system.gantry.black_captured:
             symbol, coords = piece
             x, y = coords
             if x < 75 and y < 375:
@@ -262,8 +211,8 @@ class BoardReset:
                 path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
 
                 # Update the black_captured list with the new coordinates
-                self.gantry.black_captured.remove(piece)
-                self.gantry.black_captured.append((symbol, move[1]))
+                self.control_system.gantry.black_captured.remove(piece)
+                self.control_system.gantry.black_captured.append((symbol, move[1]))
 
                 # Update the empty_squares matrix
                 old_rank, old_file = coords[1] // 50, coords[0] // 50  # Convert old coords to matrix indices
@@ -282,11 +231,24 @@ class BoardReset:
             symbol, coords = piece
             x, y = coords
             if x < 75 and y < 375:
-                new_coords=self.symbol_to_valid_coordinates(symbol)
-                #check which of the new cords 
+                reset_coords=self.symbol_to_valid_coordinates(symbol)
+                #check which of those new_cords are already occupied from white_restart_state and remove occupied new_coords
+                # Filter out occupied coordinates from new_coords
+                unoccupied_reset_coords = []
+                for coord in new_coords:
+                    is_occupied = False
+                    for state in white_restart_state:
+                        if state[0] != 0 and state[1] == coord:  # Check if the slot is occupied and matches the coord
+                            is_occupied = True
+                            break
+                    if not is_occupied:
+                        unoccupied_rest_coords.append(coord)
 
-                '''Check jacks function to know where this piece CAN move to'
-                'check white_restart_state to deterine which of those sqaures are free'
+                #find which of the new_cords is closest                
+                move = self.nearest_neighbor(coords, unoccupied_rest_coords)
+                if move[0][0] < 25 :
+                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
+                
                 'Move white to closest free starting square' 
                 'update white_captured list with new coords of piece just moved'
                 'update white_restart_state list with new coords of piece just moved'''
@@ -294,10 +256,10 @@ class BoardReset:
         
             print(f"arranging white in rank 1 & 2: {path}")
 
-            movements = self.parse_path_to_movement(path)
-            commands = self.movement_to_gcode(movements)
+            movements = self.control_system.gantry.parse_path_to_movement(path)
+            commands = self.control_system.gantry.movement_to_gcode(movements)
             print(f"Last move: {commands}")
-            self.send_commands(commands)
+            self.control_system.gantry.send_commands(commands)
             
                 
                 
@@ -309,7 +271,7 @@ class BoardReset:
         #DEAL WITH DEAD ZONE SECOND 
 
         # extract symbol and coodrinate of LAST white piece from dictionaory 
-        self.gantry.white_captured
+        self.control_system.gantry.white_captured
         # for i, val in enumerate(self.control_system.captured_pieces):
 
         #     if val.is_lower():
@@ -324,13 +286,12 @@ class BoardReset:
         start = (0, 0)
 
         # Get the occupied squares and compute the nearest neighbor path.
-        occupied_squares = board_reset.get_occupied_squares(board)
-        path = board_reset.nearest_neighbor(start, occupied_squares)
+        occupied_squares = self.get_occupied_squares(board)
+        path = self.nearest_neighbor(start, occupied_squares)
 
         # Map board coordinates to chess square labels.
         chess_path = {coord: board_reset.coord_to_chess_square(coord) for coord in path}
         # Map chess square labels to physical (x, y) coordinates using the static mapping.
-        physical_mapping = {square: BOARD_TO_PHYSICAL[square] for square in chess_path.values()}
 
         print("Nearest Neighbor Path (board coordinates):")
         print(path)
@@ -340,15 +301,9 @@ class BoardReset:
         print(physical_mapping)
 
         for square in path:
-            board_reset.gantry.send_coordinates_command(square)
-            piece = board_reset.nfc.read()
+            self.control_system.gantry.send_coordinates_command(square)
             print(f"Read piece: {piece}")
             time.sleep(1)
-
-
-
-
-
 
 
 
@@ -362,7 +317,6 @@ class BoardReset:
         # Map board coordinates to chess square labels.
         chess_path = {coord: board_reset.coord_to_chess_square(coord) for coord in path}
         # Map chess square labels to physical (x, y) coordinates using the static mapping.
-        physical_mapping = {square: BOARD_TO_PHYSICAL[square] for square in chess_path.values()}
 
         print("Nearest Neighbor Path (board coordinates):")
         print(path)
@@ -383,47 +337,6 @@ class BoardReset:
 
 
 
-
-
-
-if __name__ == "__main__":    
-    board = [
-        [1, 1, 1, 1, 1, 1, 1, 1], # 8
-        [1, 1, 1, 1, 1, 1, 1, 1], # 7
-        [0, 0, 0, 0, 0, 0, 0, 0], # 6
-        [0, 0, 0, 0, 0, 0, 0, 0], # 5
-        [0, 0, 0, 0, 0, 0, 0, 0], # 4
-        [0, 0, 0, 0, 0, 0, 0, 0], # 3
-        [1, 1, 1, 1, 1, 1, 1, 1], # 2
-        [1, 1, 1, 1, 1, 1, 1, 1]  # 1
-    # A  B  C  D  E  F  G  H
-    ]
-
-    board_reset = BoardReset()
-    # Toolhead's starting position (board coordinate).
-    start = (0, 0)
-
-    # Get the occupied squares and compute the nearest neighbor path.
-    occupied_squares = board_reset.get_occupied_squares(board)
-    path = board_reset.nearest_neighbor(start, occupied_squares)
-
-    # Map board coordinates to chess square labels.
-    chess_path = {coord: board_reset.coord_to_chess_square(coord) for coord in path}
-    # Map chess square labels to physical (x, y) coordinates using the static mapping.
-    physical_mapping = {square: BOARD_TO_PHYSICAL[square] for square in chess_path.values()}
-
-    print("Nearest Neighbor Path (board coordinates):")
-    print(path)
-    print("\nMapping to Chess Squares:")
-    print(chess_path)
-    print("\nChess Squares to Physical Coordinates:")
-    print(physical_mapping)
-
-    for square in path:
-        board_reset.gantry.send_coordinates_command(square)
-        piece = board_reset.nfc.read()
-        print(f"Read piece: {piece}")
-        time.sleep(1)
 
 
 
