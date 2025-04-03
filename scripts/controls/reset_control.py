@@ -590,13 +590,13 @@ class BoardReset:
         #     temp_x = 1 if start_x < 175 else -1
 
         # Determine vertical direction.
-        if dy > 0:
-            sign_y = 1
-        elif dy < 0:
-            sign_y = -1
-        else:
-            # For vertical moves, default to moving toward board center in y.
-            sign_y = 1 if start_y < 175 else -1
+        # if dy > 0:
+        #     sign_y = 1
+        # elif dy < 0:
+        #     sign_y = -1
+        # else:
+        #     # For vertical moves, default to moving toward board center in y.
+        #     sign_y = 1 if start_y < 175 else -1
 
         # Exit corner for the start square: offset by 25 in the chosen directions.
         exit_corner = (25 * sign_x, 25 * sign_y)
