@@ -36,7 +36,7 @@ class EndGameScreen(Screen):
         reset_btn.bind(on_release= lambda instance:self.reset_and_return())
 
         home_btn = RoundedButton(text= "Return to Menu", font_size = 40)
-        home_btn.bind(on_release= lambda instance:self.return_to_menu())
+        home_btn.bind(on_release= lambda instance:self.return_home())
 
         
 
