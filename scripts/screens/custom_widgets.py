@@ -500,9 +500,10 @@ class ChessBoard(Widget):
     def update_board(self, *args):
         print(f'testing updating visuals on piece pickup: {self.control_system.selected_piece}')
         if self.control_system.selected_piece is not None:
-            legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
-            self.highlight_legal_moves(legal_moves)
-
+            print("Highlighting squares")
+            self.legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
+        else:
+            self.legal_moves
         # Remove old chess pieces.
         pieces_to_remove = [child for child in self.children if isinstance(child, ChessPiece)]
         for piece in pieces_to_remove:

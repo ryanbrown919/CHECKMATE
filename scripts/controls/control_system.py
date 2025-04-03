@@ -615,6 +615,8 @@ class ChessControlSystem:
 
         self.notify_observers()
 
+        print("going to look for second piece")
+
         Clock.schedule_once(lambda dt: self.go_to_second_piece_detection, 0.1)
 
     def safe_poll_first(self, callback):
