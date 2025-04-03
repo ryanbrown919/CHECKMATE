@@ -1,11 +1,12 @@
 import math
 import time
 
+from hall_control import Hall
+from gantry_control import GantryControl
 
 class BoardReset:
-    def __init__(self, board, gantry, hall):    
+    def __init__(self, gantry, hall):    
         self.gantry = gantry
-        self.board = board
         self.hall = hall
 
     def distance(self, x, y):
@@ -198,6 +199,61 @@ class BoardReset:
 
             # Only process pieces in ranks 3-8 and not in the deadzone
             if x < 75 and y < 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
+
+                # Check which of those valid coordinates are already occupied
+                # occupied_coords = self.get_occupied_squares(self.board)
+                unoccupied_coords = []
+                for coord in valid_coords:
+                    if coord not in occupied_coords:
+                        unoccupied_coords.append(coord)
+
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    target_coord = unoccupied_coords[0]
+
+                    # Update the white_captured list with the new coordinates
+                    self.gantry.white_captured.remove(piece)  # Add logic for duplicate pieces
+                    self.gantry.white_captured.append((symbol, target_coord))
+
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    # self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    # self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving {symbol} from {coords} to {target_coord}")
+
+                    # Uncomment the following lines when debugging is done:
+                    # path = [coords, target_coord]  # Simple direct path
+                    # movements = self.gantry.parse_path_to_movement(path)
+                    # commands = self.gantry.movement_to_gcode(movements)
+                    # self.gantry.send_commands(commands)
+
+    def reset_playing_area_black(self):
+        # could probably merge this with above method to reduce bloat but oh well, cry about it 
+        """
+        Reset all BLACK pieces NOT on ranks 7, 8 or in the deadzone.
+        Assumes that the starting locations are either unoccupied or filled with the correct piece.
+        """
+        
+        print("Test: STARTING METHOD 'reset_playing_area_black'")
+       
+        pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
+
+        for piece in pieces:
+            symbol, coords = piece
+
+            # Only process black pieces (lowercase symbols)
+            if not symbol.islower():
+                continue
+
+            x, y = coords
+
+            # Only process pieces in ranks 1-6 and not in the deadzone
+            if x > 257 and y < 375:
                 # Get valid starting coordinates for the piece type
                 valid_coords = self.symbol_to_valid_coordinates(symbol)
 
@@ -405,24 +461,45 @@ class BoardReset:
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
+        print(f"[Test] Untransformed Empty squares: {empty_squares}")
+        empty_squares = [row[::-1] for row in empty_squares]
+        print(f"[Test] Transformed Empty squares: {empty_squares}")
 
-        # Flip the y-axis to match chess notation (h1 as (0,0), a8 as (7,7))
-        empty_squares = empty_squares[::-1]
+        # Invert 1s and 0s in the empty_squares matrix
+        empty_squares = [[1 - cell for cell in row] for row in empty_squares]
+        print(f"[Test] Inverted Empty squares: {empty_squares}")
 
-        # Initialize white_restart_state with 16 slots
-        # white_restart_state = [(0, (0, 0)) for _ in range(16)]
+        empty_targets = []
+        for i in range(len(empty_squares)):
+            for j in range(len(empty_squares[i])): 
+                if empty_squares[i][j] == 1:
+                    empty_targets.append((j*50, i*50))  
+        
+        print(f"[Test] Empty targets: {empty_targets}")
+
 
         ##moveblack piece out of white endzone    
         print("[Test] Moving black pieces out of white endzone")
         for piece in self.gantry.black_captured:
             symbol, coords = piece
+            print(f"Black piece: {symbol} at {coords}")
             x, y = coords
             if x < 75 and y < 375:
                 # move is contains initial and final cords of black piece
-                ''' change empty squares to remove ranks 1 and 2 '''
-                move = self.nearest_neighbor(coords, empty_squares) 
+                ''' remove empty squares to remove ranks 1 and 2 (all empty squares with x =0 and x= 50 ) '''
+                # Remove empty squares to exclude ranks 1 and 2 (all empty squares with x = 0 and x = 50)
+                filtered_empty_squares = []
+                for i in range(len(empty_squares)):
+                    for j in range(len(empty_squares[i])):
+                        if not (j * 50 < 75 and i * 50 < 375):  # Exclude x = 0, 50 and y = 0, 50
+                            filtered_empty_squares.append((j * 50, i * 50))
+                
+                print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
+
+                # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
+                move = self.nearest_neighbor(coords, filtered_empty_squares) 
                 vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
-                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
+                path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25)]
 
                 # Update the black_captured list with the new coordinates
                 self.gantry.black_captured.remove(piece) # me no likey
@@ -435,7 +512,8 @@ class BoardReset:
                 empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
 
                 # Execute the movement using the gantry
-                print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
+                print(f"[Test] Moving black piece {symbol} from {move[0]} to {move[1]} via path: {path}")
+                # print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
                 movements = self.gantry.parse_path_to_movement(path)
                 commands = self.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
