@@ -424,6 +424,7 @@ class BoardReset:
         self.captured_pieces=['P']
 
         moves = self.reset_board_to_home(current_fen)
+
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
             print(info["path"])
@@ -509,7 +510,7 @@ class BoardReset:
                 if available:
                     start_coords = self.square_to_coords_ry(square)
                     dest_coords = self.square_to_coords_ry(available)
-                    path = self.generate_path(start_coords, dest_coords, offset=25)
+                    path = self.generate_natural_path(start_coords, dest_coords, offset=25)
                     move_paths[square] = {
                         "piece": piece,
                         "final_square": available,
@@ -538,7 +539,7 @@ class BoardReset:
                 if available:
                     start_coords = self.square_to_coords_ry(square)
                     dest_coords = self.square_to_coords_ry(available)
-                    path = self.generate_path(start_coords, dest_coords, offset=25)
+                    path = self.generate_natural_path(start_coords, dest_coords, offset=25)
                     move_paths[square] = {
                         "piece": piece,
                         "final_square": available,
@@ -557,6 +558,67 @@ class BoardReset:
         
         return move_paths
 
+    def generate_natural_path(self, start, dest):
+        """
+        Generates a natural L-shaped path from the center of the start square to the center of the destination square.
+        The piece exits its starting square through the corner in the direction of travel and enters the destination square
+        through the corresponding corner.
+        
+        If the movement is strictly lateral or vertical, the piece will default to moving toward the board's center.
+        
+        Parameters:
+        start: (x, y) coordinates of the center of the starting square.
+        dest: (x, y) coordinates of the center of the destination square.
+        
+        Returns:
+        A list where the first element is the absolute starting coordinate and subsequent elements are relative moves.
+        """
+        start_x, start_y = start
+        dest_x, dest_y = dest
+
+        # Compute differences.
+        dx = dest_x - start_x
+        dy = dest_y - start_y
+
+        # Determine horizontal direction.
+        if dx > 0:
+            sign_x = 1
+        elif dx < 0:
+            sign_x = -1
+        else:
+            # For lateral moves, default to moving toward board center in x.
+            sign_x = 1 if start_x < 175 else -1
+
+        # Determine vertical direction.
+        if dy > 0:
+            sign_y = 1
+        elif dy < 0:
+            sign_y = -1
+        else:
+            # For vertical moves, default to moving toward board center in y.
+            sign_y = 1 if start_y < 175 else -1
+
+        # Exit corner for the start square: offset by 25 in the chosen directions.
+        exit_corner = (start_x + 25 * sign_x, start_y + 25 * sign_y)
+        # Entry corner for the destination square: offset from the destination center.
+        entry_corner = (dest_x - 25 * sign_x, dest_y - 25 * sign_y)
+
+        # Define waypoints:
+        P0 = (start_x, start_y)        # Start center.
+        P1 = exit_corner               # Exit corner of the start square.
+        P2 = entry_corner              # Entry corner of the destination square.
+        P3 = (dest_x, dest_y)          # Destination center.
+
+        # Compute relative moves between waypoints.
+        waypoints = [P0, P1, P2, P3]
+        relative_moves = []
+        for i in range(1, len(waypoints)):
+            prev = waypoints[i - 1]
+            curr = waypoints[i]
+            delta = (curr[0] - prev[0], curr[1] - prev[1])
+            relative_moves.append(delta)
+
+        return [P0] + relative_moves
 
 
     def clamp(self, value, minimum, maximum):
