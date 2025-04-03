@@ -101,10 +101,10 @@ class GantryControl:
             self.send(f"G90 X{x} Y{y}")
             time.sleep(0.05) 
 
-            self.serial.flushInput()
+            self.ser.flushInput()
             while True:
                 if self.is_idle():
-                    self.serial.flushInput()
+                    self.ser.flushInput()
                     break
     
         def send_jog_command(self, dx, dy):
