@@ -120,7 +120,7 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
-    def symbol_to_vaild_coodinates(self):
+    def symbol_to_valid_coodinates(self):
         valid_gantry_coords = {
             'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
             'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
@@ -137,6 +137,26 @@ class BoardReset:
         }
         return valid_gantry_coords
     
+    def symbol_to_valid_coodinates(self, symbol):
+        """
+        Given a chess piece symbol, return the valid coordinates for that specific symbol.
+        """
+        valid_gantry_coords = {
+            'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
+            'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
+            'B': [self.square_to_coord(f'{file}1') for file in 'cf'],  # White Bishop
+            'Q': [self.square_to_coord('d1')],  # White Queen
+            'K': [self.square_to_coord('e1')],  # White King
+            'P': [self.square_to_coord(f'{file}2') for file in 'abcdefgh'],  # White Pawn
+            'r': [self.square_to_coord(f'{file}8') for file in 'ah'],  # Black Rook
+            'n': [self.square_to_coord(f'{file}8') for file in 'bg'],  # Black Knight
+            'b': [self.square_to_coord(f'{file}8') for file in 'cf'],  # Black Bishop
+            'q': [self.square_to_coord('d8')],  # Black Queen
+            'k': [self.square_to_coord('e8')],  # Black King
+            'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
+        }
+        return valid_gantry_coords.get(symbol, [])
+
     def reset_playing_area_white(self):
         """
         Reset all WHITE pieces NOT on ranks 1,2 or 7,8 OR in the deadzone 
@@ -147,12 +167,16 @@ class BoardReset:
             symbol, current_coord = piece  # Extract symbol and current coordinates
 
             # Get valid coordinates for the symbol
-            valid_coords = self.symbol_to_vaild_coodinates().get(symbol, [])
+            valid_coords = self.symbol_to_valid_coodinates().get(symbol, [])
 
             # Check which of those valid coordinates are already occupied
             # How does the diaz function work? 
+
             occupied_coords = self.get_occupied_squares(self.control_system.board)
-            unoccupied_coords = [coord for coord in valid_coords if coord not in occupied_coords]
+            unoccupied_coords = []
+            for coord in valid_coords:
+                if coord not in occupied_coords:
+                    unoccupied_coords.append(coord)
 
             if unoccupied_coords:
                 # Generate path to the first unoccupied valid coordinate
@@ -183,7 +207,7 @@ class BoardReset:
                     file_idx += int(char)  # Skip empty squares
                 else:
                     square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
-                    coord = self.gantry.square_to_coord(square)
+                    coord = self.square_to_coord(square)
                     self.pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
 
