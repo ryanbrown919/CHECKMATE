@@ -1,8 +1,7 @@
 import math
 import time
 
-from hall_control import Hall
-from gantry_control import GantryControl
+
 
 class BoardReset:
 
@@ -27,11 +26,11 @@ class BoardReset:
 
 
 
-    def __init__(self, gantry, hall):    
+    def __init__(self, board, gantry, hall):    
 
+        self.board = board
         self.gantry = gantry
         self.hall = hall
-        self.captured_pieces = captured_pieces
 
     def distance(self, x, y):
         """Calculate the Manhattan distance between two board coordinates."""
@@ -704,7 +703,7 @@ class BoardReset:
         current_fen = self.board.fen()
         current_fen = current_fen.split()[0]
 
-        # self.captured_pieces=['P', 'P', 'P', 'P']
+        # self.captured_pieces=['P', 'P', 'N', 'B', 'p', 'p', 'n', 'b']
 
         moves = self.simple_reset_to_home(current_fen)
 
@@ -715,7 +714,7 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        self.recover_captured_pieces(captured_pieces)
+        self.recover_captured_pieces(['Q','P','R','P','P','N','p','n','p','r','n','b'])
 
         # white_moves = self.captured_piece_return(self.captured_pieces)
         # print("Assignments")
@@ -1095,6 +1094,7 @@ class BoardReset:
         #white clear
         for i, piece in enumerate(reversed(white_coords)):
             symbol, coord = piece
+            print(f"coords for {piece}: {coord}")
             path = [coord, (0, (375 - coord[1])), (white_x-coord[0], 0)]
             
             # Find the closest available square for the piece
@@ -1122,6 +1122,7 @@ class BoardReset:
 
         for i, piece in enumerate(reversed(black_coords)):
             symbol, coord = piece
+            print(f"coords for {piece}: {coord}")
             path = [coord, (0, 375-coord[1]), (black_x - coord[0], 0)]
             
             # Find the closest available square for the piece

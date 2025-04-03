@@ -30,7 +30,7 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from rocker_control import Rocker
     from hall_control import Hall
-    # from reset_control import BoardReset
+    from reset_control import BoardReset
     from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
@@ -39,7 +39,7 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
-    # from scripts.controls.reset_control import BoardReset
+    from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
 
 
@@ -235,7 +235,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after=['update_ui', 'kill_engine'])
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game', 'first_piece_detection',
             'second_piece_detection'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
@@ -309,6 +309,12 @@ class ChessControlSystem:
         while self.running:
             time.sleep(0.1)
 
+    def kill_engine(self):
+        if self.engine:
+            self.engine.quit()
+            self.engine = None
+
+
     def update_ui(self):
         # Update the UI with the current state.
         state = self.state
@@ -343,6 +349,8 @@ class ChessControlSystem:
         self.endgame_message = "Game Abandoned"
         if self.engine:
             self.engine.quit()
+            self.engine = None
+
 
 
 
@@ -407,6 +415,13 @@ class ChessControlSystem:
         move = chess.Move.from_uci(move_str)
 
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+                
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -546,6 +561,13 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -1014,7 +1036,7 @@ class ChessControlSystem:
         self.board.reset()
 
         self.rocker.reset()
-        
+        self.selected_piece = None
         self.notify_observers()
 
         self.update_ui()
@@ -1115,11 +1137,23 @@ class ChessControlSystem:
 
     def process_predefined_board_move(self, move, is_white):
 
+#         if self.board.is_en_passant(move):
+#     captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+#     captured_piece = self.board.piece_at(captured_square)
+# else:
+#     captured_piece = self.board.piece_at(move.to_square)
+
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
-            # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
+
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 captured_symbol = captured_piece.symbol()
