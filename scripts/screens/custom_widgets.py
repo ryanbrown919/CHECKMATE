@@ -75,9 +75,12 @@ class VerticalLine(Widget):
 
 
 class headerLayout(BoxLayout):
-    def __init__(self, menu=False, **kwargs):
+    def __init__(self, control_system, menu=False, **kwargs):
         # You can set orientation, size_hint, padding, etc.
         super(headerLayout, self).__init__(**kwargs)
+        self.control_system = control_system
+        self.font_size = self.control_system.title_font
+
         self.orientation='horizontal'
         self.padding=10
         self.spacing=0
@@ -85,19 +88,23 @@ class headerLayout(BoxLayout):
         icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
 
         if not menu:
-            self.add_widget(Label(text="Check-M.A.T.E", font_size=80, size_hint=(0.4, 1)))
+            self.add_widget(Label(text="Check-M.A.T.E", font_size=self.font_size, size_hint=(0.4, 1)))
 
             self.add_widget(Widget(size_hint_x=0.3))
-            self.add_widget(IconButton(source="assets/hamburgMenu.png", 
+            back_btn = IconButton(source="assets/back_arrow.png", 
                                                 size_hint=(0.1, 1),  # Disable relative sizing
                                                         # Set explicit dimensions
                                                 allow_stretch=True,      # Allow the image to stretch to fill the widget
                                                 keep_ratio=True          # Maintain the image's aspect ratio
-                                                ))
+                                                )
+            back_btn.bind(on_release = lambda instace: self.control_system.go_to_mainscreen)
+            self.add_widget(back_btn)
+            icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
+
             self.add_widget(icon)
 
         else:
-            self.add_widget(Label(text="Check-M.A.T.E", font_size=80, size_hint=(0.4, 1)))
+            self.add_widget(Label(text="Check-M.A.T.E", font_size=self.font_size, size_hint=(0.4, 1)))
             self.add_widget(Widget(size_hint_x=0.5))
             icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
             self.add_widget(icon)
@@ -111,6 +118,7 @@ class ChessBoardWidget(Widget):
         """
         super(ChessBoardWidget, self).__init__(**kwargs)
         self.orientation = orientation  # reserved for future rotations if needed
+        self.control_system = control_system
         self.selected_square = None  # e.g. "e4"
         self.row_labels = []
         self.col_labels = []
@@ -280,20 +288,20 @@ class ChessBoard(Widget):
         self.touch_enabled_white=touch_enabled_white
         self.touch_enabled_black=touch_enabled_black
 
-
-
         # External game logic
         #self.control_system = control_system if control_system is not None else GameLogic()
         # self.control_system = control_system
         self.control_system = control_system
         self.board = self.control_system.board
 
+        self.font_size = self.control_system.font_size
+
         self.control_system.register_observer(self.update_board)
 
         # self.control_system.register_observer(self.update_board)
 
         # For tracking selected piece and legal moves.
-        self.selected_piece = None
+        self.selected_piece = self.control_system.selected_piece
         self.legal_moves = []
         self.highlight_rects = []  # to store (Color, Rectangle) tuples
 
@@ -326,14 +334,22 @@ class ChessBoard(Widget):
             for file in range(8):
                 for rank in range(8):
                     # Use alternating colors.
+                    # if (file + rank) % 2 == 0:
+                    #     col = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
+                    # else:
+                    #     col = (247/255, 182/255, 114/255, 1) if self.bottom_colour_white else (189/255, 100/255, 6/255, 1)
+                    # Color(*col)
+
                     if (file + rank) % 2 == 0:
                         col = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
                     else:
                         col = (247/255, 182/255, 114/255, 1) if self.bottom_colour_white else (189/255, 100/255, 6/255, 1)
                     Color(*col)
+
                     # Adjust rank for perspective.
                     if self.bottom_colour_white:
                         pos_y = board_origin[1] + rank * cell_size
+                        #pos_x = board_origin[0] + file * cell_size
                     else:
                         pos_y = board_origin[1] + (7 - rank) * cell_size
                     pos_x = board_origin[0] + file * cell_size
@@ -349,15 +365,15 @@ class ChessBoard(Widget):
         # Add row labels in the left margin.
         for i in range(8):
             if self.bottom_colour_white:
-                label_text = str(8 - i)
-            else:
                 label_text = str(i + 1)
-            label = Label(text=label_text, halign="center", valign="middle")
-            label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
-            if self.bottom_colour_white:
-                pos_y = board_origin[1] + i * cell_size
             else:
-                pos_y = board_origin[1] + (7 - i) * cell_size
+                label_text = str(8-i)
+            label = Label(text=label_text, halign="center", valign="middle", font_size = self.font_size)
+            # label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
+            # if self.bottom_colour_white:
+            pos_y = board_origin[1] + i * cell_size
+            # else:
+            #     pos_y = board_origin[1] + (7 - i) * cell_size
             label.pos = (self.x, pos_y)
             label.size = (cell_size, cell_size)
             self.add_widget(label)
@@ -365,9 +381,13 @@ class ChessBoard(Widget):
 
         # Add column labels in the bottom margin.
         for i in range(8):
-            label_text = chr(ord('a') + i)
-            label = Label(text=label_text, halign="center", valign="middle")
-            label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
+            if self.bottom_colour_white:
+
+                label_text = chr(ord('a') + i)
+            else:
+                label_text = chr(ord('h') - i)
+            label = Label(text=label_text, halign="center", valign="middle", font_size = self.font_size)
+            # label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
             label.pos = (board_origin[0] + i * cell_size, self.y)
             label.size = (cell_size, cell_size)
             self.add_widget(label)
@@ -384,9 +404,12 @@ class ChessBoard(Widget):
                 rank = sq // 8
                 if self.bottom_colour_white:
                     pos_y = board_origin[1] + rank * cell_size
+                    pos_x = board_origin[0] + file * cell_size
                 else:
                     pos_y = board_origin[1] + (7 - rank) * cell_size
-                pos_x = board_origin[0] + file * cell_size
+                    pos_x = board_origin[0] + (7 - file) * cell_size
+                    #pos_y = board_origin[1] + (7 - rank) * cell_size
+                #pos_x = board_origin[0] + file * cell_size
                 child.pos = (pos_x, pos_y)
                 child.size = (cell_size, cell_size)
 
@@ -402,9 +425,13 @@ class ChessBoard(Widget):
             file = move.to_square % 8
             rank = move.to_square // 8
             if self.bottom_colour_white:
+                # pos_y = board_origin[1] + rank * cell_size
                 pos_y = board_origin[1] + rank * cell_size
+                pos_x = board_origin[0] + file * cell_size
             else:
+                # pos_y = board_origin[1] + (7 - rank) * cell_size
                 pos_y = board_origin[1] + (7 - rank) * cell_size
+                pos_x = board_origin[0] + (7 - file) * cell_size
             pos_x = board_origin[0] + file * cell_size
             # Choose color: red if capture, else green.
             if self.board.is_capture(move):
@@ -428,9 +455,12 @@ class ChessBoard(Widget):
                 rank = index // 8
                 if self.bottom_colour_white:
                     pos_y = board_origin[1] + rank * cell_size
+                    pos_x = board_origin[0] + file * cell_size
                 else:
                     pos_y = board_origin[1] + (7 - rank) * cell_size
-                pos_x = board_origin[0] + file * cell_size
+                    pos_x = board_origin[0] + (7 - file) * cell_size
+                    #pos_y = board_origin[1] + (7 - rank) * cell_size
+                #pos_x = board_origin[0] + file * cell_size
                 # Use blue for last move highlighting.
                 col = (191/255, 128/255, 1, 0.5) 
                 col_inst = Color(*col)
@@ -465,9 +495,15 @@ class ChessBoard(Widget):
         file = ord(square_str[0]) - ord('a')
         rank = int(square_str[1]) - 1
         return file + rank * 8
-
+    
 
     def update_board(self, *args):
+        print(f'testing updating visuals on piece pickup: {self.control_system.selected_piece}')
+        if self.control_system.selected_piece is not None:
+            print("Highlighting squares")
+            self.legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
+        else:
+            self.legal_moves
         # Remove old chess pieces.
         pieces_to_remove = [child for child in self.children if isinstance(child, ChessPiece)]
         for piece in pieces_to_remove:
@@ -523,6 +559,7 @@ class ChessBoard(Widget):
                     self.clear_highlights()
                     self.update_board()
                     return True
+        
         # Otherwise, select a piece if one exists at this square.
         piece_widget = None
         for child in self.children:
@@ -555,6 +592,7 @@ class ChessBoard(Widget):
         return super(ChessBoard, self).on_touch_down(touch)
 
     def highlight_legal_moves(self, legal_moves):
+
         # Set our legal moves and trigger a canvas update to draw highlights.
         self.legal_moves = legal_moves
         self._update_canvas()
@@ -570,6 +608,7 @@ class MovesHistory(ScrollView):
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)
         self.control_system = control_system
+        self.font_size = control_system.font_size
         # Here we register an observer if needed.
         self.control_system.register_observer(self.update_moves)
 
@@ -581,7 +620,7 @@ class MovesHistory(ScrollView):
         self.layout.clear_widgets()
         # Assume control_system.move_history is a list of UCI move strings.
         for move in self.control_system.move_history:
-            move_label = Label(text=move, size_hint_y=None, height=30)
+            move_label = Label(text=move, font_size = self.font_size, size_hint_y=None, height=30)
             self.layout.add_widget(move_label)
         self.scroll_y = 0
 
@@ -693,14 +732,15 @@ class MaterialBar(BoxLayout):
         self.black_score = ""
         self.white_score = ""
         self.control_system = control_system
+        self.font_size = self.control_system.font_size
         self.control_system.register_observer(self.update_percentages)
 
         self.bind(pos=self.update_canvas, size=self.update_canvas)
 
-        self.black_label = Label(text=f"{self.black_score}", color=(1, 1, 1, 1), font_size='16sp')
+        self.black_label = Label(text=f"{self.black_score}", color=(1, 1, 1, 1), font_size=self.font_size)
         # White's percentage label appears above the bar on the far right;
         # text color is black.
-        self.white_label = Label(text=f"{self.white_score}", color=(0, 0, 0, 1), font_size='16sp')
+        self.white_label = Label(text=f"{self.white_score}", color=(0, 0, 0, 1), font_size=self.font_size)
         # Add the labels as children.
         self.add_widget(self.black_label)
         self.add_widget(self.white_label)
@@ -932,4 +972,26 @@ class CellWidget(Widget):
     def update_rect(self, *args):
         self.rect.pos = self.pos
         self.rect.size = self.size
+
+
+
+class DemoToggleButton(ToggleButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Remove the default background image.
+        self.background_normal = ''
+        # Start with white background.
+        self.background_color = [1, 1, 1, 1]  # RGBA for white.
+        self.color_value = 'white'
+        self.bind(state=self.on_toggle)
+
+    def on_toggle(self, instance, value):
+        if value == 'down':
+            # Button is toggled "on" — set background to black.
+            self.background_color = [0, 0, 0, 1]  # RGBA for black.
+            self.color_value = 'black'
+        else:
+            # Button is toggled "off" — set background to white.
+            self.background_color = [1, 1, 1, 1]  # RGBA for white.
+            self.color_value = 'white'
         

@@ -11,7 +11,7 @@ from gantry import Gantry
 from hall import SenseLayer
 from nfc import NFC
 
-NFC_OFFSET = 42
+NFC_OFFSET = 43
 
 # Map chess squares to physical coordinates (in mm)
 BOARD_TO_PHYSICAL = {
@@ -85,7 +85,7 @@ def get_occupied_squares(board_state):
     # Map the board state to chess squares
     for y in range(7, -1, -1):
         for x in range(8):
-            if y < len(board_state) and x < len(board_state[y]) and board_state[y][x] == 1:
+            if board_state[y][x] == 1:
                 # Convert board position to chess square: Adjusted so that (0,0) is H1 and (7,7) is A8
                 file = chr(ord('H') - x)
                 rank = str(y + 1)
@@ -179,7 +179,9 @@ def main():
     print("Initialized NFC")
     
     gantry.home()
+    gantry.move(200, 43+50, blocking=True)  # Move to starting position
 
+    return
     
     try:
         while True:

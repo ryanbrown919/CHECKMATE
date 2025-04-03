@@ -18,6 +18,11 @@ def square_to_coord(square):
             return (x*25, y*25)
 
 def fen_to_coords(fen):
+    """
+    Given a fen string, output a list with the piece and its coordinates.
+    Following the convention: (symbol, (x,y))
+    """
+    
     # Extract board setup from the FEN string
     board_part = fen.split()[0]
     ranks = board_part.split("/")  # Split into ranks
@@ -32,7 +37,7 @@ def fen_to_coords(fen):
             else:
                 square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
                 coord = square_to_coord(square)
-                pieces.append((char, coord))
+                pieces.append((char, (coord[0]*25, coord[1]*25)))
                 file_idx += 1  # Move to the next file
 
     return pieces
@@ -41,7 +46,7 @@ def fen_to_coords(fen):
 def test_fen_to_squares():
     test_fens = {
         "Starting Position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        "Few Pieces": "8/8/8/3k4/8/4Q3/8/8 w - - 0 1",
+        "Few Pieces": "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3",
         "Empty Board": "8/8/8/8/8/8/8/8 w - - 0 1"
     }
 
