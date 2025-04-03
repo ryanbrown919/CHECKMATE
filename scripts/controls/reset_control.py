@@ -1,5 +1,3 @@
-
-
 import math
 # from gantry import Gantry
 # from nfc import NFC
@@ -138,6 +136,33 @@ class BoardReset:
             'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
         }
         return valid_gantry_coords
+    
+    def reset_playing_area_white(self):
+        """
+        Reset all WHITE pieces NOT on ranks 1,2 or 7,8 OR in the deadzone 
+        Assumes that the starting locations are either a) unoccupied or b) filled with the correct piece. 
+        """
+        # Loop over captured white pieces
+        for piece in self.gantry.white_captured:
+            symbol, current_coord = piece  # Extract symbol and current coordinates
+
+            # Get valid coordinates for the symbol
+            valid_coords = self.symbol_to_vaild_coodinates().get(symbol, [])
+
+            # Check which of those valid coordinates are already occupied
+            # How does the diaz function work? 
+            occupied_coords = self.get_occupied_squares(self.control_system.board)
+            unoccupied_coords = [coord for coord in valid_coords if coord not in occupied_coords]
+
+            if unoccupied_coords:
+                # Generate path to the first unoccupied valid coordinate
+                target_coord = unoccupied_coords[0]
+                path = self.nearest_neighbor(current_coord, [target_coord])
+
+                # Move the piece to the target coordinate
+                for step in path:
+                    self.gantry.send_coordinates_command(step)
+                    time.sleep(1)  # Simulate movement delay
 
     def fen_to_coords(self,fen):
         """
@@ -293,4 +318,3 @@ if __name__ == "__main__":
 
 
 
-    
