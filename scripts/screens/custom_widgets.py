@@ -469,20 +469,37 @@ class ChessBoard(Widget):
                 self.canvas.before.add(rect_inst)
                 self.last_move_rects.append((col_inst, rect_inst))
 
+    # def clear_highlights(self):
+    #     # Remove previously added highlight instructions.
+    #     for (col_inst, rect_inst) in self.highlight_rects:
+    #         if col_inst in self.canvas.after.children:
+    #             self.canvas.before.remove(col_inst)
+    #         if rect_inst in self.canvas.after.children:
+    #             self.canvas.before.remove(rect_inst)
+    #     self.highlight_rects = []
+
+    # def clear_last_move_highlights(self):
+    #     for (col_inst, rect_inst) in self.last_move_rects:
+    #         if col_inst in self.canvas.after.children:
+    #             self.canvas.before.remove(col_inst)
+    #         if rect_inst in self.canvas.after.children:
+    #             self.canvas.before.remove(rect_inst)
+    #     self.last_move_rects = []
+
     def clear_highlights(self):
-        # Remove previously added highlight instructions.
+        # Remove previously added highlight instructions from canvas.before.
         for (col_inst, rect_inst) in self.highlight_rects:
-            if col_inst in self.canvas.after.children:
+            if col_inst in self.canvas.before.children:
                 self.canvas.before.remove(col_inst)
-            if rect_inst in self.canvas.after.children:
+            if rect_inst in self.canvas.before.children:
                 self.canvas.before.remove(rect_inst)
         self.highlight_rects = []
 
     def clear_last_move_highlights(self):
         for (col_inst, rect_inst) in self.last_move_rects:
-            if col_inst in self.canvas.after.children:
+            if col_inst in self.canvas.before.children:
                 self.canvas.before.remove(col_inst)
-            if rect_inst in self.canvas.after.children:
+            if rect_inst in self.canvas.before.children:
                 self.canvas.before.remove(rect_inst)
         self.last_move_rects = []
 

@@ -27,6 +27,7 @@ class MainScreen(Screen):
         super(MainScreen, self).__init__(**kwargs)
 
         self.control_system = control_system
+        self.font_size = self.control_system.font_size
 
         self.padding = 0
         self.spacing = 0
@@ -51,22 +52,22 @@ class MainScreen(Screen):
         body_layout.add_widget(play_layout)
         body_layout.add_widget(VerticalLine())
         body_layout.add_widget(option_layout)
-        play_layout.add_widget(Label(text="Quickplay", font_size=32, size_hint=(0.2, 0.1), pos_hint={'left': 0}))
+        play_layout.add_widget(Label(text="Quickplay", font_size=50, size_hint=(0.2, 0.1), pos_hint={'left': 0}))
         play_layout.add_widget(quickplay_layout)
         play_layout.add_widget(HorizontalLine())
         play_layout.add_widget(customplay_layout)
 
         # When "Play Game" is pressed, go to the loading screen
-        custom1 = RoundedButton(text="[size=30][b]Play Engine[/b][/size]\n[size=25]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom1 = RoundedButton(text="[size=60][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
         custom1.bind(on_release=lambda instance: self.start_custom1())
 
-        custom2 = RoundedButton(text="[size=30][b]Demo Game[/b][/size]\n[size=25]Color: White\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom2 = RoundedButton(text="[size=60][b]Demo Game[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
         custom2.bind(on_release=lambda instance: self.start_demo_mode())
 
-        custom3 = RoundedButton(text="[size=30][b]Bot V Bot[/b][/size]\n[size=25]\nElo: 1500[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom3 = RoundedButton(text="[size=60][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
         custom3.bind(on_release=lambda instance: self.start_custom3())
 
-        custom4 = RoundedButton(text="[size=30][b]Challenge Mode[/b][/size]\n[size=25]Color: White\nElo: 3000[/size]", markup=True, font_size=FONT_SIZE, size_hint=(1, 1))        
+        custom4 = RoundedButton(text="[size=60][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
         custom4.bind(on_release=lambda instance: self.start_custom4())
 
 
@@ -86,22 +87,22 @@ class MainScreen(Screen):
         customplay_layout.add_widget(set_modes_button)
 
         user_btn = IconButton(source="assets/User.png", 
-                                            size_hint=(1, 0.3),
+                                            size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
         user_btn.bind(on_release=lambda instance: self.control_system.gantry.magnet_carlsen())
         
         settings_btn = (IconButton(source="assets/settings.png", 
-                                            size_hint=(1, 0.3),
+                                            size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True))
         reset_btn = (IconButton(source="assets/reset.png", 
-                                            size_hint=(1, 0.3),
+                                            size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True))
         reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
         gantry_btn = IconButton(source="assets/Power.png", 
-                                            size_hint=(1, 0.3),
+                                            size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
         gantry_btn.bind(on_release=lambda instance: self.control_system.go_to_gantry())
