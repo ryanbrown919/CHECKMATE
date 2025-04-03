@@ -58,16 +58,16 @@ class MainScreen(Screen):
         play_layout.add_widget(customplay_layout)
 
         # When "Play Game" is pressed, go to the loading screen
-        custom1 = RoundedButton(text="[size=60][b]Play Engine[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom1 = RoundedButton(text="[size=50][b]Play Engine[/b][/size]\n[size=40]Player: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom1.bind(on_release=lambda instance: self.start_custom1())
 
-        custom2 = RoundedButton(text="[size=60][b]Demo Game[/b][/size]\n[size=40]Color: White\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom2 = RoundedButton(text="[size=50][b]Demo Game[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom2.bind(on_release=lambda instance: self.start_demo_mode())
 
-        custom3 = RoundedButton(text="[size=60][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom3 = RoundedButton(text="[size=50][b]Bot V Bot[/b][/size]\n[size=40]\nElo: 1500[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom3.bind(on_release=lambda instance: self.start_custom3())
 
-        custom4 = RoundedButton(text="[size=60][b]Challenge Mode[/b][/size]\n[size=40]Color: White\nElo: 3000[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1))        
+        custom4 = RoundedButton(text="[size=50][b]Challenge Mode[/b][/size]\n[size=40]Player: White\nElo: 3000[/size]", markup=True, font_size=self.font_size, size_hint=(1, 1), halign='center', valign='middle')        
         custom4.bind(on_release=lambda instance: self.start_custom4())
 
 
@@ -86,23 +86,23 @@ class MainScreen(Screen):
         set_modes_button.bind(on_release=self.open_mode_popup)
         customplay_layout.add_widget(set_modes_button)
 
-        user_btn = IconButton(source="assets/User.png", 
+        user_btn = IconButton(source="assets/Carlsen.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
         user_btn.bind(on_release=lambda instance: self.control_system.gantry.magnet_carlsen())
         
-        settings_btn = (IconButton(source="assets/settings.png", 
+        settings_btn = (IconButton(source="assets/reset.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True))
         settings_btn.bind(on_release=lambda instance: self.control_system.resetboard())
-        reset_btn = (IconButton(source="assets/reset.png", 
-                                            size_hint=(1, 0.2),
-                                            allow_stretch=True,
-                                            keep_ratio=True))
-        reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
-        gantry_btn = IconButton(source="assets/Power.png", 
+        # reset_btn = (IconButton(source="assets/reset.png", 
+        #                                     size_hint=(1, 0.2),
+        #                                     allow_stretch=True,
+        #                                     keep_ratio=True))
+        # reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
+        gantry_btn = IconButton(source="assets/Manual.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
@@ -111,7 +111,7 @@ class MainScreen(Screen):
 
         option_layout.add_widget(user_btn)
         option_layout.add_widget(settings_btn)
-        option_layout.add_widget(reset_btn)
+        # option_layout.add_widget(reset_btn)
         option_layout.add_widget(gantry_btn)
         
 
@@ -152,7 +152,7 @@ class MainScreen(Screen):
         popup.on_mode_selected = self.on_mode_selected
         popup.open()
 
-    def on_mode_selected(self, color, elo):
+    def on_mode_selected(self, color, elo, switch):
         self.preferred_color = color
         self.chess_elo = elo
         print(f"Selected mode: {color}, ELO: {elo}")
@@ -161,10 +161,14 @@ class MainScreen(Screen):
             self.bot_mode=True
             self.preferred_color == 'white'
         elif color == 'Random':
-            self.preferred_color = random.choice('white', 'black')
+            self.preferred_color = random.choice(('white', 'black'))
             self.bot_mode = False
         else:
             self.bot_mode = False
+        if switch:
+            self.use_switch = True
+        else:
+            self.use_switch = True
 
 
     def start_custom1(self):
@@ -267,18 +271,29 @@ class ModePopup(Popup):
         self.size_hint = (0.8, 0.5)
         self.auto_dismiss = False
 
+        layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
+
+
+        self.selected_switch = False  # Default value for the toggle switch
+        # Add a toggle button for the new switch
+        toggle_layout = BoxLayout(orientation="horizontal", spacing=10)
+        toggle_layout.add_widget(Label(text="Use Switch:", size_hint=(0.4, 1)))
+        self.switch_toggle = ToggleButton(text="Off", state="normal", font_size=40)
+        self.switch_toggle.bind(on_press=self.on_switch_toggled)
+        toggle_layout.add_widget(self.switch_toggle)
+        layout.add_widget(toggle_layout)
+
         self.selected_color = current_color
         self.selected_elo = current_elo
 
-        layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
 
         # Color selection section
         color_layout = BoxLayout(orientation="horizontal", spacing=10)
         color_layout.add_widget(Label(text="Preferred Color:", size_hint=(0.4, 1)))
-        self.white_btn = ToggleButton(text="White", group="color", allow_no_selection=False)
-        self.black_btn = ToggleButton(text="Black", group="color", allow_no_selection=False)
-        self.random_btn = ToggleButton(text="Random", group="color", allow_no_selection=False)
-        self.botvbot_btn = ToggleButton(text="Bot V Bot", group="color", allow_no_selection=False)
+        self.white_btn = ToggleButton(text="White", group="color", allow_no_selection=False, font_size = 40)
+        self.black_btn = ToggleButton(text="Black", group="color", allow_no_selection=False, font_size = 40)
+        self.random_btn = ToggleButton(text="Random", group="color", allow_no_selection=False, font_size = 40)
+        self.botvbot_btn = ToggleButton(text="Bot V Bot", group="color", allow_no_selection=False, font_size = 40)
 
         
         # Set initial selection
@@ -306,18 +321,18 @@ class ModePopup(Popup):
 
         # ELO selection section
         elo_layout = BoxLayout(orientation="vertical", spacing=10)
-        elo_layout.add_widget(Label(text="Engine ELO Rating:", size_hint=(1, 0.3)))
+        elo_layout.add_widget(Label(text="Engine ELO Rating:", size_hint=(1, 0.3), font_size = 40))
         self.elo_slider = Slider(min=1320, max=2800, value=current_elo, step=50, size_hint=(1, 0.3))
         elo_layout.add_widget(self.elo_slider)
-        self.elo_label = Label(text=f"ELO: {int(self.elo_slider.value)}", size_hint=(1, 0.3))
+        self.elo_label = Label(text=f"ELO: {int(self.elo_slider.value)}", size_hint=(1, 0.3), font_size = 40)
         elo_layout.add_widget(self.elo_label)
         self.elo_slider.bind(value=self.on_elo_changed)
         layout.add_widget(elo_layout)
 
         # OK and Cancel buttons
         button_layout = BoxLayout(orientation="horizontal", spacing=10, size_hint=(1, 0.3))
-        ok_button = Button(text="OK")
-        cancel_button = Button(text="Cancel")
+        ok_button = Button(text="OK", font_size = 40)
+        cancel_button = Button(text="Cancel", font_size = 40)
         ok_button.bind(on_release=self.on_ok)
         cancel_button.bind(on_release=self.on_cancel)
         button_layout.add_widget(ok_button)
@@ -333,10 +348,13 @@ class ModePopup(Popup):
         self.selected_elo = int(value)
         self.elo_label.text = f"ELO: {self.selected_elo}"
 
+    def on_switch_toggled(self, instance):
+        self.selected_switch = instance.text
+
     def on_ok(self, instance):
         # Call a callback if defined, passing the selected values
         if hasattr(self, "on_mode_selected"):
-            self.on_mode_selected(self.selected_color, self.selected_elo)
+            self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
         self.dismiss()
 
     def on_cancel(self, instance):

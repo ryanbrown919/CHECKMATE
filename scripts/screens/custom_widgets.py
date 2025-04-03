@@ -540,6 +540,10 @@ class ChessBoard(Widget):
 
             # Refresh the canvas to update the highlights.
             self._update_canvas()
+        else:
+            self.legal_moves = []
+            self._update_canvas()
+
         
 
 

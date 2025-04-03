@@ -53,7 +53,7 @@ class GantryControl:
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
             self.set_velocity(15000)
-            self.set_acceleration(500)
+            self.set_acceleration(400)
 
         def send(self, command):
             with self.serial_lock:
@@ -1247,13 +1247,12 @@ class GantryControl:
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
                         response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
 
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
-                    print(f"Status: {status}")
+
                     if '<Idle' in status:
                         self.finished = True
                         self.ser.flushInput()
@@ -1271,7 +1270,6 @@ class GantryControl:
             if self.magnet_state == "MAG OFF":
                 self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.set_acceleration(400)
                 self.send("M8") # on
 
             gcode_commands = []
