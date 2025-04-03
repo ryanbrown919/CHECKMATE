@@ -528,13 +528,13 @@ class ChessBoard(Widget):
         print(f"trying to hightlight {square_str}")
         if square_str is not None:
             # Convert algebraic notation (e.g., 'a2') to a board index.
-            square_index = self.notation_to_index(square_str)
+            # square_index = self.notation_to_index(square_str)
             
             # Retrieve legal moves from the control system using this index.
-            self.legal_moves = self.control_system.select_piece(square_index)
+            self.legal_moves = self.control_system.select_piece(square_str)
             
             # Optionally set the selected piece in the control system.
-            self.control_system.selected_piece = square_index
+            # self.control_system.selected_piece = square_str
 
             # Refresh the canvas to update the highlights.
             self._update_canvas()
