@@ -546,6 +546,14 @@ class BoardReset:
             print("The following moves remain delayed (no home square free):", delayed_moves)
         
         return move_paths
+    
+    def sign(self, x):
+        if x < 0:
+            return -1
+        elif x > 0:
+            return 1
+        else:
+            return 0
 
 
     def generate_natural_path(self, start, dest):
@@ -574,13 +582,12 @@ class BoardReset:
         dy = dest_y - start_y
 
         # Determine horizontal direction.
-        if dx > 0:
-            sign_x = 1
-        elif dx < 0:
-            sign_x = -1
-        else:
-            # For lateral moves, default to moving toward board center in x.
-            sign_x = 1 if start_x < 175 else -1
+        sign_x = self.sign(dx)
+        sign_y = self.sign(dy)
+
+        # if sign_x == 0:
+        #     # For lateral moves, default to moving toward board center in x.
+        #     temp_x = 1 if start_x < 175 else -1
 
         # Determine vertical direction.
         if dy > 0:
