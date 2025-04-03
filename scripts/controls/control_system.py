@@ -141,6 +141,9 @@ class ChessControlSystem:
 
         }
 
+        # self.piece_images['k'] = 'assets/black_king.png'
+        # self.piece_images['K'] = 'assets/white_king.png'
+
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
         self.endgame_message = ""
@@ -1029,6 +1032,9 @@ class ChessControlSystem:
         self.captured_pieces = []
         self.move_history = []
 
+        self.piece_images['k'] = 'assets/black_king.png'
+        self.piece_images['K'] = 'assets/white_king.png'
+
       
 
         self.game_winner = None
@@ -1158,6 +1164,7 @@ class ChessControlSystem:
                 captured_symbol = captured_piece.symbol()
 
                 # Note: You might need special handling for en passant captures.
+        # self.notify_observers()
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
 
@@ -1205,8 +1212,6 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        self.notify_observers()
-
         if self.checkmate:
             self.end_game()
 
@@ -1221,6 +1226,9 @@ class ChessControlSystem:
         self.captured_pieces = []
         self.move_history = []
 
+        self.piece_images['k'] = 'assets/black_king.png'
+        self.piece_images['K'] = 'assets/white_king.png'
+
         self.rocker.reset()
         
         self.notify_observers()
@@ -1234,8 +1242,8 @@ class ChessControlSystem:
         if not self.demo_progress == len(self.demo_game):
 
             self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-            self.notify_observers()
-            self.update_ui()
+            # self.notify_observers()
+            # self.update_ui()
             self.demo_progress += 1
             Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.2)
 
