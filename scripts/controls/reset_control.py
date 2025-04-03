@@ -3,7 +3,7 @@ import time
 
 
 class BoardReset:
-    def __init__(self, gantry, board, hall):    
+    def __init__(self, board, gantry, hall):    
         self.gantry = gantry
         self.board = board
         self.hall = hall
@@ -326,7 +326,6 @@ class BoardReset:
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
             print(info["path"])
-
 
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
