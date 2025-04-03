@@ -18,7 +18,7 @@ class EndGameScreen(Screen):
         self.control_system = control_system
         root = BoxLayout(orientation='vertical', padding=10)
 
-        header_layout = headerLayout(menu=False)
+        header_layout = headerLayout(control_system = self.control_system, menu=False)
 
 
         layout = BoxLayout(orientation='horizontal', padding=10)
@@ -26,7 +26,7 @@ class EndGameScreen(Screen):
 
         board = ChessBoard(touch_enabled_black=False, touch_enabled_white=True, bottom_colour_white=True, control_system=self.control_system, size_hint=(1, 1))
 
-        endgame_text = "FUCK ME"
+        endgame_text = self.control_system.endgame_message
 
         endgame_label = Label(text=endgame_text, font_size=40)
 

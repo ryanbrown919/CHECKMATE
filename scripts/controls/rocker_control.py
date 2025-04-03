@@ -23,7 +23,7 @@ class Rocker():
             self.home()
 
     def get_switch_state(self):
-        return lgpio.gpio_read(self.handle, self.switch_pin)
+        return not lgpio.gpio_read(self.handle, self.switch_pin)
 
     def home(self):
         self._move_servo(self.CENTER_DUTY)
@@ -55,7 +55,7 @@ class Rocker():
         lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
     
     def toggle(self):
-        if self.get_switch_state():
+        if not self.get_switch_state():
             self.to_white()
         else:
             self.to_black()

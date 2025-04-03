@@ -16,6 +16,7 @@ import threading
 import sys
 import random
 import copy
+import asyncio
 
 import logging
 logging.getLogger('transitions').setLevel(logging.WARNING)
@@ -98,8 +99,9 @@ class ChessControlSystem:
             'player_move_confirmed',
             'engine_turn', 
             'first_piece_detection',
-            'second_piece_detection'
-            'end_game'
+            'second_piece_detection',
+            'end_game',
+            'predefined_game'
         ]
         },
         'gantryscreen',
@@ -144,6 +146,9 @@ class ChessControlSystem:
         self.endgame_message = "Jobs not finished"
         self.checkmate = False
 
+        self.font_size = 40
+        self.title_font = 120
+
         self.board = chess.Board()  # Integrated chess board.
         self.running = True
         if running_on_pi:
@@ -157,6 +162,12 @@ class ChessControlSystem:
             self.engine = None
         
         self.engine = None
+
+        self.use_switch = True
+
+        self.ingame_message = ""
+
+        self.demo_game = ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f8e7", "f1e1", "e8g8", "d2d4", "e5d4", "c2c4", "d4c3", "e4e5", "c3b2", "c1b2", "f6e8", "a4c2", "d7d6", "d1d3", "f7f5", "e5f6", "e7f6", "d3h7", "g8f7", "c2g6"]
         
         self.parameters = {'online': False, 'colour': "white", 'elo': 1500, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': True, 'engine_path': self.engine_path, 'local_mode': False}  # Default parameters to be set by the user 
 
@@ -181,6 +192,9 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='start_game', source='mainscreen', dest='gamescreen_engine_turn',
                                     conditions=lambda: self.parameters["bot_mode"] == True,
                                     after=['init_game', 'update_ui', 'on_board_turn'])
+        
+        self.machine.add_transition(trigger='start_demo_game', source='mainscreen', dest='gamescreen_predefined_game',
+                                    after=['update_ui', 'on_predefined_first_turn'])
 
         
 
@@ -210,12 +224,19 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='player_move_complete', source='gamescreen_player_turn', dest='gamescreen_engine_turn',
                                     unless='is_local_mode', after=['on_player_turn', 'notify_observers'])
         
+        self.machine.add_transition(trigger='process_predefined_board_move', source='gamescreen_predefined_game', dest='gamescreen_predefined_game',
+                                    after=['notify_observers'])
+        
 
 
         # self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen')
-        self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen', after=['update_ui'])
+        self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['update_ui'])
         self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
+
+
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen'], dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='end_game_screen', after=['early_exit', 'update_ui'])
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -252,6 +273,7 @@ class ChessControlSystem:
 
         self.legal_moves = None
         self.game_winner = None
+        self.selected_piece = None
 
 
 
@@ -303,12 +325,17 @@ class ChessControlSystem:
         self.update_ui()
         """Call all registered observer callbacks with the updated board."""
         for callback in self.observers:
-            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0.1)
+            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0.05)
             #callback(self.board)
 
     # def start_game(self):
     #     self.to_gamescreen()
     #     pass
+
+    def early_exit(self):
+
+        self.endgame_message = "Game Abandoned"
+
 
 
 
@@ -415,7 +442,8 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        self.rocker.toggle()
+        if not self.use_switch:
+            self.rocker.toggle()
 
         self.notify_observers()
         self.on_player_move_confirmed()
@@ -431,6 +459,8 @@ class ChessControlSystem:
         Calculate the distance between two chess squares given in text notation (e.g., 'e2e4').
         Returns the Manhattan distance between the squares.
         """
+
+        self.ingame_message = "Illegal Move detected!"
         if len(move_str) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
         
@@ -541,88 +571,261 @@ class ChessControlSystem:
         # self.process_legal_player_move(f"{move}")
 
 
+    # def on_player_first_turn(self):  
+    #     print("[State] Entering Player Turn")
+    #     self.ingame_message = "Waiting for Player..."
+
+    #     Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
+
+
+    # def on_player_turn(self):
+    #     print("[State] Entering Player Turn")
+
+    
+    #     Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.1)
+    #     # When entering player's turn, immediately begin hall effect polling.
+        
+    #     # State transition will stay in this state until a change is detected, then it will go to second state
+    # def first_piece_detection_poll(self):
+
+    #     self.ingame_message = "Waiting for Player...."
+
+
+
+    #     self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+
+    #     print(self.initial_board)
+
+        
+    #     self.selected_piece = None
+    #     # while self.selected_piece is None:
+             
+    #         # #  print("Trying to find first piece")
+             
+    #         #  new_board = self.hall.sense_layer.get_squares_game()
+    #         #  #print(new_board)
+    #         #  self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
+    #         #  time.sleep(0.1)
+    #     # self.safe_poll_first()
+
+
+    #     # Start the polling process:
+    #     self.safe_poll_first(self.on_piece_found)
+
+    #     while self.selected_piece is None:
+
+
+    #     print(self.selected_piece)
+        
+
+    #     self.notify_observers()
+
+    #     print("going to look for second piece")
+
+    #     Clock.schedule_once(lambda dt: self.go_to_second_piece_detection, 0.1)
+
+    # def safe_poll_first(self, callback):
+    #     new_board = self.hall.sense_layer.get_squares_game()
+    #     self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
+    #     if self.selected_piece is not None:
+    #         callback(self.selected_piece)
+    #     else:
+    #         Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
+
+
+    # # def safe_poll_second(self):
+    # #     # Schedule the next call after 0.1 seconds.
+
+    # #         new_board = self.hall.sense_layer.get_squares_game()
+    # #          #print(new_board)
+    # #         self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
+    # #         if self.selected_move is not None:
+    # #             return 
+    # #         Clock.schedule_once(self.safe_poll_second, 0.1)
+
+
+    # def on_piece_found(self,selected_piece):
+    #         print("Detected piece:", selected_piece)
+    #         # # Now that a piece has been selected, get its legal moves.
+    #         # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
+    #         # self.highlight_legal_moves(legal_moves)
+    #         self.notify_observers()
+
+    # def safe_poll_second(self, callback):
+    #     new_board = self.hall.sense_layer.get_squares_game()
+    #     self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
+    #     if self.selected_move is not None:
+    #         callback(self.selected_move)
+    #     else:
+    #         Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
+
+
+
+    # def second_piece_detection_poll(self):
+
+        
+    #     print("looking for second move")
+    #     self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+    #     self.selected_move = None
+    #     # while self.selected_move is None:
+
+    #     #     new_board = self.hall.sense_layer.get_squares_game()
+    #     #     self.selected_move = self.hall.compare_boards(new_board, initial_board)
+    #     #     time.sleep(0.1)
+
+    #     # Start the polling process:
+    #     self.safe_poll_second(self.on_piece_found)
+
+    #     # print(self.selected_piece)
+
+    #     # self.safe_poll_second()
+
+    #     print(f"done, found move, {self.selected_piece}{self.selected_move}")
+
+    #     if self.selected_piece == self.selected_move:
+    #         print("Piece replaced, finding new move")
+    #         # selected_piece = None
+    #         self.go_to_first_piece_detection()
+
+    #     move_str = f"{self.selected_piece}{self.selected_move}"
+
+    #     self.selected_move = None
+
+    #     print('switch')
+    #     print(self.servo.get_switch_state())
+    #     if self.use_switch:
+    #         print("waiting for switch")
+    #         while self.servo.get_switch_state():
+    #             time.sleep(0.1)
+
+    #         print('switch passed')
+
+        
+    #     move = chess.Move.from_uci(move_str)
+
+    #     legal_moves = [move for move in self.board.legal_moves if move.from_square == chess.parse_square(self.selected_piece)]
+
+    #     print(legal_moves)
+
+    #     if move in legal_moves:
+    #         print("Legal move, executing it")
+
+    #         self.process_legal_player_move(move_str)
+
+    #     else:
+    #         print("Illegal move, executing YOU")
+
+    #         self.process_illegal_player_move(move_str)
+
+    # def on_player_move_confirmed(self):
+    #     print("[State] Player Move Confirmed")
+    #     self.update_ui()
+    #     # Process the player move.
+    #     # For simplicity, here we pick the first legal move.
+    #     self.process_move()
+
     def on_player_first_turn(self):  
         print("[State] Entering Player Turn")
-
-        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 5)
-
+        self.ingame_message = "Waiting for Player..."
+        # Start the first-piece detection after a delay (if needed).
+        Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 2)
 
     def on_player_turn(self):
         print("[State] Entering Player Turn")
-
-    
+        # Immediately begin first-piece detection.
         Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.1)
-        # When entering player's turn, immediately begin hall effect polling.
-        
-        # State transition will stay in this state until a change is detected, then it will go to second state
+
     def first_piece_detection_poll(self):
-
-
+        self.ingame_message = "Waiting for Player..."
+        # Capture the initial board state.
         self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
-
-        print(self.initial_board)
-
-        
+        print("Initial board:", self.initial_board)
+        # Reset the selected piece.
         self.selected_piece = None
-        while self.selected_piece is None:
-             
-             print("Trying to find first piece")
-             
-             new_board = self.hall.sense_layer.get_squares_game()
-             #print(new_board)
-             self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
-             time.sleep(0.1)
+        # Start polling for the first piece.
+        self.safe_poll_first(self.on_first_piece_found)
 
-        print("Detected_first_piece")
-        # self.selected_piece
-        
+    def safe_poll_first(self, callback):
+        new_board = self.hall.sense_layer.get_squares_game()
+        self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
+        if self.selected_piece is not None:
+            # Piece found; call the callback with the selected piece.
+            callback(self.selected_piece)
+        else:
+            # Poll again after 0.1 seconds.
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
 
+    def on_first_piece_found(self, selected_piece):
+        print("Detected first piece:", selected_piece)
         self.notify_observers()
+        # When the first piece is found, move on to second-piece detection.
+        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.1)
 
-        self.go_to_second_piece_detection()
+    def go_to_second_piece_detection(self):
+        # Call the second piece detection function.
+        self.second_piece_detection_poll()
+
+    def safe_poll_second(self, callback):
+        new_board = self.hall.sense_layer.get_squares_game()
+        self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
+        if self.selected_move is not None:
+            callback(self.selected_move)
+        else:
+            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.1)
 
     def second_piece_detection_poll(self):
-
-        
-        print("looking for second move")
-        initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+        print("Looking for second move")
+        # Update initial board state for the second detection.
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
-        while self.selected_move is None:
+        # Start polling for the second move.
+        self.safe_poll_second(self.on_second_piece_found)
 
-            new_board = self.hall.sense_layer.get_squares_game()
-            self.selected_move = self.hall.compare_boards(new_board, initial_board)
-            time.sleep(0.1)
-
-        print(f"done, found move, {self.selected_piece}{self.selected_move}")
-
+    def on_second_piece_found(self, selected_move):
+        print("Detected second move:", selected_move)
+        # Now that we have both pieces, process the detection.
+        print(f"Done, found move: {self.selected_piece}{self.selected_move}")
+        # If the same square is selected (i.e. piece replaced), restart first detection.
         if self.selected_piece == self.selected_move:
             print("Piece replaced, finding new move")
-            # selected_piece = None
             self.go_to_first_piece_detection()
+            return
 
         move_str = f"{self.selected_piece}{self.selected_move}"
-        
+        self.selected_move = None  # Reset selected move for next turn
+
+        # Optionally, if you're using a hardware switch and want to wait for it:
+        if self.use_switch:
+            # Instead of blocking with time.sleep, you can poll the switch status.
+            def check_switch(dt):
+                if not self.rocker.get_switch_state():
+                    print("Switch passed")
+                    # Continue processing move.
+                    self.process_move_from_str(move_str)
+                else:
+                    Clock.schedule_once(check_switch, 0.1)
+            print("Waiting for switch")
+            Clock.schedule_once(check_switch, 0.1)
+        else:
+            self.process_move_from_str(move_str)
+
+    def process_move_from_str(self, move_str):
+        print('Switch passed (or not used), processing move')
         move = chess.Move.from_uci(move_str)
-
-        legal_moves = [move for move in self.board.legal_moves if move.from_square == chess.parse_square(self.selected_piece)]
-
-        print(legal_moves)
-
+        legal_moves = [m for m in self.board.legal_moves 
+                    if m.from_square == chess.parse_square(self.selected_piece)]
+        print("Legal moves:", legal_moves)
         if move in legal_moves:
             print("Legal move, executing it")
-
             self.process_legal_player_move(move_str)
-
         else:
-            print("Illegal move, executing YOU")
-
+            print("Illegal move, executing fallback")
             self.process_illegal_player_move(move_str)
 
     def on_player_move_confirmed(self):
         print("[State] Player Move Confirmed")
         self.update_ui()
         # Process the player move.
-        # For simplicity, here we pick the first legal move.
         self.process_move()
 
     def on_board_turn(self):
@@ -633,6 +836,7 @@ class ChessControlSystem:
         #self.compute_engine_move()
 
     def compute_engine_move(self):
+        self.ingame_message = "Engine Thinking.."
         time.sleep(0.2)  # Simulate engine thinking time.
         self.update_ui()
 
@@ -641,6 +845,9 @@ class ChessControlSystem:
                 result = self.engine.play(self.board, chess.engine.Limit(time=self.parameters['engine_time_limit']))
                 move = result.move
                 print(f"[Engine] Engine move: {move}")
+
+                self.ingame_message = "Executing Board Move"
+
 
                 if self.board.turn == chess.WHITE:
                     is_white = True
@@ -700,10 +907,25 @@ class ChessControlSystem:
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
 
-        self.game_winner = None
-        self.board.reset_board()
+        self.board.reset()
+        self.ingame_message = "Starting Game"
 
-        self.rocker.to_white()
+        self.first_change = None
+        self.second_change = None
+
+        self.legal_moves = None
+        self.game_winner = None
+
+
+      
+
+        self.game_winner = None
+        self.board.reset()
+
+        if not self.rocker.get_switch_state():
+            self.rocker.to_white()
+        
+        self.notify_observers()
 
         self.update_ui()
 
@@ -800,6 +1022,96 @@ class ChessControlSystem:
 
         self.notify_observers()
 
+    def process_predefined_board_move(self, move, is_white):
+
+        captured_symbol = None
+        # move = chess.Move.from_uci(move_str)
+        if self.board.is_capture(move):
+            # For a normal capture, the captured piece is on the destination square.
+            captured_piece = self.board.piece_at(move.to_square)
+            if captured_piece:
+                self.captured_pieces.append(captured_piece.symbol())
+                captured_symbol = captured_piece.symbol()
+
+                # Note: You might need special handling for en passant captures.
+
+        self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
+
+        
+        self.move_history.append(move.uci())
+    
+        if self.is_move_checkmate(self.board, move):
+            self.checkmate = True
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_mate.png'
+                self.game_winner = 'White'
+            else:
+                self.piece_images['K'] = 'assets/white_king_mate.png'
+                self.game_winner = 'Black'
+            
+        elif self.board.gives_check(move):
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king_check.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king_check.png'
+            # Make some indication
+
+            self.check = f"{self.board.turn}"
+            self.checkmate = False
+
+        else:
+            if self.board.turn == chess.WHITE:
+                self.piece_images['k'] = 'assets/black_king.png'
+            else:
+                self.piece_images['K'] = 'assets/white_king.png'
+            
+            self.check = ""
+
+            self.checkmate = False
+
+        self.legal_moves = None
+        print("pushing move:")
+
+        self.board.push(move)
+        self.notify_observers()
+
+        self.rocker.toggle()
+
+        # self.notify_observers()
+
+        if self.checkmate:
+            self.end_game()
+
+
+    def on_predefined_first_turn(self):
+
+        print("setting board up")
+
+        self.demo_progress = 0
+        self.game_winner = None
+        self.board.reset()
+
+        if not self.rocker.get_switch_state():
+            self.rocker.to_white()
+        
+        self.notify_observers()
+
+        self.update_ui()
+        
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 3)
+
+    def on_predefined_turn(self):
+
+        
+        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
+        #self.notify_observers()
+        #self.update_ui()
+        self.demo_progress += 1
+
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
+
+
+
     def toggle_clock(self):
         self.clock_logic.toggle_active_player()
 
@@ -889,8 +1201,8 @@ class ChessControlSystem:
         ## Need to put a lil more thought into this
 
         # print(path)
-        # cmds = self.gantry.movement_to_gcode(path)
-        # self.gantry.send_commands(cmds)
+        cmds = self.gantry.movement_to_gcode(path)
+        self.gantry.send_commands(cmds)
 
         # self.rocker.toggle()
         self.notify_observers

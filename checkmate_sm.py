@@ -18,6 +18,7 @@ from scripts.screens.loadingscreen import LoadingScreen
 from scripts.screens.mainscreen import MainScreen
 from scripts.screens.gantryscreen import GantryControlScreen
 from scripts.screens.endgamescreen import EndGameScreen
+from scripts.screens.demoscreen import DemoScreen
 
 # A simple ScreenManager that holds our GameScreen.
 class MainScreenManager(ScreenManager):
@@ -42,6 +43,7 @@ class TestApp(App):
         mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
         gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
         endgamescreen = EndGameScreen(control_system=self.control_system, name="endgamescreen")
+        demoscreen = DemoScreen(control_system = self.control_system, name='demoscreen')
 
 
         self.sm.add_widget(gamescreen)
@@ -83,6 +85,10 @@ class TestApp(App):
             self.sm.current = 'gantryscreen'
         elif state == 'endgamescreen':
             self.sm.current = 'endgamescreen'
+        elif state == 'loadingscreen':
+            self.sm.current = 'endgamescreen'
+        elif state == 'demoscreen':
+            self.sm.current = 'demoscreen'
 
         else:
             print("[App] Unhandled state:", state)

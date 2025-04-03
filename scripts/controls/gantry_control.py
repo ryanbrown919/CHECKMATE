@@ -948,17 +948,17 @@ class GantryControl:
                                 self.send_commands(commands)
                                 
                                 #move piece off center in
-                                path = [end_coord, (0, offset)]
+                                path = [end_coord, (offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
                                 # put capturing piece in square
-                                path = [(end_coord[0]-offset, end_coord[1]+offset), (offset, 0)]
+                                path = [(end_coord[0]-offset, end_coord[1]), (offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
                                 # take capturing piece to deadzone
-                                dead_coordinates = (end_coord[0], end_coord[1]+offset)
+                                dead_coordinates = (end_coord[0]+offset, end_coord[1])
                                 self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
@@ -1074,7 +1074,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0,  self.nextdead_white[1] - offset*15)]
             
-                self.white_captured[symbol] = (self.nextdead_white)
+                # self.white_captured[symbol] = (self.nextdead_white)
 
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
@@ -1088,7 +1088,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, self.nextdead_black[1] - offset*15)]
                 
-                self.black_captured[symbol] = (self.nextdead_black)
+                # self.black_captured[symbol] = (self.nextdead_black)
 
                 if self.nextdead_black[1] == 435:
                     self.nextdead_black = (self.nextdead_black[0], 410)
@@ -1243,11 +1243,13 @@ class GantryControl:
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
                         response = self.ser.readline().decode().strip()
-                self.ser.flushInput()
+                    print(f"Sent: {cmd}, Response: {response}")
+                time.sleep(0.1)
 
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
+                    print(f"Status: {status}")
                     if '<Idle' in status:
                         self.finished = True
                         self.ser.flushInput()
