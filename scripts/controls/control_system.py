@@ -922,7 +922,7 @@ class ChessControlSystem:
         self.update_ui()
         self.demo_progress += 1
 
-        Clock.schedule_once(lambda dt: self.go_to_predefined_move(), 0.1)
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 0.1)
 
 
 
