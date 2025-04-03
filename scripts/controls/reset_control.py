@@ -191,11 +191,11 @@ class BoardReset:
         ## White captured and black captured are current coords of all pieces after end of game
         # Filter and append all pieces to self.gantry.white_captured or self.gantry.black_captured
         for piece in board_state:
-            symbol, coords = piece  # Unpack the tuple
-            if symbol.isupper():  # Check if the symbol is uppercase (white piece)
-                self.control_system.gantry.white_captured.append((symbol, coords))  # Append to white_captured
-            elif symbol.islower():
-                self.control_system.gantry.black_captured.append((symbol, coords))\
+            symbol, coords = piece  
+            if symbol.isupper():  # White piece
+                self.control_system.gantry.white_captured.append((symbol, coords))  
+            elif symbol.islower(): # Black piece
+                self.control_system.gantry.black_captured.append((symbol, coords))
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.control_system.hall.sense_layer.get_squares_game()
@@ -204,7 +204,7 @@ class BoardReset:
         empty_squares = empty_squares[::-1]
 
         # Initialize white_restart_state with 16 slots
-        white_restart_state = [(0, (0, 0)) for _ in range(16)]
+        # white_restart_state = [(0, (0, 0)) for _ in range(16)]
 
         ##moveblack piece out of white endzone    
         for piece in self.control_system.gantry.black_captured:
@@ -212,12 +212,13 @@ class BoardReset:
             x, y = coords
             if x < 75 and y < 375:
                 # move is contains initial and final cords of black piece
-                move = self.nearest_neighbor(coords, empty_squares)
+                ''' change empty squares to remove ranks 1 and 2 '''
+                move = self.nearest_neighbor(coords, empty_squares) 
                 vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
                 path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
 
                 # Update the black_captured list with the new coordinates
-                self.control_system.gantry.black_captured.remove(piece)
+                self.control_system.gantry.black_captured.remove(piece) # me no likey
                 self.control_system.gantry.black_captured.append((symbol, move[1]))
 
                 # Update the empty_squares matrix
@@ -228,17 +229,16 @@ class BoardReset:
 
                 # Execute the movement using the gantry
                 print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
-                movements = self.parse_path_to_movement(path)
-                commands = self.movement_to_gcode(movements)
+                movements = self.control_system.gantry.parse_path_to_movement(path)
+                commands = self.control_system.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
-                self.send_commands(commands)
+                self.control_system.gantry.send_commands(commands)
 
         for piece in self.gantry.white_captured:
             symbol, coords = piece
             x, y = coords
             if x < 75 and y < 375:
                 reset_coords=self.symbol_to_valid_coordinates(symbol)
-                #check which of those new_cords are already occupied from white_restart_state and remove occupied new_coords
                 
                 # Filter out occupied coordinates from reset_coords
                 unoccupied_reset_coords = []
@@ -270,7 +270,6 @@ class BoardReset:
 
                         
             print(f"arranging white in rank 1 & 2: {path}")
-
             movements = self.control_system.gantry.parse_path_to_movement(path)
             commands = self.control_system.gantry.movement_to_gcode(movements)
             print(f"Last move: {commands}")
@@ -278,12 +277,10 @@ class BoardReset:
             
                 
     def full_reset(self)  
-        # Check white zone
-        # if white zone good:
-
+        ''' Felipe's code '''
+        self.reset_board_from_game()
         ''' Jack's code '''
         self.reset_playing_area_white()
-
         ''' Felipe's code '''
         self.reset_board_from_game()
 
