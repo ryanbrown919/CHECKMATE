@@ -267,7 +267,7 @@ class ChessControlSystem:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
-        self.reset_control = BoardReset(self.board, self.gantry, self.hall)
+        self.reset_control = BoardReset(self.board, self.gantry, self.hall, self.captured_pieces)
 
         self.first_change = None
         self.second_change = None
