@@ -442,7 +442,8 @@ class ChessControlSystem:
         self.board.push(move)
         self.notify_observers()
 
-        self.rocker.toggle()
+        if not self.use_switch:
+            self.rocker.toggle()
 
         self.notify_observers()
         self.on_player_move_confirmed()
