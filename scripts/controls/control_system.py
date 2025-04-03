@@ -631,6 +631,8 @@ class ChessControlSystem:
             self.go_to_first_piece_detection()
 
         move_str = f"{self.selected_piece}{self.selected_move}"
+
+        self.selected_move = None
         
         move = chess.Move.from_uci(move_str)
 
@@ -896,7 +898,7 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        self.notify_observers()
+        # self.notify_observers()
 
         if self.checkmate:
             self.end_game()
@@ -918,11 +920,11 @@ class ChessControlSystem:
 
         
         self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-        self.notify_observers()
-        self.update_ui()
+        #self.notify_observers()
+        #self.update_ui()
         self.demo_progress += 1
 
-        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 0.1)
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
 
 
 
