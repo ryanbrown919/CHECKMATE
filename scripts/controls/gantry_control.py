@@ -172,7 +172,7 @@ class GantryControl:
                 self.move(350, i*50)
                 self.toggle_magnet()
 
-            self.set_acceleration(400)
+            self.set_acceleration(500)
 
 
         def on_step_change(self, instance, value):
@@ -1270,7 +1270,6 @@ class GantryControl:
             if self.magnet_state == "MAG OFF":
                 self.send("M9") # off
             elif self.magnet_state == "MAG ON":
-                self.set_acceleration(400)
                 self.send("M8") # on
 
             gcode_commands = []
