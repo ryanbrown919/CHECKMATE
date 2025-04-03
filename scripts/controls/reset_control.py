@@ -58,7 +58,7 @@ class BoardReset:
                 raise ValueError("Invalid square: rank must be a number")
             x = (rank - 1) * 2   # Multiply by 2 to represent half-steps
             y = (ord('h') - ord(file)) * 2
-            return (x*25, y*25)
+            return (x, y)
 
     def coord_to_chess_square(self, coord):
         """
@@ -212,6 +212,7 @@ class BoardReset:
         # white_restart_state = [(0, (0, 0)) for _ in range(16)]
 
         ##moveblack piece out of white endzone    
+        print("[Test] Moving black pieces out of white endzone")
         for piece in self.gantry.black_captured:
             symbol, coords = piece
             x, y = coords
@@ -237,7 +238,7 @@ class BoardReset:
                 movements = self.gantry.parse_path_to_movement(path)
                 commands = self.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
-                self.gantry.send_commands(commands)
+                # self.gantry.send_commands(commands)
 
         for piece in self.gantry.white_captured:
             symbol, coords = piece
