@@ -20,7 +20,9 @@ def magnet_carlsen(gantry_control):
         magnet_on(gantry_control)
         time.sleep(0.3)
         gantry_control.send(f"G3 X0 Y{i*50 + 5} I-5 J0")
+        time.sleep(0.5)
         gantry_control.send(f"G3 X0 Y{i*50 - 5} I5 J0")
+        time.sleep(0.5)
         magnet_off(gantry_control)
         time.sleep(0.1)
     
@@ -29,7 +31,9 @@ def magnet_carlsen(gantry_control):
         magnet_on(gantry_control)
         time.sleep(0.3)
         gantry_control.send(f"G3 X50 Y{i*50 + 5} I-5 J0")
+        time.sleep(0.5)
         gantry_control.send(f"G3 X50 Y{i*50 - 5} I5 J0")
+        time.sleep(0.5)
         magnet_off(gantry_control)
         time.sleep(0.1)
 
