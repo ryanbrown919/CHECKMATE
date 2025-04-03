@@ -341,9 +341,9 @@ class ChessBoard(Widget):
                     # Color(*col)
 
                     if (file + rank) % 2 == 0:
-                        col = (189/255, 100/255, 6/255, 1)
+                        col = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
                     else:
-                        col = (247/255, 182/255, 114/255, 1)
+                        col = (247/255, 182/255, 114/255, 1) if self.bottom_colour_white else (189/255, 100/255, 6/255, 1)
                     Color(*col)
 
                     # Adjust rank for perspective.

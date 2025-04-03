@@ -633,6 +633,12 @@ class ChessControlSystem:
         move_str = f"{self.selected_piece}{self.selected_move}"
 
         self.selected_move = None
+
+
+        if self.use_switch:
+            while self.servo.get_switch_state():
+                time.sleep(0.1)
+
         
         move = chess.Move.from_uci(move_str)
 
