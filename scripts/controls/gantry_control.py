@@ -1000,7 +1000,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0,  self.nextdead_white[1] - offset*15)]
             
-                self.white_captured[symbol] = (self.nextdead_white)
+                self.white_captured.append((symbol, (self.nextdead_white)))
 
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
@@ -1014,7 +1014,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, self.nextdead_black[1] - offset*15)]
                 
-                self.black_captured[symbol] = (self.nextdead_black)
+                self.black_captured.append((symbol, (self.nextdead_black)))
 
                 if self.nextdead_black[1] == 435:
                     self.nextdead_black = (self.nextdead_black[0], 410)
