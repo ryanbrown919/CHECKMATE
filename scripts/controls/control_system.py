@@ -609,7 +609,7 @@ class ChessControlSystem:
 
         self.notify_observers()
 
-        self.go_to_second_piece_detection()
+        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.1)
 
     def second_piece_detection_poll(self):
 
