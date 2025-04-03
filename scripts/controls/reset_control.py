@@ -178,16 +178,19 @@ class BoardReset:
         # DEAL WITH EXISITING FIRST 
 
         # Parse the FEN string to extract list of pieces and their coordinates
-        board_state = self.fen_to_coords(self.board.fen())
+        board_state = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
+        print(f"Board state: {board_state}")
     
         ## White captured and black captured are current coords of all pieces after end of game
         # Filter and append all pieces to self.gantry.white_captured or self.gantry.black_captured
         for piece in board_state:
             symbol, coords = piece  
             if symbol.isupper():  # White piece
-                self.gantry.white_captured.append((symbol, coords))  
+                self.gantry.white_captured.append((symbol, coords)) 
+                print(f"White piece: {symbol} at {coords}") 
             elif symbol.islower(): # Black piece
                 self.gantry.black_captured.append((symbol, coords))
+                print(f"Black piece: {symbol} at {coords}")
                 
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
@@ -250,6 +253,8 @@ class BoardReset:
                 else:
                     path = [move[0], (-25, 0), (0, move[1][1]), (move[1][0] + 25, 0)]
         
+                print(f"[Test] Moving white piece {symbol} from {move[0]} to {move[1]} via path: {path}")
+
                 # Update white_captured list with new coordinates of the piece just moved
                 self.gantry.white_captured.remove(piece)  # Remove the old entry
                 self.gantry.white_captured.append((symbol, move[1]))  # Add the updated entry with new coordinates
@@ -270,10 +275,13 @@ class BoardReset:
                 
     def full_reset(self):
         ''' Felipe's code '''
+        print("[Test] Trying felipe 1")
         self.reset_board_from_game()
         ''' Jack's code '''
+        print("[Test] Trying jack 1")
         self.reset_playing_area_white()
         ''' Felipe's code '''
+        print("[Test] Trying felipe 2")
         self.reset_board_from_game()
 
             
