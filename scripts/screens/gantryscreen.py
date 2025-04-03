@@ -354,6 +354,7 @@ class GantryControlScreen(Screen):
         # The target board occupies most of the space.
         self.control_system = control_system
         self.gantry = self.control_system.gantry
+        self.font_size = self.control_system.font_size
 
         self.capture_move= False
 
