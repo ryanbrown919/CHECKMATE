@@ -89,7 +89,7 @@ class GantryControl:
 
         def is_idle(self):
             self.send("?")
-            response = self.serial.readline().decode().strip()
+            response = self.ser.readline().decode().strip()
 
             if "Idle" in response:
                 return True
