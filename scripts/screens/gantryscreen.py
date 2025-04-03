@@ -471,16 +471,16 @@ class GantryControlScreen(Screen):
 
         self.gantry_controls.add_widget(commandButton)
 
-        self.nfc_layout = ColoredBoxLayout(orientation='horizontal')
-        # nfc_icon = Image(source=self.image_path, allow_stretch=True, keep_ratio=True, size_hint = (0.5,0.5))
-        self.nfc_icon = ImageUpdater()
-        self.nfc_button = Button(text="Scan NFC", font_size = self.font_size)
-        self.nfc_button.bind(on_release= lambda instance: self.read_nfc())
+        # self.nfc_layout = ColoredBoxLayout(orientation='horizontal')
+        # # nfc_icon = Image(source=self.image_path, allow_stretch=True, keep_ratio=True, size_hint = (0.5,0.5))
+        # self.nfc_icon = ImageUpdater()
+        # self.nfc_button = Button(text="Scan NFC", font_size = self.font_size)
+        # self.nfc_button.bind(on_release= lambda instance: self.read_nfc())
 
-        self.nfc_layout.add_widget(self.nfc_icon)
-        self.nfc_layout.add_widget(self.nfc_button)
+        # self.nfc_layout.add_widget(self.nfc_icon)
+        # self.nfc_layout.add_widget(self.nfc_button)
 
-        self.gantry_controls.add_widget(self.nfc_layout)
+        # self.gantry_controls.add_widget(self.nfc_layout)
 
    
         
