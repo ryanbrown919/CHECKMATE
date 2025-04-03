@@ -220,8 +220,18 @@ class BoardReset:
             x, y = coords
             if x < 75 and y < 375:
                 # move is contains initial and final cords of black piece
-                ''' change empty squares to remove ranks 1 and 2 '''
-                move = self.nearest_neighbor(coords, empty_squares) 
+                ''' remove empty squares to remove ranks 1 and 2 (all empty squares with x =0 and x= 50 ) '''
+                # Remove empty squares to exclude ranks 1 and 2 (all empty squares with x = 0 and x = 50)
+                filtered_empty_squares = []
+                for i in range(len(empty_squares)):
+                    for j in range(len(empty_squares[i])):
+                        if empty_squares[i][j] == 1:  # Check if the square is empty
+                            # Exclude squares in ranks 1 and 2 (y-coordinates 0 and 50)
+                            if not (j * 50 < 75 and i * 50 < 375):  # Exclude x = 0, 50 and y = 0, 50
+                                filtered_empty_squares.append((j * 50, i * 50))
+
+                # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
+                move = self.nearest_neighbor(coords, filtered_empty_squares) 
                 vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
                 path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25), (25, 0)]
 
