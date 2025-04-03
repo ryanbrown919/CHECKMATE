@@ -154,19 +154,19 @@ class GantryControl:
 
             for i in range(8):
                 self.move(0, i*50)
-                self.toggle_magnet(gantry_control)
+                self.toggle_magnet()
     
             for i in range(7, -1, -1):
                 self.move(50, i*50)
-                self.toggle_magnet(gantry_control)
+                self.toggle_magnet()
 
             for i in range(8):
                 self.move(300, i*50)
-                self.toggle_magnet(gantry_control)
+                self.toggle_magnet()
     
             for i in range(7, -1, -1):
                 self.move(350, i*50)
-                self.toggle_magnet(gantry_control)
+                self.toggle_magnet()
 
             self.set_acceleration(400)
 
