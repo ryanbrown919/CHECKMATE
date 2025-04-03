@@ -524,6 +524,8 @@ class ChessBoard(Widget):
         3. Updates the widget's internal list of legal moves.
         4. Calls the canvas update method to redraw the highlights.
         """
+
+        print(f"trying to hightlight {square_str}")
         if square_str is not None:
             # Convert algebraic notation (e.g., 'a2') to a board index.
             square_index = self.notation_to_index(square_str)
