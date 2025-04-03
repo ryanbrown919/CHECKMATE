@@ -97,7 +97,7 @@ class headerLayout(BoxLayout):
                                                 allow_stretch=True,      # Allow the image to stretch to fill the widget
                                                 keep_ratio=True          # Maintain the image's aspect ratio
                                                 )
-            back_btn.bind(on_release = lambda instance: self.control_system.go_to_mainscreen)
+            back_btn.bind(on_release = lambda instance: self.control_system.go_to_mainscreen())
             self.add_widget(back_btn)
             icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
 
