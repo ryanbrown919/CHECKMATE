@@ -569,6 +569,7 @@ class BoardReset:
             progress = False
             # Get current occupancy from the hall sensors.
             occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            print("occupancy:")
             print(occupancy)
             # Use a copy of the current mapping so we can modify it during iteration.
             for square, piece in list(current_mapping.items()):
