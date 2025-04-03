@@ -22,6 +22,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput   
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
+from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.app import App
 from kivy.core.window import Window
@@ -356,6 +357,8 @@ class GantryControlScreen(Screen):
         self.gantry = self.control_system.gantry
         self.font_size = self.control_system.font_size
 
+        self.piece_symbol = "P"
+
         self.capture_move= False
 
         self.root_layout = BoxLayout(orientation='vertical')
@@ -398,7 +401,7 @@ class GantryControlScreen(Screen):
         self.chess_move_input = ChessMoveInput(target_widget=self.target_board,
                                                path_button=self.pathButton,
                                                on_move_callback=self.on_move_entered,
-                                               size_hint=(1, 1), font_size=self.font_size)  
+                                               size_hint=(0.5, 1), font_size=self.font_size)  
         c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size)
         controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
         self.move_input_block = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
@@ -435,12 +438,22 @@ class GantryControlScreen(Screen):
         self.move_input_block.add_widget(capture_toggle)
         self.gantry_controls.add_widget(self.move_input_block)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
-        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.2))
+        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.2), font_size = self.font_size)
         #self.magnet_state = self.magnet_control.get_state()
         self.gantry_controls.add_widget(self.magnet_control)
         commandButton = SendCommandButton(gantry=self.gantry, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size, size_hint=(1, 0.2))
 
         self.gantry_controls.add_widget(commandButton)
+
+        nfc_layout = ColoredBoxLayout(orientation='horizontal')
+        nfc_icon = Image(source=self.piece_images[self.piece_symbol], allow_stretch=True, keep_ratio=True, size_hint = (1,1))
+        nfc_button = Button(text="Scan NFC", font_size = self.font_size)
+        nfc_button.bind(on_release= lambda instance: self.read_nfc())
+
+        nfc_layout.add_widget(nfc_icon)
+        nfc_layout.add_widget(nfc_button)
+
+        self.gantry_controls.add_widget(nfc_layout)
 
    
         
@@ -479,6 +492,11 @@ class GantryControlScreen(Screen):
         if self.target_board.trail_points:
             coords = [f"({int(x)},{int(y)})" for x, y in self.target_board.trail_points]
             self.chess_move_input.text = (move)
+
+
+    def read_nfc(self):
+
+        self.passed, self.piece_symbol = self.control_system.nfc_test()
 
 
     def send_command(self):
@@ -723,6 +741,26 @@ class TrailWidget(Widget):
                 Line(points=flat_points, width=2)
     def clear_trail(self):
         self.canvas.clear()
+
+
+
+class ColoredBoxLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas.before:
+            self.bg_color = Color(0.8, 0.8, 0.8, 1)  # RGBA color (e.g., blue)
+            self.bg_rect = Rectangle(size=self.size, pos=self.pos)
+
+        # Bind size and position to automatically adjust background
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.bg_rect.pos = self.pos
+        self.bg_rect.size = self.size
+
+class MyApp(App):
+    def build(self):
+        return ColoredBoxLayout()
 
 
 # # --- For testing the widget in an app ---
