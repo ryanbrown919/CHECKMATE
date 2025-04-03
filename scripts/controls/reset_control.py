@@ -1,11 +1,12 @@
 import math
 import time
 
+from hall_control import HallControl
+from gantry_control import GantryControl
 
 class BoardReset:
-    def __init__(self, board, gantry, hall):    
+    def __init__(self, gantry, hall):    
         self.gantry = gantry
-        self.board = board
         self.hall = hall
 
     def distance(self, x, y):
@@ -113,7 +114,7 @@ class BoardReset:
                 valid_coords = self.symbol_to_valid_coordinates(symbol)
 
                 # Check which of those valid coordinates are already occupied
-                occupied_coords = self.get_occupied_squares(self.board)
+                # occupied_coords = self.get_occupied_squares(self.board)
                 unoccupied_coords = []
                 for coord in valid_coords:
                     if coord not in occupied_coords:
@@ -131,8 +132,8 @@ class BoardReset:
                     # Update the board state to reflect the move
                     old_rank, old_file = coords[1] // 50, coords[0] // 50
                     new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
-                    self.board[old_rank][old_file] = 0  # Mark old square as empty
-                    self.board[new_rank][new_file] = 1  # Mark new square as occupied
+                    # self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    # self.board[new_rank][new_file] = 1  # Mark new square as occupied
 
                     # Execute the movement using the gantry
                     print(f"Moving {symbol} from {coords} to {target_coord}")
@@ -296,6 +297,13 @@ class BoardReset:
         print("[Test] Trying felipe 2")
         self.reset_board_from_game()
 
-            
+
+if __name__ == "__main__":
+    gantry = GantryControl()
+    hall = HallControl()
+    board_reset = BoardReset(gantry, hall)
+
+    # Example usage
+    board_reset.full_reset()      
 
     
