@@ -350,6 +350,8 @@ class BoardReset:
         "h7": ["g7"]
         }
 
+        print("fuck me")
+
         current_fen = "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3"
         # Target configuration FEN: swap the white queen and white rook.
         target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
