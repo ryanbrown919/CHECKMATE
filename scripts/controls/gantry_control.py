@@ -134,9 +134,7 @@ class GantryControl:
                 cmd += f"X{x}"
             if y:
                 cmd += f"Y{y}"
-            self.set_velocity(5000)
             self.send(f"G90X{x}Y{y}")
-            self.set_velocity(15000)
 
             while True:
                 self.ser.write(b'?')
