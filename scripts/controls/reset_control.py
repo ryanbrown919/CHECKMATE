@@ -1,8 +1,7 @@
 import math
 import time
 
-from hall_control import Hall
-from gantry_control import GantryControl
+
 
 class BoardReset:
 
@@ -31,7 +30,6 @@ class BoardReset:
 
         self.gantry = gantry
         self.hall = hall
-        self.captured_pieces = captured_pieces
 
     def distance(self, x, y):
         """Calculate the Manhattan distance between two board coordinates."""
