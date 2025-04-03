@@ -804,9 +804,19 @@ class ChessControlSystem:
         # Schedule second piece detection with a small delay
         Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.1)
 
-    def go_to_second_piece_detection(self):
-        # Call the second piece detection function.
-        self.second_piece_detection_poll()
+    def second_piece_detection_poll(self):
+        print("Looking for destination square...")
+        self.ingame_message = "Place piece on destination square..."
+        
+        # Update reference board for second detection
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+        
+        # Reset detection variables
+        self.selected_move = None
+        self._detection_count = 0
+        
+        # Start polling for the second piece
+        self.safe_poll_second(self.on_second_piece_found)
 
     def safe_poll_second(self, callback):
         try:
@@ -838,20 +848,6 @@ class ChessControlSystem:
             # Poll again after a short delay on error
             Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.2)
 
-    def second_piece_detection_poll(self):
-        print("Looking for destination square...")
-        self.ingame_message = "Place piece on destination square..."
-        
-        # Update reference board for second detection
-        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
-        
-        # Reset detection variables
-        self.selected_move = None
-        self._detection_count = 0
-        
-        # Start polling for the second piece
-        self.safe_poll_second(self.on_second_piece_found)
-
     def on_second_piece_found(self, selected_move):
         print(f"Second piece confirmed: {selected_move}")
         self.ingame_message = f"Move detected: {self.selected_piece}{selected_move}"
@@ -873,6 +869,10 @@ class ChessControlSystem:
             print(f"Error processing move: {e}")
             self.ingame_message = f"Error: {str(e)[:30]}..."
             Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 1.0)
+
+    def go_to_second_piece_detection(self):
+        # Call the second piece detection function.
+        self.second_piece_detection_poll()
 
     def process_move_from_str(self, move_str):
         print('Switch passed (or not used), processing move')
@@ -1327,7 +1327,7 @@ class ChessControlSystem:
 #         settings_btn = Button(text="Settings")
 #         start_game_btn.bind(on_press=self.start_game)
 #         manual_btn.bind(on_press=self.go_manual)
-#         settings_btn.bind(on_press(self.go_settings)
+#         settings_btn.bind(on_press=self.go_settings)
 
 #         layout.add_widget(Label(text="Main Menu"))
 #         layout.add_widget(self.param_input)
