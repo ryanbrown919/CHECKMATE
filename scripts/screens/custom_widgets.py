@@ -520,8 +520,12 @@ class ChessBoard(Widget):
         if self.control_system.selected_piece is not None:
             print("Highlighting squares")
             self.legal_moves = self.control_system.select_piece(self.control_system.selected_piece)
-        else:
-            self.legal_moves
+                # You might call control_system.select_piece to update legal moves.
+            self.clear_highlights()
+            # if self.control_system.legal_moves is not None:
+            self.highlight_legal_moves(self.legal_moves)
+
+        
         # Remove old chess pieces.
         pieces_to_remove = [child for child in self.children if isinstance(child, ChessPiece)]
         for piece in pieces_to_remove:
@@ -581,7 +585,7 @@ class ChessBoard(Widget):
         # Otherwise, select a piece if one exists at this square.
         piece_widget = None
         for child in self.children:
-            if isinstance(child, ChessPiece) and child.chess_square == sq:
+            if isinstance(child, ChessPiece) and (child.chess_square == sq):
                 piece_widget = child
                 break
         if piece_widget:

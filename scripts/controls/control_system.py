@@ -163,7 +163,7 @@ class ChessControlSystem:
         
         self.engine = None
 
-        self.use_switch = True
+        self.use_switch = False
 
         self.ingame_message = ""
 

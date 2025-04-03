@@ -80,6 +80,9 @@ class GameScreen(Screen):
         # Register the refresh_board callback for when a UI move is executed.
         self.control_system.ui_move_callback = self.refresh_board
 
+    def rebuild_layout(self):
+        self.build_screen_layout()
+
     def build_screen_layout(self):
         """
         Constructs the dynamic layout of the game screen based on current parameters.
