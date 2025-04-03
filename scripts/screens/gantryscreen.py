@@ -796,7 +796,7 @@ class ImageUpdater(BoxLayout):
         super().__init__(**kwargs)
         # Define a StringProperty to hold the image path
 
-    def change_image(self, new_image_path):
+    def change_image(self, new_image_path, *args):
         self.image_path = new_image_path
 
 class MyApp(App):
