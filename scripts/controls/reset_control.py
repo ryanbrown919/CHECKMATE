@@ -805,68 +805,68 @@ class BoardReset:
                 black_coords.append([piece, black_pattern[black_count]])
                 black_count += 1
                
-            print(white_coords)
-            print(reversed(white_coords))
+        print(white_coords)
+        print(reversed(white_coords))
 
-            # Now we should have all the pieces with thier coordinates in a new list
-            white_x = 25
-            black_x = 325
+        # Now we should have all the pieces with thier coordinates in a new list
+        white_x = 25
+        black_x = 325
 
-            #white clear
-            for i, piece in enumerate(reversed(white_coords)):
-                symbol, coord = piece
-                path = [coord, (0, (375 - coord[1])), (white_x-coord[0], 0)]
+        #white clear
+        for i, piece in enumerate(reversed(white_coords)):
+            symbol, coord = piece
+            path = [coord, (0, (375 - coord[1])), (white_x-coord[0], 0)]
+            
+            # Find the closest available square for the piece
+            closest_square = None
+            for square in home_squares.get(symbol, []):
+                if occ.get(square, 1) == 0:  # Check if the square is unoccupied
+                    closest_square = square
+                    break
+
+            if closest_square:
+                print(f"Closest square for {symbol} is {closest_square}.")
+                # Generate path to the closest square
+                target_coords = self.square_to_coords_ry(closest_square)
+                if closest_square[1] == '2':
+                    path_end =  [(0, (target_coords[1] + 25) - 375), (+25, -25)]
+                else:
+                    path_end = [(0, (target_coords[1] + 25) - 375), (-25, -25)]
                 
-                # Find the closest available square for the piece
-                closest_square = None
-                for square in home_squares.get(symbol, []):
-                    if occ.get(square, 1) == 0:  # Check if the square is unoccupied
-                        closest_square = square
-                        break
+                # Update occupancy and move the piece
+                occ[closest_square] = 1
 
-                if closest_square:
-                    print(f"Closest square for {symbol} is {closest_square}.")
-                    # Generate path to the closest square
-                    target_coords = self.square_to_coords_ry(closest_square)
-                    if closest_square[1] == '2':
-                        path_end =  [(0, (target_coords[1] + 25) - 375), (+25, -25)]
-                    else:
-                        path_end = [(0, (target_coords[1] + 25) - 375), (-25, -25)]
+                movements = self.gantry.parse_path_to_movement(path + path_end)
+                commands = self.gantry.movement_to_gcode(movements)
+                self.gantry.send_commands(commands)
+
+        for i, piece in enumerate(reversed(black_coords)):
+            symbol, coord = piece
+            path = [coord, (0, 375-coord[1]), (black_x - coord[0], 0)]
+            
+            # Find the closest available square for the piece
+            closest_square = None
+            for square in home_squares.get(symbol, []):
+                if occ.get(square, 1) == 0:  # Check if the square is unoccupied
+                    closest_square = square
                     
-                    # Update occupancy and move the piece
-                    occ[closest_square] = 1
+                    break
 
-                    movements = self.gantry.parse_path_to_movement(path + path_end)
-                    commands = self.gantry.movement_to_gcode(movements)
-                    self.gantry.send_commands(commands)
-
-            for i, piece in enumerate(reversed(black_coords)):
-                symbol, coord = piece
-                path = [coord, (0, 375-coord[1]), (black_x - coord[0], 0)]
+            if closest_square:
+                print(f"Closest square for {symbol} is {closest_square}.")
+                # Generate path to the closest square
+                target_coords = self.square_to_coords_ry(closest_square)
+                if closest_square[1] == '7':
+                    path_end =  [(0, (target_coords[1] + 25) - 375), (- 25, -25)]
+                else:
+                    path_end = [(0, (target_coords[1] + 25)-375), (+ 25, -25)]
                 
-                # Find the closest available square for the piece
-                closest_square = None
-                for square in home_squares.get(symbol, []):
-                    if occ.get(square, 1) == 0:  # Check if the square is unoccupied
-                        closest_square = square
-                        
-                        break
+                # Update occupancy and move the piece
+                occ[closest_square] = 1
 
-                if closest_square:
-                    print(f"Closest square for {symbol} is {closest_square}.")
-                    # Generate path to the closest square
-                    target_coords = self.square_to_coords_ry(closest_square)
-                    if closest_square[1] == '7':
-                        path_end =  [(0, (target_coords[1] + 25) - 375), (- 25, -25)]
-                    else:
-                        path_end = [(0, (target_coords[1] + 25)-375), (+ 25, -25)]
-                    
-                    # Update occupancy and move the piece
-                    occ[closest_square] = 1
-
-                    movements = self.gantry.parse_path_to_movement(path + path_end)
-                    commands = self.gantry.movement_to_gcode(movements)
-                    self.gantry.send_commands(commands)
+                movements = self.gantry.parse_path_to_movement(path + path_end)
+                commands = self.gantry.movement_to_gcode(movements)
+                self.gantry.send_commands(commands)
     
     def count_capital_elements(array):
             """
