@@ -366,7 +366,7 @@ class GantryControlScreen(Screen):
         self.gantry_controls = BoxLayout(orientation='vertical')
 
 
-        self.target_board = GantryTargetWidget(control_system=self.control_system, size_hint={1, 1})
+        self.target_board = GantryTargetWidget(control_system=self.control_system, size_hint=(1,1))
         self.board_display.add_widget(self.target_board)
 
 
