@@ -438,7 +438,7 @@ class GantryControlScreen(Screen):
         self.move_input_block.add_widget(capture_toggle)
         self.gantry_controls.add_widget(self.move_input_block)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
-        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.2), font_size = self.font_size)
+        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.2))
         #self.magnet_state = self.magnet_control.get_state()
         self.gantry_controls.add_widget(self.magnet_control)
         commandButton = SendCommandButton(gantry=self.gantry, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size, size_hint=(1, 0.2))
@@ -659,7 +659,7 @@ class MagnetControl(BoxLayout):
                                # Normal (unselected) background color.
                                background_color=[0.8, 0.8, 0.8, 1],
                                color=[0, 0, 0, 1],
-                               size_hint=(1, 1))
+                               size_hint=(1, 1), font_size=40)
             btn.bind(state=self.on_button_state)
             self.buttons.append(btn)
             self.add_widget(btn)
