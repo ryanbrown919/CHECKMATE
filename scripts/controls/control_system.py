@@ -797,7 +797,7 @@ class ChessControlSystem:
         if self.use_switch:
             # Instead of blocking with time.sleep, you can poll the switch status.
             def check_switch(dt):
-                if not self.servo.get_switch_state():
+                if not self.rocker.get_switch_state():
                     print("Switch passed")
                     # Continue processing move.
                     self.process_move_from_str(move_str)
