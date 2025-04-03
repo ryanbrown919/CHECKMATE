@@ -1271,8 +1271,8 @@ class GantryControl:
             gcode_commands = []
             for i, move in enumerate(move_list):
                 if i == 0:
-                    gcode_commands.append("120=400") 
-                    gcode_commands.append("121=400") 
+                    gcode_commands.append("120=1000") 
+                    gcode_commands.append("121=1000") 
                     gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
                         gcode_commands.append("120=400") 
