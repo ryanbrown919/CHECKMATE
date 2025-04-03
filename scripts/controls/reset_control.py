@@ -115,7 +115,7 @@ class BoardReset:
 
         for piece in self.gantry.white_captured:
             symbol, coords = piece
-            x, y = coords
+            x, y = coordsn
 
             # Only process pieces in the playable area (not in the deadzone)
             if x < 75 and y < 375:
@@ -268,18 +268,16 @@ class BoardReset:
             self.control_system.gantry.send_commands(commands)
             
                 
-                
+    def full_reset(self)  
+        # Check white zone
+        # if white zone good:
+
+        ''' Jack's code '''
+        self.reset_playing_area_white()
+
+        ''' Felipe's code '''
+        self.reset_board_from_game()
+
             
 
-         
-        
-
-
-
-
-
-
-
-
-
-
+    
