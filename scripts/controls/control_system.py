@@ -606,8 +606,10 @@ class ChessControlSystem:
             #  time.sleep(0.1)
         self.safe_poll_first()
 
-        print("Detected_first_piece")
+        print("Detected_first_piece:")
         # self.selected_piece
+
+        print(self.selected_piece)
         
 
         self.notify_observers()
@@ -640,7 +642,7 @@ class ChessControlSystem:
 
         
         print("looking for second move")
-        initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
         self.selected_move = None
         # while self.selected_move is None:
 
