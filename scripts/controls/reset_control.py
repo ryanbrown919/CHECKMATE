@@ -424,7 +424,7 @@ class BoardReset:
         current_fen = self.board.fen()
         current_fen = current_fen.split()[0]
 
-        self.captured_pieces=['P', 'P', 'P', 'P']
+        # self.captured_pieces=['P', 'P', 'P', 'P']
 
         moves = self.simple_reset_to_home(current_fen)
 
