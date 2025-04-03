@@ -211,6 +211,7 @@ class BoardReset:
 
                 if unoccupied_coords:
                     # Select the first unoccupied valid coordinate
+                    # make this intelligent later...
                     target_coord = unoccupied_coords[0]
 
                     # Update the white_captured list with the new coordinates
@@ -440,6 +441,11 @@ class BoardReset:
         print("Test: CALLED METHOD 'fen_to_coords'")
         return pieces
 
+        
+
+      
+        
+
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
         # DEAL WITH EXISITING FIRST 
@@ -574,4 +580,12 @@ class BoardReset:
         self.reset_board_from_game()
 
 
+if __name__ == "__main__":
+    gantry = GantryControl()
+    hall = Hall()
+    board_reset = BoardReset(gantry, hall)
 
+    # Example usage
+    board_reset.TEST_reset_playing_area_white()
+
+    
