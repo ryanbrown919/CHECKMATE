@@ -105,9 +105,14 @@ class BoardReset:
 
         for piece in pieces:
             symbol, coords = piece
+
+            # Only process white pieces (uppercase symbols)
+            if not symbol.isupper():
+                continue
+
             x, y = coords
 
-            # Only process pieces in the playable area (not in the deadzone)
+            # Only process pieces in ranks 3-8 and not in the deadzone
             if x < 75 and y < 375:
                 # Get valid starting coordinates for the piece type
                 valid_coords = self.symbol_to_valid_coordinates(symbol)
@@ -121,11 +126,10 @@ class BoardReset:
 
                 if unoccupied_coords:
                     # Select the first unoccupied valid coordinate
-                    # make this intelligent later...
                     target_coord = unoccupied_coords[0]
 
                     # Update the white_captured list with the new coordinates
-                    self.gantry.white_captured.remove(piece) # add logic for duplicate pieces
+                    self.gantry.white_captured.remove(piece)  # Add logic for duplicate pieces
                     self.gantry.white_captured.append((symbol, target_coord))
 
                     # Update the board state to reflect the move
@@ -136,10 +140,68 @@ class BoardReset:
 
                     # Execute the movement using the gantry
                     print(f"Moving {symbol} from {coords} to {target_coord}")
-                    path = [coords, target_coord]  # Simple direct path
-                    movements = self.gantry.parse_path_to_movement(path)
-                    commands = self.gantry.movement_to_gcode(movements)
-                    self.gantry.send_commands(commands)
+
+                    # Uncomment the following lines when debugging is done:
+                    # path = [coords, target_coord]  # Simple direct path
+                    # movements = self.gantry.parse_path_to_movement(path)
+                    # commands = self.gantry.movement_to_gcode(movements)
+                    # self.gantry.send_commands(commands)
+
+
+    def reset_playing_area_black(self):
+        # could probably merge this with above method to reduce bloat but oh well, cry about it 
+        """
+        Reset all BLACK pieces NOT on ranks 7, 8 or in the deadzone.
+        Assumes that the starting locations are either unoccupied or filled with the correct piece.
+        """
+        
+        print("Test: STARTING METHOD 'reset_playing_area_black'")
+       
+        pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
+
+        for piece in pieces:
+            symbol, coords = piece
+
+            # Only process black pieces (lowercase symbols)
+            if not symbol.islower():
+                continue
+
+            x, y = coords
+
+            # Only process pieces in ranks 1-6 and not in the deadzone
+            if x > 257 and y < 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
+
+                # Check which of those valid coordinates are already occupied
+                occupied_coords = self.get_occupied_squares(self.board)
+                unoccupied_coords = []
+                for coord in valid_coords:
+                    if coord not in occupied_coords:
+                        unoccupied_coords.append(coord)
+
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    target_coord = unoccupied_coords[0]
+
+                    # Update the black_captured list with the new coordinates
+                    self.gantry.black_captured.remove(piece)  # Add logic for duplicate pieces
+                    self.gantry.black_captured.append((symbol, target_coord))
+
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving {symbol} from {coords} to {target_coord}")
+
+                    # Uncomment the following lines when debugging is done:
+                    # path = [coords, target_coord]  # Simple direct path
+                    # movements = self.gantry.parse_path_to_movement(path)
+                    # commands = self.gantry.movement_to_gcode(movements)
+                    # self.gantry.send_commands(commands)
                     
 
     def fen_to_coords(self,fen):
