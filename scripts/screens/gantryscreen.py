@@ -359,6 +359,28 @@ class GantryControlScreen(Screen):
 
         self.piece_symbol = "P"
 
+
+
+        self.piece_images = {
+            'P': 'assets/white_pawn.png',
+            'R': 'assets/white_rook.png',
+            'N': 'assets/white_knight.png',
+            'B': 'assets/white_bishop.png',
+            'Q': 'assets/white_queen.png',
+            'K': 'assets/white_king.png',
+            'p': 'assets/black_pawn.png',
+            'r': 'assets/black_rook.png',
+            'n': 'assets/black_knight.png',
+            'b': 'assets/black_bishop.png',
+            'q': 'assets/black_queen.png',
+            'k': 'assets/black_king.png',
+            'K_mate': 'assets/black_king_mate.png',
+            'K_check': 'assets/black_king_check.png',
+            'k_mate': 'assets/white_king_mate.png',
+            'k_check': 'assets/white_king_mate.png',
+
+        }
+
         self.capture_move= False
 
         self.root_layout = BoxLayout(orientation='vertical')
