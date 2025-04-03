@@ -59,7 +59,7 @@ class BoardReset:
                 raise ValueError("Invalid square: rank must be a number")
             x = (rank - 1) * 2   # Multiply by 2 to represent half-steps
             y = (ord('h') - ord(file)) * 2
-            return (x, y)
+            return (x*25, y*25)
 
     def coord_to_chess_square(self, coord):
         """
@@ -440,11 +440,6 @@ class BoardReset:
 
         print("Test: CALLED METHOD 'fen_to_coords'")
         return pieces
-
-        
-
-      
-        
 
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
