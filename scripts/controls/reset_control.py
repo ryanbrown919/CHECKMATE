@@ -795,19 +795,19 @@ class BoardReset:
 
         return white_moves, black_moves
     
-    def coords_to_square_ry(self, coord):
-        """
-        Converts physical coordinates (assumed to be board-center values in multiples of 50)
-        to a board square (e.g., "e4"). 
-        Assumes:
-        - x (rank coordinate): 0 corresponds to rank 1, 350 to rank 8.
-        - y (file coordinate): 0 corresponds to file h, 350 to file a.
-        """
-        x, y = coord
-        rank = int(x / 50) + 1
-        file_index = 7 - int(y / 50)
-        file_letter = chr(ord('a') + file_index)
-        return file_letter + str(rank)
+    # def coords_to_square_ry(self, coord):
+    #     """
+    #     Converts physical coordinates (assumed to be board-center values in multiples of 50)
+    #     to a board square (e.g., "e4"). 
+    #     Assumes:
+    #     - x (rank coordinate): 0 corresponds to rank 1, 350 to rank 8.
+    #     - y (file coordinate): 0 corresponds to file h, 350 to file a.
+    #     """
+    #     x, y = coord
+    #     rank = int(x / 50) + 1
+    #     file_index = 7 - int(y / 50)
+    #     file_letter = chr(ord('a') + file_index)
+    #     return file_letter + str(rank)
     
     def recover_captured_piece_path(self, captured_coord, piece, occupancy):
         """
@@ -847,7 +847,7 @@ class BoardReset:
             # Re-fetch occupancy continuously.
             occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
             candidate_coord = (target_x, candidate_y)
-            square_candidate = self.coords_to_square(candidate_coord)
+            square_candidate = self.coords_to_square_ry(candidate_coord)
             if occupancy.get(square_candidate) is None:
                 final_coord = candidate_coord
                 final_square = square_candidate
@@ -1268,7 +1268,7 @@ class BoardReset:
         final_square = None
         while candidate_y >= 0:
             candidate_coord = (target_x, candidate_y)
-            square_candidate = self.coords_to_square(candidate_coord)
+            square_candidate = self.coords_to_square_ry(candidate_coord)
             if occupancy.get(square_candidate) is None:
                 final_coord = candidate_coord
                 final_square = square_candidate
