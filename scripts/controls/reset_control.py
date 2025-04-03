@@ -195,7 +195,7 @@ class BoardReset:
         # Poll hall for empty squares and create an 8x8 matrix
         empty_squares = self.hall.sense_layer.get_squares_game()
         print(f"[Test] Untransformed Empty squares: {empty_squares}")
-        empty_squares = empty_squares[::-1]
+        empty_squares = [row[::-1] for row in empty_squares]
         print(f"[Test] Transformed Empty squares: {empty_squares}")
 
         empty_targets = []
