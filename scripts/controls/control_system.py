@@ -606,15 +606,9 @@ class ChessControlSystem:
             #  time.sleep(0.1)
         self.safe_poll_first()
 
-        def on_piece_found(selected_piece):
-            print("Detected first piece:", selected_piece)
-            # # Now that a piece has been selected, get its legal moves.
-            # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
-            # self.highlight_legal_moves(legal_moves)
-            self.notify_observers()
 
         # Start the polling process:
-        self.safe_poll_first(on_piece_found)
+        self.safe_poll_first(self.on_piece_found)
 
         print(self.selected_piece)
         
@@ -642,6 +636,14 @@ class ChessControlSystem:
     #             return 
     #         Clock.schedule_once(self.safe_poll_second, 0.1)
 
+
+    def on_piece_found(self,selected_piece):
+            print("Detected piece:", selected_piece)
+            # # Now that a piece has been selected, get its legal moves.
+            # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
+            # self.highlight_legal_moves(legal_moves)
+            self.notify_observers()
+
     def safe_poll_second(self, callback):
         new_board = self.hall.sense_layer.get_squares_game()
         self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
@@ -663,15 +665,9 @@ class ChessControlSystem:
         #     new_board = self.hall.sense_layer.get_squares_game()
         #     self.selected_move = self.hall.compare_boards(new_board, initial_board)
         #     time.sleep(0.1)
-        def on_piece_found(selected_piece):
-            print("Detected piece:", selected_piece)
-            # # Now that a piece has been selected, get its legal moves.
-            # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
-            # self.highlight_legal_moves(legal_moves)
-            self.notify_observers()
 
         # Start the polling process:
-        self.safe_poll_first(on_piece_found)
+        self.safe_poll_second(self.on_piece_found)
 
         # print(self.selected_piece)
 
