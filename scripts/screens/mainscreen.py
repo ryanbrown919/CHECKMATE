@@ -152,7 +152,7 @@ class MainScreen(Screen):
         popup.on_mode_selected = self.on_mode_selected
         popup.open()
 
-    def on_mode_selected(self, color, elo):
+    def on_mode_selected(self, color, elo, switch):
         self.preferred_color = color
         self.chess_elo = elo
         print(f"Selected mode: {color}, ELO: {elo}")
@@ -165,6 +165,10 @@ class MainScreen(Screen):
             self.bot_mode = False
         else:
             self.bot_mode = False
+        if switch:
+            self.use_switch = True
+        else:
+            False
 
 
     def start_custom1(self):
@@ -267,6 +271,15 @@ class ModePopup(Popup):
         self.size_hint = (0.8, 0.5)
         self.auto_dismiss = False
 
+        self.use_switch = False  # Default value for the toggle switch
+        # Add a toggle button for the new switch
+        toggle_layout = BoxLayout(orientation="horizontal", spacing=10)
+        toggle_layout.add_widget(Label(text="Use Switch:", size_hint=(0.4, 1)))
+        self.switch_toggle = ToggleButton(text="Off", state="normal", font_size=40)
+        self.switch_toggle.bind(on_press=self.on_switch_toggled)
+        toggle_layout.add_widget(self.switch_toggle)
+        layout.add_widget(toggle_layout)
+
         self.selected_color = current_color
         self.selected_elo = current_elo
 
@@ -333,10 +346,13 @@ class ModePopup(Popup):
         self.selected_elo = int(value)
         self.elo_label.text = f"ELO: {self.selected_elo}"
 
+    def on_switch_toggled(self, instance):
+        self.selected_switch = instance.text
+
     def on_ok(self, instance):
         # Call a callback if defined, passing the selected values
         if hasattr(self, "on_mode_selected"):
-            self.on_mode_selected(self.selected_color, self.selected_elo)
+            self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
         self.dismiss()
 
     def on_cancel(self, instance):

@@ -641,94 +641,94 @@ class BoardReset:
 
         return move_plans
     
-    def recover_captured_piece_path(self, captured_coord, piece, occupancy):
-        """
-        Generates a movement path for a captured piece to re-enter the board.
+    # def recover_captured_piece_path(self, captured_coord, piece, occupancy):
+    #     """
+    #     Generates a movement path for a captured piece to re-enter the board.
 
-        The plan is:
-        1. From its stored coordinate (captured_coord), move vertically so that its y becomes 375.
-        2. Then move horizontally so that its x becomes 25 (for white pieces, uppercase)
-            or 325 (for black pieces, lowercase) while keeping y = 375.
-        3. Then, from that intermediate point, select the closest available home square 
-            (from a predefined home_positions dictionary) based on Euclidean distance.
-        4. Generate a natural path from the intermediate point to the candidate's center.
+    #     The plan is:
+    #     1. From its stored coordinate (captured_coord), move vertically so that its y becomes 375.
+    #     2. Then move horizontally so that its x becomes 25 (for white pieces, uppercase)
+    #         or 325 (for black pieces, lowercase) while keeping y = 375.
+    #     3. Then, from that intermediate point, select the closest available home square 
+    #         (from a predefined home_positions dictionary) based on Euclidean distance.
+    #     4. Generate a natural path from the intermediate point to the candidate's center.
         
-        Returns:
-        A tuple (path, final_square), where:
-            - path is a list in the format: [absolute start, relative move1, relative move2, ...]
-            - final_square is the chosen home square (e.g. "e2") where the piece will be placed.
+    #     Returns:
+    #     A tuple (path, final_square), where:
+    #         - path is a list in the format: [absolute start, relative move1, relative move2, ...]
+    #         - final_square is the chosen home square (e.g. "e2") where the piece will be placed.
         
-        Assumptions:
-        - occupancy is obtained by self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-        - Helper methods self.square_to_coords_ry(square) and self.generate_natural_path(start, dest) exist.
-        """
-        # Define home positions (standard starting positions) locally.
-        home_positions = {
-            "K": ["e1"],
-            "Q": ["d1"],
-            "R": ["a1", "h1"],
-            "B": ["c1", "f1"],
-            "N": ["b1", "g1"],
-            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
-            "k": ["e8"],
-            "q": ["d8"],
-            "r": ["a8", "h8"],
-            "b": ["c8", "f8"],
-            "n": ["b8", "g8"],
-            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
-        }
+    #     Assumptions:
+    #     - occupancy is obtained by self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+    #     - Helper methods self.square_to_coords_ry(square) and self.generate_natural_path(start, dest) exist.
+    #     """
+    #     # Define home positions (standard starting positions) locally.
+    #     home_positions = {
+    #         "K": ["e1"],
+    #         "Q": ["d1"],
+    #         "R": ["a1", "h1"],
+    #         "B": ["c1", "f1"],
+    #         "N": ["b1", "g1"],
+    #         "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+    #         "k": ["e8"],
+    #         "q": ["d8"],
+    #         "r": ["a8", "h8"],
+    #         "b": ["c8", "f8"],
+    #         "n": ["b8", "g8"],
+    #         "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+    #     }
         
-        # Step 1: Move vertically so that y becomes 375.
-        wp1 = (captured_coord[0], 375)
-        # Step 2: Move horizontally so that x becomes target_x.
-        target_x = 25 if piece.isupper() else 325
-        wp2 = (target_x, 375)
+    #     # Step 1: Move vertically so that y becomes 375.
+    #     wp1 = (captured_coord[0], 375)
+    #     # Step 2: Move horizontally so that x becomes target_x.
+    #     target_x = 25 if piece.isupper() else 325
+    #     wp2 = (target_x, 375)
         
-        # Step 3: From wp2, select the closest available home square.
-        # Get candidate home squares for this piece.
-        candidates = home_positions.get(piece, [])
-        best_candidate = None
-        best_dist = float('inf')
+    #     # Step 3: From wp2, select the closest available home square.
+    #     # Get candidate home squares for this piece.
+    #     candidates = home_positions.get(piece, [])
+    #     best_candidate = None
+    #     best_dist = float('inf')
         
-        for candidate in candidates:
-            # Re-read occupancy each time to ensure the candidate is up-to-date.
-            occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-            if occ.get(candidate, 0) != 0:
-                continue  # Candidate square is occupied.
-            # Convert candidate square to its center coordinates.
-            candidate_coord = self.square_to_coords_ry(candidate)
-            # Compute Euclidean distance from wp2.
-            dist = math.hypot(candidate_coord[0] - wp2[0], candidate_coord[1] - wp2[1])
-            if dist < best_dist:
-                best_candidate = candidate
-                best_dist = dist
+    #     for candidate in candidates:
+    #         # Re-read occupancy each time to ensure the candidate is up-to-date.
+    #         occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+    #         if occ.get(candidate, 0) != 0:
+    #             continue  # Candidate square is occupied.
+    #         # Convert candidate square to its center coordinates.
+    #         candidate_coord = self.square_to_coords_ry(candidate)
+    #         # Compute Euclidean distance from wp2.
+    #         dist = math.hypot(candidate_coord[0] - wp2[0], candidate_coord[1] - wp2[1])
+    #         if dist < best_dist:
+    #             best_candidate = candidate
+    #             best_dist = dist
 
-        if best_candidate is None:
-            # According to your design, this should not happen.
-            print("Error: No free home square available for captured piece", piece)
-            return None, None
+    #     if best_candidate is None:
+    #         # According to your design, this should not happen.
+    #         print("Error: No free home square available for captured piece", piece)
+    #         return None, None
 
-        # Convert the chosen candidate to its coordinates.
-        final_coord = self.square_to_coords_ry(best_candidate)
+    #     # Convert the chosen candidate to its coordinates.
+    #     final_coord = self.square_to_coords_ry(best_candidate)
         
-        # Step 4: Generate a natural path from wp2 to final_coord.
-        natural_segment = self.generate_natural_path(wp2, final_coord)
-        # Build the overall path:
-        #  - Segment 1: captured_coord -> wp1
-        delta1 = (wp1[0] - captured_coord[0], wp1[1] - captured_coord[1])
-        #  - Segment 2: wp1 -> wp2
-        delta2 = (wp2[0] - wp1[0], wp2[1] - wp1[1])
-        #  - Segment 3: from wp2 to final_coord using the relative moves from natural_segment.
-        # natural_segment is assumed to be [wp2, rel_move1, rel_move2, ...]
-        if len(natural_segment) < 2:
-            # Fallback if generate_natural_path doesn't return relative moves.
-            delta3 = (final_coord[0] - wp2[0], final_coord[1] - wp2[1])
-            segment3 = [delta3]
-        else:
-            segment3 = natural_segment[1:]
+    #     # Step 4: Generate a natural path from wp2 to final_coord.
+    #     natural_segment = self.generate_natural_path(wp2, final_coord)
+    #     # Build the overall path:
+    #     #  - Segment 1: captured_coord -> wp1
+    #     delta1 = (wp1[0] - captured_coord[0], wp1[1] - captured_coord[1])
+    #     #  - Segment 2: wp1 -> wp2
+    #     delta2 = (wp2[0] - wp1[0], wp2[1] - wp1[1])
+    #     #  - Segment 3: from wp2 to final_coord using the relative moves from natural_segment.
+    #     # natural_segment is assumed to be [wp2, rel_move1, rel_move2, ...]
+    #     if len(natural_segment) < 2:
+    #         # Fallback if generate_natural_path doesn't return relative moves.
+    #         delta3 = (final_coord[0] - wp2[0], final_coord[1] - wp2[1])
+    #         segment3 = [delta3]
+    #     else:
+    #         segment3 = natural_segment[1:]
         
-        path = [captured_coord, delta1, delta2] + segment3
-        return path, best_candidate
+    #     path = [captured_coord, delta1, delta2] + segment3
+    #     return path, best_candidate
 
 
 
@@ -842,13 +842,14 @@ class BoardReset:
 
             for i, piece in enumerate(reversed(black_coords)):
                 symbol, coord = piece
-                path = [coord, (0, 375-coord[1]), (white_x - coord[0], 0)]
+                path = [coord, (0, 375-coord[1]), (black_x - coord[0], 0)]
                 
                 # Find the closest available square for the piece
                 closest_square = None
                 for square in home_squares.get(symbol, []):
                     if occ.get(square, 1) == 0:  # Check if the square is unoccupied
                         closest_square = square
+                        
                         break
 
                 if closest_square:
