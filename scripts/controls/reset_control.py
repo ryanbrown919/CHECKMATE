@@ -435,93 +435,102 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-    def reset_board_to_home_recursive(self, current_mapping, moves_so_far=None):
-        """
-        Recursively processes the dictionary of pieces that need to be moved (current_mapping)
-        and assigns each piece a home square if one of its candidate home squares is free.
-        At each step, the function polls the current board occupancy via the hall-effect sensors,
-        so that pieces already moved (and thus occupying their home squares) are taken into account.
+        returns = self.captured_piece_return()
+
+        for start_square, info in returns.items():
+            print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
+            print(info["path"])
+
+            cmds = self.gantry.path_to_gcode(info["path"])
+            self.gantry.send_commands(cmds)
+
+    # def reset_board_to_home_recursive(self, current_mapping, moves_so_far=None):
+    #     """
+    #     Recursively processes the dictionary of pieces that need to be moved (current_mapping)
+    #     and assigns each piece a home square if one of its candidate home squares is free.
+    #     At each step, the function polls the current board occupancy via the hall-effect sensors,
+    #     so that pieces already moved (and thus occupying their home squares) are taken into account.
         
-        Parameters:
-        current_mapping: dict mapping square (string) -> piece symbol for pieces not yet moved.
-        moves_so_far: dict (accumulated move plans). Each move plan is a dictionary with:
-            - "piece": piece symbol,
-            - "final_square": chosen home square,
-            - "path": list of moves (first element is absolute start, then relative moves).
+    #     Parameters:
+    #     current_mapping: dict mapping square (string) -> piece symbol for pieces not yet moved.
+    #     moves_so_far: dict (accumulated move plans). Each move plan is a dictionary with:
+    #         - "piece": piece symbol,
+    #         - "final_square": chosen home square,
+    #         - "path": list of moves (first element is absolute start, then relative moves).
         
-        Returns:
-        A dictionary of move plans for pieces that have been moved.
-        (If no further progress is possible, any remaining pieces are reported as delayed.)
-        """
-        if moves_so_far is None:
-            moves_so_far = {}
+    #     Returns:
+    #     A dictionary of move plans for pieces that have been moved.
+    #     (If no further progress is possible, any remaining pieces are reported as delayed.)
+    #     """
+    #     if moves_so_far is None:
+    #         moves_so_far = {}
 
-        # Base case: if there are no pieces left to move, return the accumulated moves.
-        if not current_mapping:
-            return moves_so_far
+    #     # Base case: if there are no pieces left to move, return the accumulated moves.
+    #     if not current_mapping:
+    #         return moves_so_far
 
-        # Define the standard home squares for each piece type.
-        starting_positions = {
-            "K": ["e1"],
-            "Q": ["d1"],
-            "R": ["a1", "h1"],
-            "B": ["c1", "f1"],
-            "N": ["b1", "g1"],
-            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
-            "k": ["e8"],
-            "q": ["d8"],
-            "r": ["a8", "h8"],
-            "b": ["c8", "f8"],
-            "n": ["b8", "g8"],
-            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
-        }
+    #     # Define the standard home squares for each piece type.
+    #     starting_positions = {
+    #         "K": ["e1"],
+    #         "Q": ["d1"],
+    #         "R": ["a1", "h1"],
+    #         "B": ["c1", "f1"],
+    #         "N": ["b1", "g1"],
+    #         "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+    #         "k": ["e8"],
+    #         "q": ["d8"],
+    #         "r": ["a8", "h8"],
+    #         "b": ["c8", "f8"],
+    #         "n": ["b8", "g8"],
+    #         "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+    #     }
 
-        moves_this_round = {}
-        remaining = {}
+    #     moves_this_round = {}
+    #     remaining = {}
 
-        # Iterate over a copy of the current mapping.
-        for square, piece in current_mapping.items():
-            # Skip if the piece is already at one of its home squares.
-            if square in starting_positions.get(piece, []):
-                continue
+    #     # Iterate over a copy of the current mapping.
+    #     for square, piece in current_mapping.items():
+    #         # Skip if the piece is already at one of its home squares.
+    #         if square in starting_positions.get(piece, []):
+    #             continue
 
-            # Poll the current occupancy from the hall sensors.
-            occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-            candidate_found = None
-            for candidate in starting_positions.get(piece, []):
-                if occ.get(candidate, 0) == 0:
-                    candidate_found = candidate
-                    break
+    #         # Poll the current occupancy from the hall sensors.
+    #         occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+    #         candidate_found = None
+    #         for candidate in starting_positions.get(piece, []):
+    #             if occ.get(candidate, 0) == 0:
+    #                 candidate_found = candidate
+    #                 break
 
-            if candidate_found is not None:
-                # Generate a natural path from the piece's current square to the chosen candidate.
-                start_coords = self.square_to_coords_ry(square)
-                dest_coords = self.square_to_coords_ry(candidate_found)
-                path = self.generate_natural_path(start_coords, dest_coords)
-                moves_this_round[square] = {
-                    "piece": piece,
-                    "final_square": candidate_found,
-                    "path": path
-                }
-            else:
-                # No candidate free; keep the piece in the remaining list.
-                remaining[square] = piece
+    #         if candidate_found is not None:
+    #             # Generate a natural path from the piece's current square to the chosen candidate.
+    #             start_coords = self.square_to_coords_ry(square)
+    #             dest_coords = self.square_to_coords_ry(candidate_found)
+    #             path = self.generate_natural_path(start_coords, dest_coords)
+    #             moves_this_round[square] = {
+    #                 "piece": piece,
+    #                 "final_square": candidate_found,
+    #                 "path": path
+    #             }
+    #         else:
+    #             # No candidate free; keep the piece in the remaining list.
+    #             remaining[square] = piece
 
-        # If no moves were made this round, then stop recursion.
-        if not moves_this_round:
-            print("No further progress can be made. The following moves remain delayed:", remaining)
-            # Optionally, record the remaining pieces as delayed.
-            moves_so_far.update({sq: {"piece": p, "final_square": None, "path": []} for sq, p in remaining.items()})
-            return moves_so_far
-        else:
-            # Update moves_so_far with moves from this round.
-            moves_so_far.update(moves_this_round)
-            # Remove the moved pieces from the current mapping.
-            for sq in moves_this_round.keys():
-                if sq in current_mapping:
-                    del current_mapping[sq]
-            # Recurse on the remaining pieces.
-            return self.reset_board_to_home_recursive(current_mapping, moves_so_far)
+    #     # If no moves were made this round, then stop recursion.
+    #     if not moves_this_round:
+    #         print("No further progress can be made. The following moves remain delayed:", remaining)
+    #         # Optionally, record the remaining pieces as delayed.
+    #         moves_so_far.update({sq: {"piece": p, "final_square": None, "path": []} for sq, p in remaining.items()})
+    #         return moves_so_far
+    #     else:
+    #         # Update moves_so_far with moves from this round.
+    #         moves_so_far.update(moves_this_round)
+    #         # Remove the moved pieces from the current mapping.
+    #         for sq in moves_this_round.keys():
+    #             if sq in current_mapping:
+    #                 del current_mapping[sq]
+    #         # Recurse on the remaining pieces.
+    #         return self.reset_board_to_home_recursive(current_mapping, moves_so_far)
         
     def simple_reset_to_home(self, fen):
         """
@@ -615,36 +624,68 @@ class BoardReset:
                 break
 
         return move_plans
+    
+    def captured_piece_return(self, captured_pieces):
 
 
 
-
-
-    def reset_board_to_home(self, current_fen):
-        """
-        Resets the board from the current configuration (given by current_fen)
-        to the standard home positions.
+        white_pattern = [(350, 435), (350, 410), (325, 435), (325, 410), (300, 435), (300, 410), (275, 435), (275, 410), (250, 435), (250, 410), (225, 435), (225, 410), (200, 435), (200, 410), (175, 435), (175, 410)]
+        black_pattern = [(0, 435), (0, 410), (25, 435), (25, 410), (50, 435), (50, 410), (75, 435), (75, 410), (100, 435), (100, 410), (125, 435), (125, 410), (150, 435), (150, 410), (175, 435), (175, 410)]
         
-        This function:
-        1. Parses the current FEN to obtain a mapping of squares to pieces.
-        2. Uses a starting_positions dictionary to define home squares for each piece.
-        3. Iterates through the pieces and, for each piece, re-reads occupancy
-            (via self.hall.sense_layer.get_squares_game() and occupancy_list_to_dict)
-            to check if any candidate home square for that piece is free (occupancy==0).
-        4. If a free candidate is found, it generates a natural path (via generate_natural_path)
-            from the piece's current square to that candidate and “moves” the piece.
-        5. If not, the piece is delayed for later processing.
-        6. The process repeats until no further moves can be made.
+
+        white_moves = {}
+        black_moves = {}
+        white_index = 0
+        black_index = 0
         
-        Returns:
-        A dictionary mapping the original square (from which the piece moved) to a move plan.
-        Each move plan is a dictionary with:
-            - "piece": the piece symbol,
-            - "final_square": the chosen home square,
-            - "path": a list with the absolute starting coordinate followed by relative moves.
+        for i, piece in enumerate(captured_pieces):
+            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            if piece.isupper():
+                stored_coord = white_pattern[white_index % len(white_pattern)]
+                white_index += 1
+                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
+                white_moves[i] = {
+                    "piece": piece,
+                    "start_coord": stored_coord,
+                    "final_square": final_square,
+                    "path": path
+                }
+            else:
+                stored_coord = black_pattern[black_index % len(black_pattern)]
+                black_index += 1
+                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
+                black_moves[i] = {
+                    "piece": piece,
+                    "start_coord": stored_coord,
+                    "final_square": final_square,
+                    "path": path
+                }
+        
+        return white_moves, black_moves
+    
+    def recover_captured_piece_path(self, captured_coord, piece, occupancy):
         """
-        # Define standard starting positions for each piece.
-        starting_positions = {
+        Generates a movement path for a captured piece to re-enter the board.
+        
+        The plan is:
+        1. From its stored coordinate (captured_coord), move vertically so that its y becomes 375.
+        2. Then move horizontally so that its x becomes:
+                25 for white pieces (uppercase) or 325 for black pieces (lowercase),
+            while keeping y = 375.
+        3. Then check the piece’s home squares (from a home_squares dictionary, which for our purposes
+            is the same as standard starting positions). For each candidate home square, re-read occupancy
+            (via self.hall.sense_layer.get_squares_game() and occupancy_list_to_dict); if one is free,
+            choose that candidate.
+        4. Generate a natural path from the second waypoint (wp2) to the candidate’s center.
+        
+        Returns a tuple (path, final_square), where:
+        - path is a list: the first element is the absolute starting coordinate, followed by relative move segments.
+        - final_square is the chosen home square (e.g., "e2") where the piece will finally be placed.
+        
+        It is assumed that occupancy is updated by calling self.hall.sense_layer.get_squares_game().
+        """
+        # Dictionary of home squares (same as standard starting positions)
+        home_squares = {
             "K": ["e1"],
             "Q": ["d1"],
             "R": ["a1", "h1"],
@@ -659,81 +700,285 @@ class BoardReset:
             "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
         }
         
-        # Parse the current board FEN.
-        current_mapping = self.parse_fen(current_fen)
-        
-        # Create a full list of board squares.
-        board_squares = [f + str(r) for r in range(8, 0, -1) for f in "abcdefgh"]
-        
-        # (We don't update occupancy; each check will use the hall sensor.)
-        # Initialize move plans and a delayed moves dictionary.
-        move_paths = {}
-        delayed_moves = {}
-        
-        progress = True
-        while progress:
-            progress = False
-            # Process each piece in the current mapping.
-            for square, piece in list(current_mapping.items()):
-                # Skip if the piece is already in one of its home squares.
-                if square in starting_positions.get(piece, []):
-                    continue
+        # Determine target x based on piece color.
+        target_x = 25 if piece.isupper() else 325
 
-                # For this piece, get its candidate home squares.
-                candidates = starting_positions.get(piece, [])
-                chosen = None
-                # For each candidate, re-read occupancy to see if it's free.
-                for candidate in candidates:
-                    occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-                    if occ.get(candidate, 0) == 0:
-                        chosen = candidate
-                        break
-                if chosen:
-                    # Generate the natural path from current square to the chosen candidate.
-                    start_coords = self.square_to_coords_ry(square)
-                    dest_coords = self.square_to_coords_ry(chosen)
-                    path = self.generate_natural_path(start_coords, dest_coords)
-                    move_paths[square] = {
-                        "piece": piece,
-                        "final_square": chosen,
-                        "path": path
-                    }
-                    # "Move" the piece by updating current_mapping.
-                    current_mapping[chosen] = piece
-                    del current_mapping[square]
-                    progress = True
-                else:
-                    # No candidate free; delay this piece.
-                    delayed_moves[square] = piece
+        # Waypoint 1: Adjust y to 375 (vertical move), keep x unchanged.
+        wp1 = (captured_coord[0], 375)
+        # Waypoint 2: Move horizontally to target_x, keeping y = 375.
+        wp2 = (target_x, 375)
+        
+        # Now, check the piece's home squares.
+        candidate_found = None
+        # Re-read occupancy for each candidate.
+        for candidate in home_squares.get(piece, []):
+            occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            if occ.get(candidate, 0) == 0:  # 0 indicates the square is free.
+                candidate_found = candidate
+                break
+        
+        if candidate_found is None:
+            print("Error: No free home square found for captured piece", piece)
+            return None, None
+
+        # Convert the chosen candidate home square to coordinates.
+        final_coord = self.square_to_coords_ry(candidate_found)
+        
+        # Generate a natural path from wp2 to the final coordinate.
+        # We assume generate_natural_path returns a list with the first element equal to wp2,
+        # then relative moves.
+        natural_segment = self.generate_natural_path(wp2, final_coord)
+        # Build the overall path:
+        #   Segment 1: from captured_coord to wp1.
+        delta1 = (wp1[0] - captured_coord[0], wp1[1] - captured_coord[1])
+        #   Segment 2: from wp1 to wp2.
+        delta2 = (wp2[0] - wp1[0], wp2[1] - wp1[1])
+        #   Segment 3: from wp2 to final_coord, using the natural segment's relative moves (excluding the absolute starting point).
+        # natural_segment is assumed to be [wp2, rel_move1, rel_move2, ...]
+        if len(natural_segment) < 2:
+            # Fallback in case generate_natural_path didn't return relative moves.
+            delta3 = (final_coord[0] - wp2[0], final_coord[1] - wp2[1])
+            segment3 = [delta3]
+        else:
+            segment3 = natural_segment[1:]
+        
+        # Construct the full path as a list: first element is captured_coord (absolute start),
+        # then each subsequent element is a relative move.
+        path = [captured_coord, delta1, delta2] + segment3
+        return path, candidate_found
+
+
+
+
+
+    # def reset_board_to_home(self, current_fen):
+    #     """
+    #     Resets the board from the current configuration (given by current_fen)
+    #     to the standard home positions.
+        
+    #     This function:
+    #     1. Parses the current FEN to obtain a mapping of squares to pieces.
+    #     2. Uses a starting_positions dictionary to define home squares for each piece.
+    #     3. Iterates through the pieces and, for each piece, re-reads occupancy
+    #         (via self.hall.sense_layer.get_squares_game() and occupancy_list_to_dict)
+    #         to check if any candidate home square for that piece is free (occupancy==0).
+    #     4. If a free candidate is found, it generates a natural path (via generate_natural_path)
+    #         from the piece's current square to that candidate and “moves” the piece.
+    #     5. If not, the piece is delayed for later processing.
+    #     6. The process repeats until no further moves can be made.
+        
+    #     Returns:
+    #     A dictionary mapping the original square (from which the piece moved) to a move plan.
+    #     Each move plan is a dictionary with:
+    #         - "piece": the piece symbol,
+    #         - "final_square": the chosen home square,
+    #         - "path": a list with the absolute starting coordinate followed by relative moves.
+    #     """
+    #     # Define standard starting positions for each piece.
+    #     starting_positions = {
+    #         "K": ["e1"],
+    #         "Q": ["d1"],
+    #         "R": ["a1", "h1"],
+    #         "B": ["c1", "f1"],
+    #         "N": ["b1", "g1"],
+    #         "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+    #         "k": ["e8"],
+    #         "q": ["d8"],
+    #         "r": ["a8", "h8"],
+    #         "b": ["c8", "f8"],
+    #         "n": ["b8", "g8"],
+    #         "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+    #     }
+        
+    #     # Parse the current board FEN.
+    #     current_mapping = self.parse_fen(current_fen)
+        
+    #     # Create a full list of board squares.
+    #     board_squares = [f + str(r) for r in range(8, 0, -1) for f in "abcdefgh"]
+        
+    #     # (We don't update occupancy; each check will use the hall sensor.)
+    #     # Initialize move plans and a delayed moves dictionary.
+    #     move_paths = {}
+    #     delayed_moves = {}
+        
+    #     progress = True
+    #     while progress:
+    #         progress = False
+    #         # Process each piece in the current mapping.
+    #         for square, piece in list(current_mapping.items()):
+    #             # Skip if the piece is already in one of its home squares.
+    #             if square in starting_positions.get(piece, []):
+    #                 continue
+
+    #             # For this piece, get its candidate home squares.
+    #             candidates = starting_positions.get(piece, [])
+    #             chosen = None
+    #             # For each candidate, re-read occupancy to see if it's free.
+    #             for candidate in candidates:
+    #                 occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+    #                 if occ.get(candidate, 0) == 0:
+    #                     chosen = candidate
+    #                     break
+    #             if chosen:
+    #                 # Generate the natural path from current square to the chosen candidate.
+    #                 start_coords = self.square_to_coords_ry(square)
+    #                 dest_coords = self.square_to_coords_ry(chosen)
+    #                 path = self.generate_natural_path(start_coords, dest_coords)
+    #                 move_paths[square] = {
+    #                     "piece": piece,
+    #                     "final_square": chosen,
+    #                     "path": path
+    #                 }
+    #                 # "Move" the piece by updating current_mapping.
+    #                 current_mapping[chosen] = piece
+    #                 del current_mapping[square]
+    #                 progress = True
+    #             else:
+    #                 # No candidate free; delay this piece.
+    #                 delayed_moves[square] = piece
             
-            # Process delayed moves.
-            for square, piece in list(delayed_moves.items()):
-                candidates = starting_positions.get(piece, [])
-                chosen = None
-                for candidate in candidates:
-                    occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-                    if occ.get(candidate, 0) == 0:
-                        chosen = candidate
-                        break
-                if chosen:
-                    start_coords = self.square_to_coords_ry(square)
-                    dest_coords = self.square_to_coords_ry(chosen)
-                    path = self.generate_natural_path(start_coords, dest_coords)
-                    move_paths[square] = {
-                        "piece": piece,
-                        "final_square": chosen,
-                        "path": path
-                    }
-                    current_mapping[chosen] = piece
-                    del current_mapping[square]
-                    del delayed_moves[square]
-                    progress = True
-            # Loop until no further moves can be made.
+    #         # Process delayed moves.
+    #         for square, piece in list(delayed_moves.items()):
+    #             candidates = starting_positions.get(piece, [])
+    #             chosen = None
+    #             for candidate in candidates:
+    #                 occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+    #                 if occ.get(candidate, 0) == 0:
+    #                     chosen = candidate
+    #                     break
+    #             if chosen:
+    #                 start_coords = self.square_to_coords_ry(square)
+    #                 dest_coords = self.square_to_coords_ry(chosen)
+    #                 path = self.generate_natural_path(start_coords, dest_coords)
+    #                 move_paths[square] = {
+    #                     "piece": piece,
+    #                     "final_square": chosen,
+    #                     "path": path
+    #                 }
+    #                 current_mapping[chosen] = piece
+    #                 del current_mapping[square]
+    #                 del delayed_moves[square]
+    #                 progress = True
+    #         # Loop until no further moves can be made.
         
-        if delayed_moves:
-            print("The following moves remain delayed (no home square free):", delayed_moves)
+    #     if delayed_moves:
+    #         print("The following moves remain delayed (no home square free):", delayed_moves)
         
-        return move_paths
+    #     return move_paths
+    
+    def captured_piece_return(self, captured_pieces):
+
+
+
+        white_pattern = [(350, 435), (350, 410), (325, 435), (325, 410), (300, 435), (300, 410), (275, 435), (275, 410), (250, 435), (250, 410), (225, 435), (225, 410), (200, 435), (200, 410), (175, 435), (175, 410)]
+        black_pattern = [(0, 435), (0, 410), (25, 435), (25, 410), (50, 435), (50, 410), (75, 435), (75, 410), (100, 435), (100, 410), (125, 435), (125, 410), (150, 435), (150, 410), (175, 435), (175, 410)]
+        
+
+        white_moves = {}
+        black_moves = {}
+        white_index = 0
+        black_index = 0
+        
+        for i, piece in enumerate(captured_pieces):
+            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            if piece.isupper():
+                stored_coord = white_pattern[white_index % len(white_pattern)]
+                white_index += 1
+                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
+                white_moves[i] = {
+                    "piece": piece,
+                    "start_coord": stored_coord,
+                    "final_square": final_square,
+                    "path": path
+                }
+            else:
+                stored_coord = black_pattern[black_index % len(black_pattern)]
+                black_index += 1
+                path, final_square = self.recover_captured_piece_path(stored_coord, piece, occupancy)
+                black_moves[i] = {
+                    "piece": piece,
+                    "start_coord": stored_coord,
+                    "final_square": final_square,
+                    "path": path
+                }
+        
+        return white_moves, black_moves
+    
+    def recover_captured_piece_path(self, captured_coord, piece):
+        """
+        Generates a movement path for a captured piece to re-enter the board.
+        
+        The plan is:
+        1. From its stored coordinate (captured_coord), move so that its y becomes 375.
+        2. Then move horizontally so that its x becomes 25 (for white pieces, uppercase)
+            or 325 (for black pieces, lowercase) while keeping y = 375.
+        3. Then slide vertically (in steps of -50 in y) until an unoccupied board square is found.
+            (Board-square centers are at y = 350, 300, 250, ... down to 0.)
+        
+        This version continuously re-reads occupancy from the hall-effect sensors so that newly 
+        occupied squares are immediately taken into account.
+        
+        Returns a tuple (path, final_square), where:
+        - path is a list in the format: [absolute start, relative move1, relative move2, relative move3].
+        - final_square is the board square (e.g., "e4") where the piece will finally be placed.
+        
+        The occupancy is updated continuously by calling self.hall.sense_layer.get_squares_game() and 
+        converting it via self.occupancy_list_to_dict.
+        """
+
+        occupancy = 
+
+        # Determine target x based on piece color.
+        target_x = 25 if piece.isupper() else 325
+
+        # Waypoint 1: Set y to 375 while keeping x unchanged.
+        wp1 = (captured_coord[0], 375)
+        # Waypoint 2: Move horizontally to target_x (keeping y = 375).
+        wp2 = (target_x, 375)
+
+        # Now, slide vertically downward (in 50-unit steps) until an unoccupied square is found.
+        candidate_y = 350  # Start with the highest board square center.
+        final_coord = None
+        final_square = None
+
+        while candidate_y >= 0:
+            # Re-fetch occupancy continuously.
+            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            candidate_coord = (target_x, candidate_y)
+            square_candidate = self.coords_to_square_ry(candidate_coord)
+            if occupancy.get(square_candidate) == 0:
+                final_coord = candidate_coord
+                final_square = square_candidate
+                break
+            candidate_y -= 50
+
+        if final_coord is None:
+            print("No available board square for captured piece", piece)
+            return None, None
+
+        # Build the path:
+        # Move 1: captured_coord -> wp1
+        delta1 = (wp1[0] - captured_coord[0], wp1[1] - captured_coord[1])
+        # Move 2: wp1 -> wp2
+        delta2 = (wp2[0] - wp1[0], wp2[1] - wp1[1])
+        # Move 3: wp2 -> final_coord
+        delta3 = (final_coord[0] - wp2[0], final_coord[1] - wp2[1])
+
+        path = [captured_coord, delta1, delta2, delta3]
+        return path, final_square
+
+
+
+
+        # 
+
+
+
+
+
+
+
+
     
     def sign(self, x):
         if x < 0:
