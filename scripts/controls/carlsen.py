@@ -1,9 +1,9 @@
 import time
-from control_system import ControlSystem
+from control_system import ChessControlSystem
 
 def toggle_magnet(control_system):
     control_system.gantry.send("M8")
-    time.sleep(0.1)
+    time.sleep(0.2)
     control_system.gantry.send("M9")
 
 def carlsen(control_system):
