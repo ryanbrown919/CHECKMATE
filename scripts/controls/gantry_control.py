@@ -1274,7 +1274,8 @@ class GantryControl:
                     self.set_acceleration(1000)
                     gcode_commands.append(f"G90X{move[0]}Y{move[1]}")
                     if self.magnet_state == "MOVE MODE":
-                        self.set_acceleration(400)
+                        gcode_commands.append("120=400") 
+                        gcode_commands.append("121=400") 
                         gcode_commands.append(f"M8") #Activate after initial movement
                 elif i == len(move_list) - 1:
                     dx = self.sign(move_list[-1][0]) * self.overshoot
