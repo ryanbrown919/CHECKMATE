@@ -70,8 +70,7 @@ class BoardReset:
         file = chr(ord('H') + x)
         rank = str(8 - y)
         return file + rank
-    
-    
+       
     def symbol_to_valid_coordinates(self, symbol):
         """
         Given a chess piece symbol, return the valid coordinates for that specific symbol.
@@ -92,6 +91,91 @@ class BoardReset:
         }
         print("Test: CALLED METHOD 'symbol_to_valid_coordinates'")
         return valid_gantry_coords.get(symbol, [])
+
+    def TEST_reset_playing_area_white(self):
+        """
+        TEST METHOD - See if Jack's code works without relying on cleared/sorted starting positions.
+        """
+        print("Test: STARTING METHOD 'TEST_reset_playing_area_white'")
+
+        pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
+
+        for piece in pieces:
+            symbol, coords = piece
+
+            # Only process white pieces (uppercase symbols)
+            if not symbol.isupper():
+                continue
+
+            x, y = coords
+
+            # Only process pieces not in the deadzone
+            if y < 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
+                print(f"Valid coordinates for {symbol}: {valid_coords}")
+                # Check which of those valid coordinates are already occupied
+                # occupied_coords = self.get_occupied_squares(self.board)
+                unoccupied_coords = [coord for coord in valid_coords if coord not in occupied_coords]
+
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    target_coord = unoccupied_coords[0]
+                else:
+                    # If all valid targets are occupied, make space by moving a blocking piece
+                    blocking_piece = None
+                    for coord in valid_coords:
+                        for other_piece in pieces:
+                            if other_piece[1] == coord:
+                                blocking_piece = other_piece
+                                break
+                        if blocking_piece:
+                            break
+
+                    if blocking_piece:
+                        # Move the blocking piece to another valid position
+                        blocking_symbol, blocking_coords = blocking_piece
+                        blocking_valid_coords = self.symbol_to_valid_coordinates(blocking_symbol)
+                        blocking_unoccupied_coords = [
+                            coord for coord in blocking_valid_coords if coord not in occupied_coords
+                        ]
+
+                        if blocking_unoccupied_coords:
+                            blocking_target_coord = blocking_unoccupied_coords[0]
+                            print(f"Making space: Moving blocking piece {blocking_symbol} from {blocking_coords} to {blocking_target_coord}")
+
+                            # Update the board state for the blocking piece
+                            old_rank, old_file = blocking_coords[1] // 50, blocking_coords[0] // 50
+                            new_rank, new_file = blocking_target_coord[1] // 50, blocking_target_coord[0] // 50
+                            self.board[old_rank][old_file] = 0  # Mark old square as empty
+                            self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                            # Update the blocking piece's position
+                            self.gantry.white_captured.remove(blocking_piece)
+                            self.gantry.white_captured.append((blocking_symbol, blocking_target_coord))
+
+                            # Set the target coordinate for the current piece
+                            target_coord = coord
+
+                if target_coord:
+                    # Update the white_captured list with the new coordinates
+                    self.gantry.white_captured.remove(piece)  # Add logic for duplicate pieces
+                    self.gantry.white_captured.append((symbol, target_coord))
+
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving {symbol} from {coords} to {target_coord}")
+
+                    # Uncomment the following lines when debugging is done:
+                    # path = [coords, target_coord]  # Simple direct path
+                    # movements = self.gantry.parse_path_to_movement(path)
+                    # commands = self.gantry.movement_to_gcode(movements)
+                    # self.gantry.send_commands(commands)
 
     def reset_playing_area_white(self):
         """
@@ -146,7 +230,6 @@ class BoardReset:
                     # movements = self.gantry.parse_path_to_movement(path)
                     # commands = self.gantry.movement_to_gcode(movements)
                     # self.gantry.send_commands(commands)
-
 
     def reset_playing_area_black(self):
         # could probably merge this with above method to reduce bloat but oh well, cry about it 
@@ -203,6 +286,77 @@ class BoardReset:
                     # commands = self.gantry.movement_to_gcode(movements)
                     # self.gantry.send_commands(commands)
                     
+    def reset_playing_area_deadzone(self):
+        """
+        Reset all pieces in the deadzone.
+        """
+        print("Test: STARTING METHOD 'reset_playing_area_deadzone'")
+
+        # Process white pieces in the deadzone
+        for piece in self.gantry.white_captured:
+            symbol, coords = piece
+            x, y = coords
+
+            # Check if the piece is in the deadzone (y > 375)
+            if y > 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
+
+                # Check which of those valid coordinates are already occupied
+                occupied_coords = self.get_occupied_squares(self.board)
+                unoccupied_coords = [coord for coord in valid_coords if coord not in occupied_coords]
+
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    target_coord = unoccupied_coords[0]
+
+                    # Update the white_captured list with the new coordinates
+                    self.gantry.white_captured.remove(piece)
+                    self.gantry.white_captured.append((symbol, target_coord))
+
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving white piece {symbol} from {coords} to {target_coord}")
+
+                    # need DIAZ to do dead zone path palnning logic
+
+        # Process black pieces in the deadzone
+        for piece in self.gantry.black_captured:
+            symbol, coords = piece
+            x, y = coords
+
+            # Check if the piece is in the deadzone (y > 375)
+            if y > 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
+
+                # Check which of those valid coordinates are already occupied
+                occupied_coords = self.get_occupied_squares(self.board)
+                unoccupied_coords = [coord for coord in valid_coords if coord not in occupied_coords]
+
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    target_coord = unoccupied_coords[0]
+
+                    # Update the black_captured list with the new coordinates
+                    self.gantry.black_captured.remove(piece)
+                    self.gantry.black_captured.append((symbol, target_coord))
+
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    self.board[old_rank][old_file] = 0  # Mark old square as empty
+                    self.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving black piece {symbol} from {coords} to {target_coord}")
+
+                    # need DIAZ to do dead zone path palnning logic...
 
     def fen_to_coords(self,fen):
         """
@@ -219,7 +373,7 @@ class BoardReset:
         for rank_idx, rank in enumerate(reversed(ranks)):  # Reverse so rank 1 is at the bottom
             file_idx = 0
             for char in rank:
-                if char.isdigit():
+                if (char.isdigit()):
                     file_idx += int(char)  # Skip empty squares
                 else:
                     square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
@@ -229,11 +383,6 @@ class BoardReset:
 
         print("Test: CALLED METHOD 'fen_to_coords'")
         return pieces
-
-        
-
-      
-        
 
     def reset_board_from_game(self):
         # Add logic here for dealign with resetting as well as deadzone pieces
@@ -333,8 +482,7 @@ class BoardReset:
                 movements = self.gantry.parse_path_to_movement(path)
                 commands = self.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
-                self.gantry.send_commands(commands)
-            
+                self.gantry.send_commands(commands)         
                 
     def full_reset(self):
         ''' Felipe's code '''
@@ -347,6 +495,5 @@ class BoardReset:
         print("[Test] Trying felipe 2")
         self.reset_board_from_game()
 
-            
 
-    
+
