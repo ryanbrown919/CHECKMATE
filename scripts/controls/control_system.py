@@ -894,6 +894,8 @@ class ChessControlSystem:
 
 
     def on_predefined_first_turn(self):
+
+        self.demo_progress = 0
         self.game_winner = None
         self.board.reset()
 
@@ -905,13 +907,14 @@ class ChessControlSystem:
 
     def on_predefined_turn(self):
 
-        for i, move in enumerate(self.demo_game):
-            self.process_predefined_board_move(chess.Move.from_uci(move),  i % 2 == 0)
-            self.notify_observers()
-            self.update_ui()
+        
+        self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress])),  self.demo_progress % 2 == 0)
+        self.notify_observers()
+        self.update_ui()
+        self.demo_progress += 1
 
-            time.sleep(1)
- 
+        Clock.schedule_once(lambda dt: self.go_to_predefined_move(), 0.1)
+
 
 
     def toggle_clock(self):

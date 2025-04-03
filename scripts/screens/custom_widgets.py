@@ -329,14 +329,22 @@ class ChessBoard(Widget):
             for file in range(8):
                 for rank in range(8):
                     # Use alternating colors.
+                    # if (file + rank) % 2 == 0:
+                    #     col = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
+                    # else:
+                    #     col = (247/255, 182/255, 114/255, 1) if self.bottom_colour_white else (189/255, 100/255, 6/255, 1)
+                    # Color(*col)
+
                     if (file + rank) % 2 == 0:
-                        col = (189/255, 100/255, 6/255, 1) if self.bottom_colour_white else (247/255, 182/255, 114/255, 1)
+                        col = (189/255, 100/255, 6/255, 1)
                     else:
-                        col = (247/255, 182/255, 114/255, 1) if self.bottom_colour_white else (189/255, 100/255, 6/255, 1)
+                        col = (247/255, 182/255, 114/255, 1)
                     Color(*col)
+
                     # Adjust rank for perspective.
                     if self.bottom_colour_white:
                         pos_y = board_origin[1] + rank * cell_size
+                        #pos_x = board_origin[0] + file * cell_size
                     else:
                         pos_y = board_origin[1] + (7 - rank) * cell_size
                     pos_x = board_origin[0] + file * cell_size
@@ -352,9 +360,9 @@ class ChessBoard(Widget):
         # Add row labels in the left margin.
         for i in range(8):
             if self.bottom_colour_white:
-                label_text = str(8 - i)
-            else:
                 label_text = str(i + 1)
+            else:
+                label_text = str(8-i)
             label = Label(text=label_text, halign="center", valign="middle", font_size = self.font_size)
             # label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
             # if self.bottom_colour_white:
@@ -368,7 +376,11 @@ class ChessBoard(Widget):
 
         # Add column labels in the bottom margin.
         for i in range(8):
-            label_text = chr(ord('a') + i)
+            if self.bottom_colour_white:
+
+                label_text = chr(ord('a') + i)
+            else:
+                label_text = chr(ord('h') - i)
             label = Label(text=label_text, halign="center", valign="middle", font_size = self.font_size)
             # label.bind(size=lambda inst, val: setattr(inst, 'text_size', val))
             label.pos = (board_origin[0] + i * cell_size, self.y)
@@ -387,9 +399,12 @@ class ChessBoard(Widget):
                 rank = sq // 8
                 if self.bottom_colour_white:
                     pos_y = board_origin[1] + rank * cell_size
+                    pos_x = board_origin[0] + file * cell_size
                 else:
                     pos_y = board_origin[1] + (7 - rank) * cell_size
-                pos_x = board_origin[0] + file * cell_size
+                    pos_x = board_origin[0] + (7 - file) * cell_size
+                    #pos_y = board_origin[1] + (7 - rank) * cell_size
+                #pos_x = board_origin[0] + file * cell_size
                 child.pos = (pos_x, pos_y)
                 child.size = (cell_size, cell_size)
 
@@ -435,9 +450,12 @@ class ChessBoard(Widget):
                 rank = index // 8
                 if self.bottom_colour_white:
                     pos_y = board_origin[1] + rank * cell_size
+                    pos_x = board_origin[0] + file * cell_size
                 else:
                     pos_y = board_origin[1] + (7 - rank) * cell_size
-                pos_x = board_origin[0] + file * cell_size
+                    pos_x = board_origin[0] + (7 - file) * cell_size
+                    #pos_y = board_origin[1] + (7 - rank) * cell_size
+                #pos_x = board_origin[0] + file * cell_size
                 # Use blue for last move highlighting.
                 col = (191/255, 128/255, 1, 0.5) 
                 col_inst = Color(*col)
