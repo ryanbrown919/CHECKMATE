@@ -901,7 +901,7 @@ class GantryControl:
                                 self.send_commands(commands)
                                 
                                 #move piece off center in
-                                path = [end_coord, (0, offset)]
+                                path = [end_coord, (-offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 

@@ -28,8 +28,14 @@ class BoardResetScreen(Screen):
 
         custom1 = MatrixWidget(control_system = self.control_system)
 
+        reset_btn = RoundedButton(text="Reset Board from FEN")
+        reset_btn.bind(on_release=lambda instance: self.control_system.reset_control.full_reset())
+        
+
+
 
         layout.add_widget(custom1)
+        layout.add_widget(reset_btn)
         self.add_widget(layout)
 
 

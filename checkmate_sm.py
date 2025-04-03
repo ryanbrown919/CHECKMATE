@@ -19,6 +19,9 @@ from scripts.screens.mainscreen import MainScreen
 from scripts.screens.gantryscreen import GantryControlScreen
 from scripts.screens.endgamescreen import EndGameScreen
 from scripts.screens.demoscreen import DemoScreen
+from scripts.screens.boardresetscreen import BoardResetScreen
+
+
 
 # A simple ScreenManager that holds our GameScreen.
 class MainScreenManager(ScreenManager):
@@ -37,21 +40,22 @@ class TestApp(App):
         self.control_system.parameters["bot_mode"] = True  # Set to True for engine vs. engine.
 
         self.sm = MainScreenManager(transition=FadeTransition())
-        gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
-        initscreen = InitScreen(control_system=self.control_system, name='initscreen')
-        loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
-        mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
-        gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
-        endgamescreen = EndGameScreen(control_system=self.control_system, name="endgamescreen")
-        demoscreen = DemoScreen(control_system = self.control_system, name='demoscreen')
+        self.gamescreen = GameScreen(control_system=self.control_system, name="gamescreen")
+        self.initscreen = InitScreen(control_system=self.control_system, name='initscreen')
+        self.loadingscreen = LoadingScreen(control_system=self.control_system, name='loadingscreen')
+        self.mainscreen = MainScreen(control_system=self.control_system, name='mainscreen')
+        self.gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
+        self.endgamescreen = EndGameScreen(control_system=self.control_system, name="endgamescreen")
+        self.demoscreen = DemoScreen(control_system = self.control_system, name='demoscreen')
+        self.resetscreen = BoardResetScreen(control_system = self.control_system, name='boardresetscreen')
 
 
-        self.sm.add_widget(gamescreen)
-        self.sm.add_widget(initscreen)
-        self.sm.add_widget(loadingscreen)
-        self.sm.add_widget(mainscreen)
-        self.sm.add_widget(gantryscreen)
-        self.sm.add_widget(endgamescreen)
+        self.sm.add_widget(self.gamescreen)
+        self.sm.add_widget(self.initscreen)
+        self.sm.add_widget(self.loadingscreen)
+        self.sm.add_widget(self.mainscreen)
+        self.sm.add_widget(self.gantryscreen)
+        self.sm.add_widget(self.endgamescreen)
 
 
 
@@ -89,9 +93,19 @@ class TestApp(App):
             self.sm.current = 'endgamescreen'
         elif state == 'demoscreen':
             self.sm.current = 'demoscreen'
+        elif state == 'boardresetscreen':
+            self.sm.current = 'boardresetscreen'
 
         else:
             print("[App] Unhandled state:", state)
+
+    # def trigger_game_screen_update(self, control_system):
+    #     # Assume 'game' is the name of your GameScreen in the ScreenManager.
+    #     # Switch to the game screen first.
+    #     self.sm.current = 'gamescreen'
+    #     # Get the game screen instance.
+    #     # Schedule the layout rebuild with a short delay.
+    #     Clock.schedule_once(lambda dt: self.gamescreen.rebuild_layout(), 0.1)
 
 
 if __name__ == '__main__':

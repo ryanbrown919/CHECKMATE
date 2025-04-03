@@ -163,7 +163,7 @@ class ChessControlSystem:
         
         self.engine = None
 
-        self.use_switch = True
+        self.use_switch = False
 
         self.ingame_message = ""
 
@@ -236,7 +236,7 @@ class ChessControlSystem:
 
 
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen'], dest='mainscreen', after='update_ui')
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='end_game_screen', after=['early_exit', 'update_ui'])
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
@@ -266,6 +266,8 @@ class ChessControlSystem:
         except Exception as e:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
+
+        self.reset_control = BoardReset()
 
         self.first_change = None
         self.second_change = None
@@ -334,6 +336,8 @@ class ChessControlSystem:
     def early_exit(self):
 
         self.endgame_message = "Game Abandoned"
+        if self.engine:
+            self.engine.quit()
 
 
 
@@ -422,6 +426,12 @@ class ChessControlSystem:
                 self.game_winner = 'Black'
             # Make some indication
 
+            self.rocker.toggle()
+            #time.sleep(0.3)
+
+            self.rocker.toggle()
+
+
             self.check = f"{self.board.turn}"
             self.checkmate = False
 
@@ -499,7 +509,7 @@ class ChessControlSystem:
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
-        # self.rocker.toggle()
+        self.rocker.toggle()
         self.notify_observers()
 
         self.on_player_turn()
@@ -537,6 +547,12 @@ class ChessControlSystem:
                 self.piece_images['k'] = 'assets/black_king_check.png'
             else:
                 self.piece_images['K'] = 'assets/white_king_check.png'
+
+            self.rocker.toggle()
+            #time.sleep(0.3)
+
+            self.rocker.toggle()
+
             # Make some indication
 
             self.check = f"{self.board.turn}"
@@ -1056,6 +1072,10 @@ class ChessControlSystem:
 
             self.check = f"{self.board.turn}"
             self.checkmate = False
+
+            self.rocker.toggle()
+            #time.sleep(0.3)
+            self.rocker.toggle()
 
         else:
             if self.board.turn == chess.WHITE:

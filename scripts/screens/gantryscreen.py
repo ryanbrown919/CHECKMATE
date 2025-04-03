@@ -354,6 +354,7 @@ class GantryControlScreen(Screen):
         # The target board occupies most of the space.
         self.control_system = control_system
         self.gantry = self.control_system.gantry
+        self.font_size = self.control_system.font_size
 
         self.capture_move= False
 
@@ -361,11 +362,11 @@ class GantryControlScreen(Screen):
 
         self.header_layout = headerLayout(control_system = self.control_system, menu=False)
         self.body_layout = BoxLayout(orientation='horizontal')
-        self.board_display = BoxLayout(orientation='vertical', padding=10)
+        self.board_display = BoxLayout(orientation='vertical')
         self.gantry_controls = BoxLayout(orientation='vertical')
 
 
-        self.target_board = GantryTargetWidget(control_system=self.control_system)
+        self.target_board = GantryTargetWidget(control_system=self.control_system, size_hint={0.4, 1})
         self.board_display.add_widget(self.target_board)
 
 
@@ -377,7 +378,7 @@ class GantryControlScreen(Screen):
         self.body_layout.add_widget(self.gantry_controls)
         
         # Create arrow buttons.
-        btn_layout = GridLayout(size_hint=(1, 1), cols=3, rows=3)
+        btn_layout = GridLayout(size_hint=(1, 0.4), cols=3, rows=3)
         # We arrange buttons in a simple vertical layout with a nested grid.
         arrow_layout = BoxLayout(orientation='vertical')
 
@@ -393,19 +394,19 @@ class GantryControlScreen(Screen):
         s  = IconButton(source="assets/s.png",  size_hint=(0.1, 0.1))
         se = IconButton(source="assets/se.png", size_hint=(0.1, 0.1))
 
-        self.pathButton = PathPlanToggleButton(target_widget = self.target_board)
+        self.pathButton = PathPlanToggleButton(target_widget = self.target_board, font_size=self.font_size)
         self.chess_move_input = ChessMoveInput(target_widget=self.target_board,
                                                path_button=self.pathButton,
                                                on_move_callback=self.on_move_entered,
-                                               size_hint=(1, 1))  
-        c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input)
-        controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        self.move_input_block = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
+                                               size_hint=(1, 1), font_size=self.font_size)  
+        c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size)
+        controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
+        self.move_input_block = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
 
 
         controls.add_widget(self.pathButton)
         controls.add_widget(c_clear)
-        controls.add_widget(Button(text="Home", on_press=lambda instance: self.gantry.home()))
+        controls.add_widget(Button(text="Home", font_size=self.font_size, on_press=lambda instance: self.gantry.home()))
 
 
         btn_layout.add_widget(nw)
@@ -427,17 +428,17 @@ class GantryControlScreen(Screen):
         self.move_input_block.add_widget(self.chess_move_input)
 
         capture_toggle = CaptureToggleButton(
-            text="Capture Move",
+            text="Capture Move", font_size=self.font_size,
             size_hint=(0.3, 1))
         capture_toggle.bind(state=self.on_toggle_state)
 
         self.move_input_block.add_widget(capture_toggle)
         self.gantry_controls.add_widget(self.move_input_block)
         #self.gantry_controls.add_widget(Label(text="Magnet Controls", size_hint=(1, 0.1)))
-        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.1))
+        self.magnet_control = MagnetControl(gantry=self.gantry, size_hint=(1, 0.2))
         #self.magnet_state = self.magnet_control.get_state()
         self.gantry_controls.add_widget(self.magnet_control)
-        commandButton = SendCommandButton(gantry=self.gantry, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, size_hint=(1, 0.1))
+        commandButton = SendCommandButton(gantry=self.gantry, target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size, size_hint=(1, 0.2))
 
         self.gantry_controls.add_widget(commandButton)
 
@@ -471,7 +472,8 @@ class GantryControlScreen(Screen):
         self.is_en_passant = False
         self.is_white = False
         self.target_board.trail_enabled = True
-        self.target_board.process_chess_move(move, self.capture_move, self.is_castling, self.is_en_passant, self.is_white)
+        self.symbol = None
+        self.target_board.process_chess_move(move, self.capture_move, self.is_castling, self.is_en_passant, self.is_white, self.symbol)
         # Disable the text input and update its display with the trail coordinates.
         self.chess_move_input.disabled = True
         if self.target_board.trail_points:
