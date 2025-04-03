@@ -10,6 +10,7 @@ from kivy.clock import Clock
 from kivy.uix.togglebutton import ToggleButton
 
 import chess
+import math
 
 
 
@@ -88,11 +89,11 @@ class headerLayout(BoxLayout):
         icon = Image(source='assets/logo.png', allow_stretch=True, keep_ratio=True, size_hint=(0.1, 1))
 
         if not menu:
-            self.add_widget(Label(text="Check-M.A.T.E", font_size=self.font_size, size_hint=(0.4, 1)))
+            self.add_widget(Label(text="CheckMATE", font_size=self.font_size, size_hint=(0.4, 1)))
 
             self.add_widget(Widget(size_hint_x=0.3))
             back_btn = IconButton(source="assets/back_arrow.png", 
-                                                size_hint=(0.1, 1),  # Disable relative sizing
+                                                size_hint=(0.1, 0.8),  # Disable relative sizing
                                                         # Set explicit dimensions
                                                 allow_stretch=True,      # Allow the image to stretch to fill the widget
                                                 keep_ratio=True          # Maintain the image's aspect ratio
@@ -618,18 +619,47 @@ class ChessBoard(Widget):
         self.control_system.handle_ui_move(move_uci)  # triggers state transition
 
 
+# class MovesHistory(ScrollView):
+#     """
+#     A scrollable view that displays past moves.
+#     """
+#     def __init__(self, control_system, **kwargs):
+#         super().__init__(**kwargs)
+#         self.control_system = control_system
+#         self.font_size = control_system.font_size
+#         # Here we register an observer if needed.
+#         self.control_system.register_observer(self.update_moves)
+
+#         self.layout = BoxLayout(orientation='vertical')
+#         self.layout.bind(minimum_height=self.layout.setter('height'))
+#         self.add_widget(self.layout)
+
+#     def update_moves(self, *args):
+#         self.layout.clear_widgets()
+#         # Assume control_system.move_history is a list of UCI move strings.
+#         for move in self.control_system.move_history:
+#             move_label = Label(text=move, font_size = self.font_size, size_hint_y=None, height=30)
+#             self.layout.add_widget(move_label)
+#         self.scroll_y = 0
+
 class MovesHistory(ScrollView):
     """
-    A scrollable view that displays past moves.
+    A scrollable view that displays past moves with spacing between elements.
     """
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)
         self.control_system = control_system
         self.font_size = control_system.font_size
-        # Here we register an observer if needed.
+        
+        # Ensure vertical scrolling is enabled and allow dragging on content.
+        self.do_scroll_y = True
+        self.scroll_type = ['bars', 'content']  # Allows dragging on the content
+        
+        # Register the observer for updating moves.
         self.control_system.register_observer(self.update_moves)
-
-        self.layout = BoxLayout(orientation='vertical')
+        
+        # Create a BoxLayout with added spacing between elements and optional padding.
+        self.layout = BoxLayout(orientation='vertical', spacing=10, padding=[0, 10, 0, 10])
         self.layout.bind(minimum_height=self.layout.setter('height'))
         self.add_widget(self.layout)
 
@@ -637,62 +667,152 @@ class MovesHistory(ScrollView):
         self.layout.clear_widgets()
         # Assume control_system.move_history is a list of UCI move strings.
         for move in self.control_system.move_history:
-            move_label = Label(text=move, font_size = self.font_size, size_hint_y=None, height=30)
+            move_label = Label(text=move, font_size=self.font_size,
+                               size_hint_y=None, height=30)
             self.layout.add_widget(move_label)
-        self.scroll_y = 0
+        # Scroll to the top.
+        self.scroll_y = 1
 
 class CapturedPieces(Widget):
-    def __init__(self, control_system = None, rows=2, cols=8, **kwargs):
+    def __init__(self, control_system=None, rows=2, **kwargs):
         super(CapturedPieces, self).__init__(**kwargs)
-        self.rows = rows
-        self.cols = cols
+        self.rows = rows  # Number of rows in each side's grid
         self.control_system = control_system
         self.control_system.register_observer(self.update_captured)
         # This will hold the list of captured piece symbols.
         self.captured_list = []
-        # Redraw the board whenever position/size changes.
+        # Redraw the background whenever position or size changes.
         self.bind(pos=self.draw_board, size=self.draw_board)
 
     def draw_board(self, *args):
-        # Draw a simple 2x8 chessboard pattern as background.
+        """
+        Draw a background for the captured pieces widget.
+        The left half is for white captures, the right half for black captures.
+        """
         self.canvas.before.clear()
-        cell_width = self.width / self.cols
-        cell_height = cell_width * 2
-        self.offset_y = (self.height - (self.rows * cell_height)) / 2
-
-        #cell_height = self.height / self.rows
-        for r in range(self.rows):
-            for c in range(self.cols):
-                # Alternate colors like a chessboard.
-                color=(247/255, 182/255, 114/255, 1)
-                with self.canvas.before:
-                    Color(*color)
-                    Rectangle(
-                        pos=(self.x + c * cell_width, self.y + self.offset_y + r * cell_height),
-                        size=(cell_width, cell_height)
-                    )
+        with self.canvas.before:
+            # White capture area (left half) background:
+            Color(0.9, 0.9, 0.9, 1)  # light grey
+            Rectangle(pos=(self.x, self.y), size=(self.width/2, self.height))
+            # Black capture area (right half) background:
+            Color(0.7, 0.7, 0.7, 1)  # slightly darker grey
+            Rectangle(pos=(self.x + self.width/2, self.y), size=(self.width/2, self.height))
 
     def update_captured(self, *args):
         """
-        Update the board with captured pieces.
-        :param captured_list: A list of piece symbols (e.g., ['p', 'N', ...])
+        Update the widget with captured pieces.
+        White pieces (uppercase symbols) are arranged on the left,
+        while black pieces (lowercase symbols) are arranged on the right.
+        Pieces are placed in columns:
+          - For white: first piece at the bottom-left corner, next above it,
+            then moving to the next column to the right.
+          - For black: first piece at the bottom-right corner, next above it,
+            then moving to the next column to the left.
         """
         self.captured_list = self.control_system.captured_pieces
-        # Remove any previously added piece images.
+        # Remove any previously added images.
         self.clear_widgets()
-        cell_width = self.width / self.cols
-        cell_height = self.height / self.rows
-        for idx, piece in enumerate(self.captured_list):
-            row = idx // self.cols
-            col = idx % self.cols
+
+        # Separate the captured pieces by color:
+        white_captures = [p for p in self.captured_list if p.isupper()]
+        black_captures = [p for p in self.captured_list if p.islower()]
+
+        # --- White Captures (Left Half) ---
+        white_area_x = self.x
+        white_area_y = self.y
+        white_area_width = self.width / 2
+        white_area_height = self.height
+        # Determine the number of columns needed (each column fills vertically).
+        white_cols = math.ceil(len(white_captures) / self.rows) if self.rows > 0 else 1
+        # Compute cell size in the white area.
+        white_cell_width = white_area_width / white_cols if white_cols > 0 else white_area_width
+        white_cell_height = white_area_height / self.rows
+
+        for i, piece in enumerate(white_captures):
+            col = i // self.rows  # Column index (starting from 0)
+            row = i % self.rows   # Row index (0 is bottom)
+            # Place first capture in the far left (bottom-left corner).
+            piece_x = white_area_x + col * white_cell_width
+            piece_y = white_area_y + row * white_cell_height
             source = self.control_system.piece_images.get(piece, '')
             img = Image(source=source, allow_stretch=True, keep_ratio=True)
-            img.size = (cell_width, cell_height)
-            # Basic positioning: one image per cell.
-            # To place pieces between squares, adjust the computed pos below.
-            # img.pos = (self.x + col * cell_width, self.y + row * cell_height)
-            img.pos=(self.x + col * cell_width, self.y + self.offset_y + row * cell_height)
+            img.size = (white_cell_width, white_cell_height)
+            img.pos = (piece_x, piece_y)
             self.add_widget(img)
+
+        # --- Black Captures (Right Half) ---
+        black_area_x = self.x + self.width/2
+        black_area_y = self.y
+        black_area_width = self.width / 2
+        black_area_height = self.height
+        black_cols = math.ceil(len(black_captures) / self.rows) if self.rows > 0 else 1
+        black_cell_width = black_area_width / black_cols if black_cols > 0 else black_area_width
+        black_cell_height = black_area_height / self.rows
+
+        for i, piece in enumerate(black_captures):
+            col = i // self.rows  # Column index (starting from 0)
+            row = i % self.rows   # Row index (0 is bottom)
+            # For black captures, start at the far right: subtract columns from the right edge.
+            piece_x = black_area_x + black_area_width - (col + 1) * black_cell_width
+            piece_y = black_area_y + row * black_cell_height
+            source = self.control_system.piece_images.get(piece, '')
+            img = Image(source=source, allow_stretch=True, keep_ratio=True)
+            img.size = (black_cell_width, black_cell_height)
+            img.pos = (piece_x, piece_y)
+            self.add_widget(img)
+
+# class CapturedPieces(Widget):
+#     def __init__(self, control_system = None, rows=2, cols=8, **kwargs):
+#         super(CapturedPieces, self).__init__(**kwargs)
+#         self.rows = rows
+#         self.cols = cols
+#         self.control_system = control_system
+#         self.control_system.register_observer(self.update_captured)
+#         # This will hold the list of captured piece symbols.
+#         self.captured_list = []
+#         # Redraw the board whenever position/size changes.
+#         self.bind(pos=self.draw_board, size=self.draw_board)
+
+#     def draw_board(self, *args):
+#         # Draw a simple 2x8 chessboard pattern as background.
+#         self.canvas.before.clear()
+#         cell_width = self.width / self.cols
+#         cell_height = cell_width * 2
+#         self.offset_y = (self.height - (self.rows * cell_height)) / 2
+
+#         #cell_height = self.height / self.rows
+#         for r in range(self.rows):
+#             for c in range(self.cols):
+#                 # Alternate colors like a chessboard.
+#                 color=(247/255, 182/255, 114/255, 1)
+#                 with self.canvas.before:
+#                     Color(*color)
+#                     Rectangle(
+#                         pos=(self.x + c * cell_width, self.y + self.offset_y + r * cell_height),
+#                         size=(cell_width, cell_height)
+#                     )
+
+#     def update_captured(self, *args):
+#         """
+#         Update the board with captured pieces.
+#         :param captured_list: A list of piece symbols (e.g., ['p', 'N', ...])
+#         """
+#         self.captured_list = self.control_system.captured_pieces
+#         # Remove any previously added piece images.
+#         self.clear_widgets()
+#         cell_width = self.width / self.cols
+#         cell_height = self.height / self.rows
+#         for idx, piece in enumerate(self.captured_list):
+#             row = idx // self.cols
+#             col = idx % self.cols
+#             source = self.control_system.piece_images.get(piece, '')
+#             img = Image(source=source, allow_stretch=True, keep_ratio=True)
+#             img.size = (cell_width, cell_height)
+#             # Basic positioning: one image per cell.
+#             # To place pieces between squares, adjust the computed pos below.
+#             # img.pos = (self.x + col * cell_width, self.y + row * cell_height)
+#             img.pos=(self.x + col * cell_width, self.y + self.offset_y + row * cell_height)
+#             self.add_widget(img)
 
 
 # class CapturedPiecesOld(GridLayout):
