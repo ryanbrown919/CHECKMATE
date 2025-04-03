@@ -113,9 +113,9 @@ class BoardReset:
         """
         pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4R3")
 
-        for piece in self.gantry.white_captured:
+        for piece in pieces:
             symbol, coords = piece
-            x, y = coordsn
+            x, y = coords
 
             # Only process pieces in the playable area (not in the deadzone)
             if x < 75 and y < 375:
