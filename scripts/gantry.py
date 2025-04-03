@@ -4,7 +4,7 @@ import time
 class Gantry():
     def __init__(self):
         self.serial = serial.Serial("/dev/ttyACM0", 115200)
-        self.serial.send("\r\n\r")
+        self.send("\r\n\r")
         time.sleep(2)
         self.serial.flushInput()  
         self.position = None
@@ -45,6 +45,10 @@ class Gantry():
             
             return x, y   
         return None, None  
+    
+    def set_acceleration(self, acceleration):
+        self.send(f"$120={acceleration}")
+        self.send(f"$121={acceleration}")
     
     def move(self, x, y, blocking = False):
         ''' Absolute positioning'''
