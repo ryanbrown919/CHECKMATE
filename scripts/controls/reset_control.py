@@ -224,7 +224,8 @@ class BoardReset:
                 empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
 
                 # Execute the movement using the gantry
-                print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
+                print(f"[Test] Moving black piece {symbol} from {move[0]} to {move[1]} via path: {path}")
+                # print(f"Moving black piece {symbol} from {coords} to {new_coords} via path: {path}")
                 movements = self.gantry.parse_path_to_movement(path)
                 commands = self.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
