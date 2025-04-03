@@ -271,7 +271,7 @@ class BoardReset:
                 empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
 
                         
-            print(f"arranging white in rank 1 & 2: {path}")
+            # print(f"arranging white in rank 1 & 2: {path}")
             movements = self.gantry.parse_path_to_movement(path)
             commands = self.gantry.movement_to_gcode(movements)
             print(f"Last move: {commands}")
