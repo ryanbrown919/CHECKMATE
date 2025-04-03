@@ -71,7 +71,7 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
-    def symbol_to_valid_coodinates(self):
+    def symbol_to_valid_coordinates(self):
         valid_gantry_coords = {
             'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
             'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
@@ -88,7 +88,7 @@ class BoardReset:
         }
         return valid_gantry_coords
     
-    def symbol_to_valid_coodinates(self, symbol):
+    def symbol_to_valid_coordinates(self, symbol):
         """
         Given a chess piece symbol, return the valid coordinates for that specific symbol.
         """
@@ -122,7 +122,7 @@ class BoardReset:
             # Only process pieces in the playable area (not in the deadzone)
             if x < 75 and y < 375:
                 # Get valid starting coordinates for the piece type
-                valid_coords = self.symbol_to_valid_coodinates(symbol)
+                valid_coords = self.symbol_to_valid_coordinates(symbol)
 
                 # Check which of those valid coordinates are already occupied
                 occupied_coords = self.get_occupied_squares(self.board)
@@ -271,7 +271,7 @@ class BoardReset:
                 empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
 
                         
-            # print(f"arranging white in rank 1 & 2: {path}")
+                # print(f"arranging white in rank 1 & 2: {path}")
                 movements = self.gantry.parse_path_to_movement(path)
                 commands = self.gantry.movement_to_gcode(movements)
                 print(f"Last move: {commands}")
