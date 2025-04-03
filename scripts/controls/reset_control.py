@@ -225,10 +225,10 @@ class BoardReset:
                 filtered_empty_squares = []
                 for i in range(len(empty_squares)):
                     for j in range(len(empty_squares[i])):
-                        if empty_squares[i][j] == 1:  # Check if the square is empty
-                            # Exclude squares in ranks 1 and 2 (y-coordinates 0 and 50)
-                            if not (j * 50 < 75 and i * 50 < 375):  # Exclude x = 0, 50 and y = 0, 50
-                                filtered_empty_squares.append((j * 50, i * 50))
+                        if not (j * 50 < 75 and i * 50 < 375):  # Exclude x = 0, 50 and y = 0, 50
+                            filtered_empty_squares.append((j * 50, i * 50))
+                
+                print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
 
                 # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
                 move = self.nearest_neighbor(coords, filtered_empty_squares) 
