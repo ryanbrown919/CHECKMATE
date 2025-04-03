@@ -715,7 +715,7 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        self.recover_captured_pieces(captured_pieces)
+        self.recover_captured_pieces(['P', 'p', 'p', 'P'])
 
         # white_moves = self.captured_piece_return(self.captured_pieces)
         # print("Assignments")
