@@ -267,7 +267,7 @@ class ChessControlSystem:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
-        self.reset_control = BoardReset(self.board, self.gantry, self.hall)
+        # self.reset_control = BoardReset(self.board, self.gantry, self.hall)
 
         self.first_change = None
         self.second_change = None
@@ -507,7 +507,6 @@ class ChessControlSystem:
             (0, dy - 2*offset*dy_sign),        # Move vertically (most of Y distance)
             (offset*dx_sign, offset*dy_sign)   # Final approach to target position
         ]
-
 
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
