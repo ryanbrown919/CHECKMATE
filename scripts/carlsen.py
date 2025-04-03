@@ -31,6 +31,6 @@ if __name__ == "__main__":
     gantry = Gantry()
     gantry.home()
     while True:
-        print("Press Enter to start the magnet test...")
+        input("Press Enter to start the magnet test...")
         magnet_carlsen(gantry)
     
