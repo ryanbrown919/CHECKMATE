@@ -377,7 +377,7 @@ class GantryControlScreen(Screen):
         self.body_layout.add_widget(self.gantry_controls)
         
         # Create arrow buttons.
-        btn_layout = GridLayout(size_hint=(1, 1), cols=3, rows=3, size_hint=(1, 0.4))
+        btn_layout = GridLayout(size_hint=(1, 0.4), cols=3, rows=3)
         # We arrange buttons in a simple vertical layout with a nested grid.
         arrow_layout = BoxLayout(orientation='vertical')
 
