@@ -232,27 +232,36 @@ class BoardReset:
             if x < 75 and y < 375:
                 reset_coords=self.symbol_to_valid_coordinates(symbol)
                 #check which of those new_cords are already occupied from white_restart_state and remove occupied new_coords
-                # Filter out occupied coordinates from new_coords
+                
+                # Filter out occupied coordinates from reset_coords
                 unoccupied_reset_coords = []
-                for coord in new_coords:
+                for coord in reset_coords:
                     is_occupied = False
-                    for state in white_restart_state:
-                        if state[0] != 0 and state[1] == coord:  # Check if the slot is occupied and matches the coord
+                    for state in self.gantry.white_captured:
+                        if state[1] == coord:  # Check if the coordinate is already in white_captured
                             is_occupied = True
                             break
-                    if not is_occupied:
-                        unoccupied_rest_coords.append(coord)
+                    if not is_occupied:  # If the coordinate is not occupied, add it to unoccupied_reset_coords
+                        unoccupied_reset_coords.append(coord)
 
                 #find which of the new_cords is closest                
-                move = self.nearest_neighbor(coords, unoccupied_rest_coords)
+                move = self.nearest_neighbor(coords, unoccupied_reset_coords)
                 if move[0][0] < 25 :
-                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
-                
-                'Move white to closest free starting square' 
-                'update white_captured list with new coords of piece just moved'
-                'update white_restart_state list with new coords of piece just moved'''
-
+                    path = [move[0], (25, 0), (0, move[1][1]), (move[1][0] - 25, 0)]
+                else:
+                    path = [move[0], (-25, 0), (0, move[1][1]), (move[1][0] + 25, 0)]
         
+                # Update white_captured list with new coordinates of the piece just moved
+                self.gantry.white_captured.remove(piece)  # Remove the old entry
+                self.gantry.white_captured.append((symbol, move[1]))  # Add the updated entry with new coordinates
+
+                # Update the empty_squares matrix
+                old_rank, old_file = coords[1] // 50, coords[0] // 50  # Convert old coords to matrix indices
+                new_rank, new_file = move[1][0] // 50, move [1][1] // 50  # Convert new coords to matrix indices
+                empty_squares[old_rank][old_file] = 0  # Mark the old square as empty
+                empty_squares[new_rank][new_file] = 1  # Mark the new square as occupied
+
+                        
             print(f"arranging white in rank 1 & 2: {path}")
 
             movements = self.parse_path_to_movement(path)
