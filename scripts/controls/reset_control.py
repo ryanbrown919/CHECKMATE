@@ -28,19 +28,18 @@ class BoardReset:
     def nearest_neighbor(self, start, targets):
         """
         Compute the nearest neighbor path starting at 'start' through all target squares.
-        Returns a list of board coordinates representing the visiting order.
+        Returns a tuple: (start, movement vector to the closest target relative to start).
         """
-        unvisited = targets[:]
-        path = [start]
-        current = start
-
-        while unvisited:
-            nearest = min(unvisited, key=lambda x: self.distance(current, x))
-            path.append(nearest)
-            unvisited.remove(nearest)
-            current = nearest
-
-        return path
+        if not targets:
+            return (start, (0, 0))  # No targets, no movement
+    
+        # Find the nearest target
+        nearest = min(targets, key=lambda x: self.distance(start, x))
+    
+        # Calculate the movement vector relative to the start
+        movement_vector = (nearest[0] - start[0], nearest[1] - start[1])
+    
+        return (start, movement_vector)
 
     def square_to_coord(self, square):
             """
@@ -486,13 +485,12 @@ class BoardReset:
                 # move is contains initial and final cords of black piece
                 ''' remove empty squares to remove ranks 1 and 2 (all empty squares with x =0 and x= 50 ) '''
                 # Remove empty squares to exclude ranks 1 and 2 (all empty squares with x = 0 and x = 50)
-                filtered_empty_squares = []
-                for i in range(len(empty_squares)):
-                    for j in range(len(empty_squares[i])):
-                        if not (j * 50 < 75 and i * 50 < 375):  # Exclude x = 0, 50 and y = 0, 50
-                            filtered_empty_squares.append((j * 50, i * 50))
+                # Copy empty_targets to filtered_empty_squares and filter out values with x = 0 or x = 50
+                filtered_empty_squares = [coord for coord in empty_targets if coord[0] != 0 and coord[0] != 50]
                 
-                print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
+                print(f"[Test] Filtered empty squares (excluding x = 0 and x = 50): {filtered_empty_squares}")
+
+
 
                 # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
                 move = self.nearest_neighbor(coords, filtered_empty_squares) 
