@@ -188,7 +188,7 @@ class BoardReset:
         # DEAL WITH EXISITING FIRST 
 
         # Parse the FEN string to extract list of pieces and their coordinates
-        board_state = self.fen_to_coords(self.board.fen())
+        board_state = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
     
         ## White captured and black captured are current coords of all pieces after end of game
         # Filter and append all pieces to self.gantry.white_captured or self.gantry.black_captured
