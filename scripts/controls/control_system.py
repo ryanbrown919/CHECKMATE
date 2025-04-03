@@ -251,7 +251,6 @@ class ChessControlSystem:
         # print("Hall Initialized")
 
         self.rocker = Rocker()
-        self.rocker.begin()
         print("Rocker initialized")
         self.gantry = GantryControl()
         self.gantry.home()
@@ -922,8 +921,7 @@ class ChessControlSystem:
         self.game_winner = None
         self.board.reset()
 
-        if not self.rocker.get_switch_state():
-            self.rocker.to_white()
+        self.rocker.reset()
         
         self.notify_observers()
 
@@ -1091,8 +1089,7 @@ class ChessControlSystem:
         self.game_winner = None
         self.board.reset()
 
-        if not self.rocker.get_switch_state():
-            self.rocker.to_white()
+        self.rocker.reset()
         
         self.notify_observers()
 

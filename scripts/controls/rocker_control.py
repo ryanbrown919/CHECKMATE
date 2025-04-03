@@ -40,7 +40,7 @@ class Rocker():
                     lgpio.tx_pwm(self.handle, self.servo_pin, self.PWM_FREQ, self.current_duty)
             time.sleep(0.02)  # Small delay to prevent CPU hogging
 
-    def begin(self):
+    def reset(self):
         if self.get_switch_state():
             self.to_white()
         else:
