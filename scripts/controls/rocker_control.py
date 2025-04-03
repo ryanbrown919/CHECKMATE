@@ -83,7 +83,7 @@ class Rocker():
             lgpio.tx_pwm(self.handle, self.servo_pin, 0, 0)
     
     def toggle(self):
-        if not self.get_switch_state():
+        if self.get_switch_state():
             self.to_white()
         else:
             self.to_black()
