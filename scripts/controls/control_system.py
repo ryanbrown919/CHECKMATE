@@ -1011,7 +1011,7 @@ class ChessControlSystem:
         # Transition back to gameplay after setup.
         self.to_gameplay()
 
-    def reset_board_(self):
+    def reset_board(self):
         self.reset_control.full_reset()
     
     def end_game(self):
