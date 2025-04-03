@@ -106,8 +106,6 @@ class GantryControl:
                 if self.is_idle():
                     self.serial.flushInput()
                     break
-
-        self.position = (x, y)
     
         def send_jog_command(self, dx, dy):
             """
