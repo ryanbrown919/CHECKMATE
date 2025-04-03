@@ -345,7 +345,7 @@ class BoardReset:
         for square in black_pawn_squares:
             piece_alternatives[square] = [s for s in black_pawn_squares if s != square]
 
-        current_fen = "4r3/8/2kPnK2/8/8/2QpNq2/8/4R3"
+        current_fen = "r1bqnr2/1pp2kpQ/p1np1bB1/8/8/5N2/PB1P2PP/RN2R1K1"
         # Target configuration FEN: swap the white queen and white rook.
         target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 

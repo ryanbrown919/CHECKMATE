@@ -241,7 +241,9 @@ class ChessControlSystem:
 
         self.machine.add_transition(trigger='go_to_gantry', source='mainscreen', dest='gantryscreen', after='update_ui')
         self.machine.add_transition(trigger='go_to_boardreset', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
-        
+
+        self.machine.add_transition(trigger='end_game', source=['mainscreen', 'boardresetscreen'], dest='boardresetscreen', after='update_ui')
+
 
         # print("trying to init hall")
         # try:
@@ -1032,7 +1034,7 @@ class ChessControlSystem:
             #find black king, victory lap  
             # 
         self.end_game_processes()
-        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 4)
+        Clock.schedule_once(lambda dt: self.go_to_endgamescreen(), 3)
 
         self.notify_observers()
 
@@ -1087,8 +1089,8 @@ class ChessControlSystem:
 
             self.checkmate = False
 
-        self.legal_moves = None
-        print("pushing move:")
+        # self.legal_moves = None
+        # print("pushing move:")
 
         self.board.push(move)
         self.notify_observers()
@@ -1121,13 +1123,12 @@ class ChessControlSystem:
 
     def on_predefined_turn(self):
 
-        
         self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-        #self.notify_observers()
-        #self.update_ui()
+        self.notify_observers()
+        self.update_ui()
         self.demo_progress += 1
 
-        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.2)
 
 
 
