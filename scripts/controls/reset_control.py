@@ -199,9 +199,9 @@ class BoardReset:
         empty_squares = [row[::-1] for row in empty_squares]
         print(f"[Test] Transformed Empty squares: {empty_squares}")
 
-        # Invert 1s and 0s in the empty_squares matrix
-        empty_squares = [[1 - cell for cell in row] for row in empty_squares]
-        print(f"[Test] Inverted Empty squares: {empty_squares}")
+        # # Invert 1s and 0s in the empty_squares matrix
+        # empty_squares = [[1 - cell for cell in row] for row in empty_squares]
+        # print(f"[Test] Inverted Empty squares: {empty_squares}")
 
         empty_targets = []
         for i in range(len(empty_squares)):
@@ -233,7 +233,7 @@ class BoardReset:
                 # print(f"[Test] Filtered empty squares (excluding ranks 1 and 2): {filtered_empty_squares}")
                 move = self.nearest_neighbor(coords, filtered_empty_squares) 
                 vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
-                path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25), (25, 0)]
+                path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25)]
 
                 # Update the black_captured list with the new coordinates
                 self.gantry.black_captured.remove(piece) # me no likey
