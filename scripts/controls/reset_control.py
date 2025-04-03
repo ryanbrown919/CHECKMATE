@@ -276,7 +276,7 @@ class BoardReset:
             self.control_system.gantry.send_commands(commands)
             
                 
-    def full_reset(self)  
+    def full_reset(self):
         ''' Felipe's code '''
         self.reset_board_from_game()
         ''' Jack's code '''
