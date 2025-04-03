@@ -1252,7 +1252,6 @@ class GantryControl:
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
-                    print(f"Status: {status}")
                     if '<Idle' in status:
                         self.finished = True
                         self.ser.flushInput()
