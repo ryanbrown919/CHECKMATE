@@ -125,7 +125,7 @@ class BoardReset:
                 valid_coords = self.symbol_to_valid_coodinates(symbol)
 
                 # Check which of those valid coordinates are already occupied
-                occupied_coords = self.get_occupied_squares(self.control_system.board)
+                occupied_coords = self.get_occupied_squares(self.board)
                 unoccupied_coords = []
                 for coord in valid_coords:
                     if coord not in occupied_coords:
@@ -188,7 +188,7 @@ class BoardReset:
         # DEAL WITH EXISITING FIRST 
 
         # Parse the FEN string to extract list of pieces and their coordinates
-        board_state = self.fen_to_coords(self.control_system.board.fen())
+        board_state = self.fen_to_coords(self.board.fen())
     
         ## White captured and black captured are current coords of all pieces after end of game
         # Filter and append all pieces to self.gantry.white_captured or self.gantry.black_captured
@@ -209,7 +209,7 @@ class BoardReset:
         # white_restart_state = [(0, (0, 0)) for _ in range(16)]
 
         ##moveblack piece out of white endzone    
-        for piece in self.control_system.gantry.black_captured:
+        for piece in self.gantry.black_captured:
             symbol, coords = piece
             x, y = coords
             if x < 75 and y < 375:
