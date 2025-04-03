@@ -1364,7 +1364,7 @@ class ChessControlSystem:
 
         return legal_moves
     
-    def nfc_test():
+    def nfc_test(self):
         self.gantry.move(0, 43)
         return self.nfc.read()
 
