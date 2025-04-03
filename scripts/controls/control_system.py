@@ -227,8 +227,8 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='player_move_complete', source='gamescreen_player_turn', dest='gamescreen_engine_turn',
                                     unless='is_local_mode', after=['on_player_turn', 'notify_observers'])
         
-        self.machine.add_transition(trigger='process_predefined_board_move', source='gamescreen_predefined_game', dest='gamescreen_predefined_game',
-                                    after=['notify_observers'])
+        # self.machine.add_transition(trigger='process_predefined_board_move', source='gamescreen_predefined_game', dest='gamescreen_predefined_game',
+        #                             after=['notify_observers'])
         
 
 
