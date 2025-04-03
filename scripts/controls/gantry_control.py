@@ -52,12 +52,60 @@ class GantryControl:
             self.send("$H")
             self.send("G91 X0 Y-11")  # Center under H1
             self.send("G92 X0 Y0 Z0") # Reposition coordinate system
-            self.send("$120 = 400")
-            self.send("$121 = 400")
+            self.set_velocity(15000)
+            self.set_acceleration(500)
 
         def send(self, command):
             with self.serial_lock:
                 self.ser.write(str.encode(command + "\n"))
+        
+        def set_velocity(self, velocity):
+            self.send(f"$110={velocity}")
+            self.send(f"$111={velocity}")
+        
+        def set_acceleration(self, acceleration):
+            self.send(f"$120={acceleration}")
+            self.send(f"$121={acceleration}")
+        
+        def get_position(self, max_attempts=10, delay=0.1):
+            for _ in range(max_attempts):
+                self.send("?")
+                response = self.serial.readline().decode().strip()
+                
+                if 'MPos:' in response:
+                    pos_part = response.split('MPos:')[1].split('|')[0]
+                    coords = pos_part.split(',')
+                elif 'WPos:' in response:
+                    pos_part = response.split('WPos:')[1].split('|')[0]
+                    coords = pos_part.split(',')
+                else:
+                    continue 
+                    
+                x = int(float(coords[0]) + 475)
+                y = int(float(coords[1]) + 486)
+                
+                return x, y   
+            return None, None  
+
+        def is_idle(self):
+            self.send("?")
+            response = self.ser.readline().decode().strip()
+
+            if "Idle" in response:
+                return True
+            else:
+                return False
+
+        def move(self, x, y):
+            ''' Absolute positioning'''
+            self.send(f"G90 X{x} Y{y}")
+            time.sleep(0.05) 
+
+            self.ser.flushInput()
+            while True:
+                if self.is_idle():
+                    self.ser.flushInput()
+                    break
     
         def send_jog_command(self, dx, dy):
             """
@@ -95,6 +143,36 @@ class GantryControl:
                 if '<Idle' in status:
                     break
                 time.sleep(0.5)
+
+        def toggle_magnet(self):
+            self.send("M8")
+            time.sleep(0.3)
+            self.send("M9")
+            time.sleep(0.1)
+
+        def magnet_carlsen(self):
+            self.set_acceleration(1000)
+
+            for i in range(8):
+                if i == 0:
+                    self.toggle_magnet()
+                    continue
+                self.move(0, i*50)
+                self.toggle_magnet()
+    
+            for i in range(7, -1, -1):
+                self.move(50, i*50)
+                self.toggle_magnet()
+
+            for i in range(8):
+                self.move(300, i*50)
+                self.toggle_magnet()
+    
+            for i in range(7, -1, -1):
+                self.move(350, i*50)
+                self.toggle_magnet()
+
+            self.set_acceleration(400)
 
 
         def on_step_change(self, instance, value):
@@ -874,17 +952,17 @@ class GantryControl:
                                 self.send_commands(commands)
                                 
                                 #move piece off center in
-                                path = [end_coord, (0, offset)]
+                                path = [end_coord, (offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
                                 # put capturing piece in square
-                                path = [(end_coord[0]-offset, end_coord[1]+offset), (offset, 0)]
+                                path = [(end_coord[0]-offset, end_coord[1]), (offset, 0)]
                                 commands = self.movement_to_gcode(path)
                                 self.send_commands(commands)
 
                                 # take capturing piece to deadzone
-                                dead_coordinates = (end_coord[0], end_coord[1]+offset)
+                                dead_coordinates = (end_coord[0]+offset, end_coord[1])
                                 self.to_deadzone(dead_coordinates, is_white, symbol)
                                 return (path)
 
@@ -1000,7 +1078,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0,  self.nextdead_white[1] - offset*15)]
             
-                self.white_captured[symbol] = (self.nextdead_white)
+                # self.white_captured[symbol] = (self.nextdead_white)
 
                 if self.nextdead_white[1] == 435:
                     self.nextdead_white = (self.nextdead_white[0], 410)
@@ -1014,7 +1092,7 @@ class GantryControl:
                 
                 path = [dead_coordinates, (0, offset*15 - dead_coordinates[1]), (dead_x, 0), (0, self.nextdead_black[1] - offset*15)]
                 
-                self.black_captured[symbol] = (self.nextdead_black)
+                # self.black_captured[symbol] = (self.nextdead_black)
 
                 if self.nextdead_black[1] == 435:
                     self.nextdead_black = (self.nextdead_black[0], 410)
@@ -1160,7 +1238,7 @@ class GantryControl:
                 time.sleep(2)
                 print(f"Sent commands")
             else:
-                
+                print("[S] sending commands")
                 for cmd in cmd_list:
                     self.finished = False
                     full_cmd = cmd + "\n"
@@ -1168,7 +1246,6 @@ class GantryControl:
                     # Wait for GRBL response ("ok")
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
-                        # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
                     print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
@@ -1179,9 +1256,10 @@ class GantryControl:
                     print(f"Status: {status}")
                     if '<Idle' in status:
                         self.finished = True
-                print("Finished Sending commands")
+                        self.ser.flushInput()
+                print("[S] sent commands")
 
-            
+        
 
         def path_to_gcode(self, move_list):
             """
@@ -1193,6 +1271,7 @@ class GantryControl:
             if self.magnet_state == "MAG OFF":
                 self.send("M9") # off
             elif self.magnet_state == "MAG ON":
+                self.set_acceleration(400)
                 self.send("M8") # on
 
             gcode_commands = []

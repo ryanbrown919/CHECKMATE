@@ -359,7 +359,7 @@ class GantryControlScreen(Screen):
 
         self.root_layout = BoxLayout(orientation='vertical')
 
-        self.header_layout = headerLayout(menu=False)
+        self.header_layout = headerLayout(control_system = self.control_system, menu=False)
         self.body_layout = BoxLayout(orientation='horizontal')
         self.board_display = BoxLayout(orientation='vertical', padding=10)
         self.gantry_controls = BoxLayout(orientation='vertical')
