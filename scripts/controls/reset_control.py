@@ -592,7 +592,7 @@ class BoardReset:
 
         # Loop until current_mapping is empty (all pieces moved) or no progress can be made.
         progress = True
-        while current_mapping and progress:
+        while current_mapping:
             progress = False
             # Get current occupancy from the hall sensors.
             occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
