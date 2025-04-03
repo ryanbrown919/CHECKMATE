@@ -415,6 +415,13 @@ class ChessControlSystem:
         move = chess.Move.from_uci(move_str)
 
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+                
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -554,6 +561,13 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             # For a normal capture, the captured piece is on the destination square.
             captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
@@ -1132,8 +1146,14 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
-            # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
+
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 captured_symbol = captured_piece.symbol()
