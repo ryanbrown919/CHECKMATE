@@ -96,6 +96,7 @@ class MainScreen(Screen):
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True))
+        settings_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
         reset_btn = (IconButton(source="assets/reset.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,

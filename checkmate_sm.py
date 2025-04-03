@@ -19,6 +19,9 @@ from scripts.screens.mainscreen import MainScreen
 from scripts.screens.gantryscreen import GantryControlScreen
 from scripts.screens.endgamescreen import EndGameScreen
 from scripts.screens.demoscreen import DemoScreen
+from scripts.screens.boardresetscreen import BoardResetScreen
+
+
 
 # A simple ScreenManager that holds our GameScreen.
 class MainScreenManager(ScreenManager):
@@ -44,6 +47,7 @@ class TestApp(App):
         self.gantryscreen = GantryControlScreen(control_system=self.control_system, name="gantryscreen")
         self.endgamescreen = EndGameScreen(control_system=self.control_system, name="endgamescreen")
         self.demoscreen = DemoScreen(control_system = self.control_system, name='demoscreen')
+        self.resetscreen = BoardResetScreen(control_system = self.control_system, name='boardresetscreen')
 
 
         self.sm.add_widget(self.gamescreen)
@@ -89,6 +93,8 @@ class TestApp(App):
             self.sm.current = 'endgamescreen'
         elif state == 'demoscreen':
             self.sm.current = 'demoscreen'
+        elif state == 'boardresetscreen':
+            self.sm.current = 'boardresetscreen'
 
         else:
             print("[App] Unhandled state:", state)
