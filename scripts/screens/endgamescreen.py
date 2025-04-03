@@ -53,8 +53,6 @@ class EndGameScreen(Screen):
 
         root.add_widget(layout)
 
-        layout.add_widget(reset_btn)
-
         self.add_widget(root)
 
     def reset_and_return(self):
