@@ -21,6 +21,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput   
 from kivy.uix.togglebutton import ToggleButton
+from kivy.properties import StringProperty
 from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.clock import Clock
@@ -471,7 +472,8 @@ class GantryControlScreen(Screen):
         self.gantry_controls.add_widget(commandButton)
 
         nfc_layout = ColoredBoxLayout(orientation='horizontal')
-        nfc_icon = Image(source=self.image_path, allow_stretch=True, keep_ratio=True, size_hint = (0.5,0.5))
+        # nfc_icon = Image(source=self.image_path, allow_stretch=True, keep_ratio=True, size_hint = (0.5,0.5))
+        nfc_icon = ImageUpdater()
         nfc_button = Button(text="Scan NFC", font_size = self.font_size)
         nfc_button.bind(on_release= lambda instance: self.read_nfc())
 
@@ -498,6 +500,7 @@ class GantryControlScreen(Screen):
         # self.gantry_controls.add_widget(self.coord_label)
         # Update the label periodically.
         Clock.schedule_interval(self.update_label, 0.2)
+        
     
     def update_label(self, dt):
         mm_coord = self.target_board.get_current_mm()
@@ -525,6 +528,8 @@ class GantryControlScreen(Screen):
         print(f"{self.passed, self.piece_symbol}")
 
         self.image_path = self.piece_images[self.piece_symbol]
+
+        Clock.schedule_once(lambda dt: self.nfc_button.change_image(self.image_path, 0.5))
 
 
     def send_command(self):
@@ -785,6 +790,13 @@ class ColoredBoxLayout(BoxLayout):
     def update_rect(self, *args):
         self.bg_rect.pos = self.pos
         self.bg_rect.size = self.size
+
+class ImageUpdater(BoxLayout):
+    # Define a StringProperty to hold the image path
+    image_path = StringProperty('image1.png')
+
+    def change_image(self, new_image_path):
+        self.image_path = new_image_path
 
 class MyApp(App):
     def build(self):
