@@ -94,7 +94,7 @@ class TestApp(App):
         else:
             print("[App] Unhandled state:", state)
 
-    def trigger_game_screen_update(screen_manager, control_system):
+    def trigger_game_screen_update(self, screen_manager, control_system):
         # Assume 'game' is the name of your GameScreen in the ScreenManager.
         game_screen = screen_manager.get_screen('gamescreen')
 
