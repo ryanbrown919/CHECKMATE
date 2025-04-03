@@ -419,12 +419,12 @@ class BoardReset:
         # ''' Felipe's code '''
         # self.reset_board_from_game()
 
-        current_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR"
+        # current_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR"
 
-        # current_fen = self.board.fen()
-        # current_fen = current_fen.split()[0]
+        current_fen = self.board.fen()
+        current_fen = current_fen.split()[0]
 
-        self.captured_pieces=['P', 'n']
+        # self.captured_pieces=['P', 'n']
 
         moves = self.simple_reset_to_home(current_fen)
 
@@ -435,9 +435,9 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        white_moves = self.captured_piece_return(self.captured_pieces)
-        print("Assignments")
-        print(white_moves)
+        # white_moves = self.captured_piece_return(self.captured_pieces)
+        # print("Assignments")
+        # print(white_moves)
 
         # for start_square, info in white_moves.items():
         #     print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
@@ -666,14 +666,42 @@ class BoardReset:
             (100,435), (100,410), (125,435), (125,410),
             (150,435), (150,410), (175,435), (175,410)
         ]
+        home_squares = {
+            "K": ["e1"],
+            "Q": ["d1"],
+            "R": ["a1", "h1"],
+            "B": ["c1", "f1"],
+            "N": ["b1", "g1"],
+            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+            "k": ["e8"],
+            "q": ["d8"],
+            "r": ["a8", "h8"],
+            "b": ["c8", "f8"],
+            "n": ["b8", "g8"],
+            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+        }
         
         # Get current occupancy.
         occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
-        
-        assignments = {}
-        
+
+        white_count = self.count_capital_elements(captured_pieces)
+        black_count = len(captured_pieces) - white_count
+                
         # Process captured pieces in reverse order (LIFO: newest first).
         for i, piece in enumerate(reversed(captured_pieces)):
+
+            if piece.isupper():
+                #white
+                target_x = 25
+
+                white_count =- 1
+
+            else:
+                target_x = 325
+
+                black_count -=1
+
+
             pattern = white_pattern if piece.isupper() else black_pattern
             assigned_coord = None
             for candidate in pattern:
@@ -685,6 +713,13 @@ class BoardReset:
             assignments[i] = {"piece": piece, "assigned_coord": assigned_coord}
         
         return assignments
+    
+    def count_capital_elements(array):
+            """
+            Count the number of capital elements in an array of strings.
+            Each string is assumed to be a single character like "P" or "p".
+            """
+            return sum(1 for element in array if element.isupper())
     
 
     
