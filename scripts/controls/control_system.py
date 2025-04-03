@@ -1018,7 +1018,7 @@ class ChessControlSystem:
         self.reset_control.full_reset()
         self.done_reset()
     def done_reset(self):
-        self.go_to_mainmenu()
+        self.go_to_mainscreen()
     
     def end_game(self):
 

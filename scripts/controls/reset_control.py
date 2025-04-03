@@ -810,6 +810,8 @@ class BoardReset:
 
                 black_count -=1
 
+            print(white_coords)
+            print(black_coords)
 
             # Now we should have all the pieces with thier coordinates in a new list
             white_x = 25
