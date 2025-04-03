@@ -801,15 +801,10 @@ class BoardReset:
                 #white
                 white_x = 25
 
-                white_count =- 1
-
             else:
                 black_coords.append([piece, black_pattern[black_count]])
                 black_count += 1
                
-
-                black_count -=1
-
             print(white_coords)
             print(black_coords)
 
