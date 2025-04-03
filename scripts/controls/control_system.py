@@ -511,7 +511,7 @@ class ChessControlSystem:
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
-        self.rocker.toggle()
+        self.rocker.reset()
         self.notify_observers()
 
         self.on_player_turn()
