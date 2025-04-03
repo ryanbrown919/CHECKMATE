@@ -321,7 +321,7 @@ class BoardReset:
         # Target configuration FEN: swap the white queen and white rook.
         target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
-        moves = self.plan_board_reset((current_fen, target_fen, piece_alternatives))
+        moves = self.plan_board_reset(current_fen, target_fen, piece_alternatives)
 
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
@@ -476,77 +476,6 @@ class BoardReset:
                 return candidate
         return None
 
-        # Define alternative placements for pieces that might have more than one acceptable target.
-        # (These can be applied if needed; keys are current squares and values are lists of alternate squares.)
-        # piece_alternatives = {
-        #     # White pieces alternatives (for demonstration)
-        #     "a1": ["h1"],
-        #     "h1": ["a1"],
-        #     "b1": ["g1"],
-        #     "g1": ["b1"],
-        #     "c1": ["f1"],
-        #     "f1": ["c1"],
-        #     # Pawns: allow adjacent files on the same rank.
-        #     "a2": ["b2"],
-        #     "b2": ["a2", "c2"],
-        #     "c2": ["b2", "d2"],
-        #     "d2": ["c2", "e2"],
-        #     "e2": ["d2", "f2"],
-        #     "f2": ["e2", "g2"],
-        #     "g2": ["f2", "h2"],
-        #     "h2": ["g2"],
-        #     # Black pieces alternatives (for demonstration)
-        #     "a8": ["h8"],
-        #     "h8": ["a8"],
-        #     "b8": ["g8"],
-        #     "g8": ["b8"],
-        #     "c8": ["f8"],
-        #     "f8": ["c8"],
-        #     "a7": ["b7"],
-        #     "b7": ["a7", "c7"],
-        #     "c7": ["b7", "d7"],
-        #     "d7": ["c7", "e7"],
-        #     "e7": ["d7", "f7"],
-        #     "f7": ["e7", "g7"],
-        #     "g7": ["f7", "h7"],
-        #     "h7": ["g7"]
-        # }
-
-        # def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
-
-        #     piece_alternatives = {
-        #     # White pieces alternatives (for demonstration)
-        #     "a1": ["h1"],
-        #     "h1": ["a1"],
-        #     "b1": ["g1"],
-        #     "g1": ["b1"],
-        #     "c1": ["f1"],
-        #     "f1": ["c1"],
-        #     # Pawns: allow adjacent files on the same rank.
-        #     "a2": ["b2"],
-        #     "b2": ["a2", "c2"],
-        #     "c2": ["b2", "d2"],
-        #     "d2": ["c2", "e2"],
-        #     "e2": ["d2", "f2"],
-        #     "f2": ["e2", "g2"],
-        #     "g2": ["f2", "h2"],
-        #     "h2": ["g2"],
-        #     # Black pieces alternatives (for demonstration)
-        #     "a8": ["h8"],
-        #     "h8": ["a8"],
-        #     "b8": ["g8"],
-        #     "g8": ["b8"],
-        #     "c8": ["f8"],
-        #     "f8": ["c8"],
-        #     "a7": ["b7"],
-        #     "b7": ["a7", "c7"],
-        #     "c7": ["b7", "d7"],
-        #     "d7": ["c7", "e7"],
-        #     "e7": ["d7", "f7"],
-        #     "f7": ["e7", "g7"],
-        #     "g7": ["f7", "h7"],
-        #     "h7": ["g7"]
-        #     }
 
     def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
         """
