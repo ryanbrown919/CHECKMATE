@@ -23,7 +23,18 @@ class Rocker():
             self.home()
 
     def get_switch_state(self):
-        return not lgpio.gpio_read(self.handle, self.switch_pin)
+        DEBOUNCE_COUNT = 5
+        DEBOUNCE_DELAY = 0.005 
+        
+        readings = []
+        for _ in range(DEBOUNCE_COUNT):
+            readings.append(lgpio.gpio_read(self.handle, self.switch_pin))
+            time.sleep(DEBOUNCE_DELAY)
+        
+        high_count = readings.count(1)
+        low_count = readings.count(0)
+        
+        return 1 if high_count > low_count else 0
 
     def home(self):
         self._move_servo(self.CENTER_DUTY)
