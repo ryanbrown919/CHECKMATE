@@ -486,7 +486,7 @@ class BoardReset:
                 ''' remove empty squares to remove ranks 1 and 2 (all empty squares with x =0 and x= 50 ) '''
                 # Remove empty squares to exclude ranks 1 and 2 (all empty squares with x = 0 and x = 50)
                 # Copy empty_targets to filtered_empty_squares and filter out values with x = 0 or x = 50
-                filtered_empty_squares = [coord for coord in empty_targets if coord[0] != 0 and coord[0] != 50]
+                filtered_empty_squares = [coord for coord in empty_targets if coord[1] != 0 and coord[0] != 50]
                 
                 print(f"[Test] Filtered empty squares (excluding x = 0 and x = 50): {filtered_empty_squares}")
 
