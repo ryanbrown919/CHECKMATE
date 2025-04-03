@@ -632,6 +632,8 @@ class BoardReset:
                     del current_mapping[square]
                     progress = True
             # If no progress was made during this iteration, break the loop.
+            print("current mapping")
+            print(current_mapping)
             if not progress:
                 print("No further progress can be made. The following pieces remain unmoved:", current_mapping)
                 break
