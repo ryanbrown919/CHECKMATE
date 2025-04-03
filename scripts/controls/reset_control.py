@@ -926,7 +926,7 @@ class BoardReset:
         converting it via self.occupancy_list_to_dict.
         """
 
-        occupancy = 
+        # occupancy = 
 
         # Determine target x based on piece color.
         target_x = 25 if piece.isupper() else 325
