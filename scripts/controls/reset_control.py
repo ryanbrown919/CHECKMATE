@@ -595,7 +595,6 @@ class BoardReset:
         while current_mapping:
             progress = False
             # Get current occupancy from the hall sensors.
-            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
             print("occupancy:")
             print(occupancy)
             # Use a copy of the current mapping so we can modify it during iteration.
@@ -783,19 +782,26 @@ class BoardReset:
         # Get current occupancy.
         occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
 
-        white_count = self.count_capital_elements(captured_pieces)
-        black_count = len(captured_pieces) - white_count
+        # white_count = self.count_capital_elements(captured_pieces)
+        # black_count = len(captured_pieces) - white_count
+
+        white_count = 0
+        black_count = 0
+        piece_coords = []
                 
         # Process captured pieces in reverse order (LIFO: newest first).
-        for i, piece in enumerate(reversed(captured_pieces)):
-
+        for i, piece in enumerate((captured_pieces)):
+            
             if piece.isupper():
+                piece_coords = (piece, white_pattern[white_count])
+                white_count += 1
                 #white
                 target_x = 25
 
                 white_count =- 1
 
             else:
+                piece_coords = (piece, black_pattern[black_count])
                 target_x = 325
 
                 black_count -=1
