@@ -161,7 +161,7 @@ class MainScreen(Screen):
             self.bot_mode=True
             self.preferred_color == 'white'
         elif color == 'Random':
-            self.preferred_color = random.choice('white', 'black')
+            self.preferred_color = random.choice(('white', 'black'))
             self.bot_mode = False
         else:
             self.bot_mode = False
@@ -275,10 +275,10 @@ class ModePopup(Popup):
         # Color selection section
         color_layout = BoxLayout(orientation="horizontal", spacing=10)
         color_layout.add_widget(Label(text="Preferred Color:", size_hint=(0.4, 1)))
-        self.white_btn = ToggleButton(text="White", group="color", allow_no_selection=False)
-        self.black_btn = ToggleButton(text="Black", group="color", allow_no_selection=False)
-        self.random_btn = ToggleButton(text="Random", group="color", allow_no_selection=False)
-        self.botvbot_btn = ToggleButton(text="Bot V Bot", group="color", allow_no_selection=False)
+        self.white_btn = ToggleButton(text="White", group="color", allow_no_selection=False, font_size = 40)
+        self.black_btn = ToggleButton(text="Black", group="color", allow_no_selection=False, font_size = 40)
+        self.random_btn = ToggleButton(text="Random", group="color", allow_no_selection=False, font_size = 40)
+        self.botvbot_btn = ToggleButton(text="Bot V Bot", group="color", allow_no_selection=False, font_size = 40)
 
         
         # Set initial selection
@@ -306,18 +306,18 @@ class ModePopup(Popup):
 
         # ELO selection section
         elo_layout = BoxLayout(orientation="vertical", spacing=10)
-        elo_layout.add_widget(Label(text="Engine ELO Rating:", size_hint=(1, 0.3)))
+        elo_layout.add_widget(Label(text="Engine ELO Rating:", size_hint=(1, 0.3), font_size = 40))
         self.elo_slider = Slider(min=1320, max=2800, value=current_elo, step=50, size_hint=(1, 0.3))
         elo_layout.add_widget(self.elo_slider)
-        self.elo_label = Label(text=f"ELO: {int(self.elo_slider.value)}", size_hint=(1, 0.3))
+        self.elo_label = Label(text=f"ELO: {int(self.elo_slider.value)}", size_hint=(1, 0.3), font_size = 40)
         elo_layout.add_widget(self.elo_label)
         self.elo_slider.bind(value=self.on_elo_changed)
         layout.add_widget(elo_layout)
 
         # OK and Cancel buttons
         button_layout = BoxLayout(orientation="horizontal", spacing=10, size_hint=(1, 0.3))
-        ok_button = Button(text="OK")
-        cancel_button = Button(text="Cancel")
+        ok_button = Button(text="OK", font_size = 40)
+        cancel_button = Button(text="Cancel", font_size = 40)
         ok_button.bind(on_release=self.on_ok)
         cancel_button.bind(on_release=self.on_cancel)
         button_layout.add_widget(ok_button)
