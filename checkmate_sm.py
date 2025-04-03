@@ -96,7 +96,6 @@ class TestApp(App):
 
     def trigger_game_screen_update(self, control_system):
         # Assume 'game' is the name of your GameScreen in the ScreenManager.
-        def trigger_game_screen_update(self, screen_manager, control_system):
         # Switch to the game screen first.
         self.sm.current = 'gamescreen'
         # Get the game screen instance.
