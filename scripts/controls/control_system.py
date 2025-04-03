@@ -500,13 +500,29 @@ class ChessControlSystem:
 
         offset = STEP_MM
 
-        path = [
-            end_coords,                        # Starting absolute position (current piece location)
-            (offset*dx_sign, offset*dy_sign),  # Lift the piece with offset in both directions
-            (dx - 2*offset*dx_sign, 0),        # Move horizontally (most of X distance)
-            (0, dy - 2*offset*dy_sign),        # Move vertically (most of Y distance)
-            (offset*dx_sign, offset*dy_sign)   # Final approach to target position
-        ]
+        # Check if movement is horizontal, vertical or diagonal and create appropriate path
+        if dx == 0:  # Vertical movement
+            path = [
+                end_coords,                    # Starting absolute position (current piece location)
+                (0, offset*dy_sign),           # Lift the piece vertically
+                (0, dy - 2*offset*dy_sign),    # Move vertically (most of Y distance)
+                (0, offset*dy_sign)            # Final approach to target position
+            ]
+        elif dy == 0:  # Horizontal movement
+            path = [
+                end_coords,                    # Starting absolute position (current piece location)
+                (offset*dx_sign, 0),           # Lift the piece horizontally
+                (dx - 2*offset*dx_sign, 0),    # Move horizontally (most of X distance)
+                (offset*dx_sign, 0)            # Final approach to target position
+            ]
+        else:  # Diagonal movement (original path)
+            path = [
+                end_coords,                        # Starting absolute position (current piece location)
+                (offset*dx_sign, offset*dy_sign),  # Lift the piece with offset in both directions
+                (dx - 2*offset*dx_sign, 0),        # Move horizontally (most of X distance)
+                (0, dy - 2*offset*dy_sign),        # Move vertically (most of Y distance)
+                (offset*dx_sign, offset*dy_sign)   # Final approach to target position
+            ]
 
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
