@@ -591,9 +591,9 @@ class BoardReset:
         # Exit corner for the start square: offset by 25 in the chosen directions.
         exit_corner = (25 * sign_x, 25 * sign_y)
 
-        move_to_square = [(dx -25 * sign_x, 0), (0, dy -  25 * sign_y)]
+        move_to_square = [(dx -50 * sign_x, 0), (0, dy -  50 * sign_y)]
         # Entry corner for the destination square: offset from the destination center.
-        entry_corner = ( - 25 * sign_x, -25 * sign_y)
+        entry_corner = ( 25 * sign_x, 25 * sign_y)
 
         # # Define waypoints:
         P0 = (start_x, start_y)        # Start center.
