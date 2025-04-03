@@ -111,6 +111,8 @@ class BoardReset:
         Reset all WHITE pieces NOT on ranks 1, 2 or in the deadzone.
         Assumes that the starting locations are either unoccupied or filled with the correct piece.
         """
+        pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4R3")
+
         for piece in self.gantry.white_captured:
             symbol, coords = piece
             x, y = coords
@@ -133,7 +135,7 @@ class BoardReset:
                     target_coord = unoccupied_coords[0]
 
                     # Update the white_captured list with the new coordinates
-                    self.gantry.white_captured.remove(piece)
+                    self.gantry.white_captured.remove(piece) # add logic for duplicate pieces
                     self.gantry.white_captured.append((symbol, target_coord))
 
                     # Update the board state to reflect the move
@@ -145,9 +147,9 @@ class BoardReset:
                     # Execute the movement using the gantry
                     print(f"Moving {symbol} from {coords} to {target_coord}")
                     path = [coords, target_coord]  # Simple direct path
-                    movements = self.parse_path_to_movement(path)
-                    commands = self.movement_to_gcode(movements)
-                    self.send_commands(commands)
+                    movements = self.control_system.gantry.parse_path_to_movement(path)
+                    commands = self.control_system.gantry.movement_to_gcode(movements)
+                    self.control_system.gantry.send_commands(commands)
 
     def fen_to_coords(self,fen):
         """
@@ -159,7 +161,7 @@ class BoardReset:
         board_part = fen.split()[0]
         ranks = board_part.split("/")  # Split into ranks
 
-        self.pieces = []
+        pieces = []
         
         for rank_idx, rank in enumerate(reversed(ranks)):  # Reverse so rank 1 is at the bottom
             file_idx = 0
@@ -171,6 +173,10 @@ class BoardReset:
                     coord = self.square_to_coord(square)
                     self.pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
+
+        return pieces
+
+        
 
       
         
@@ -267,70 +273,6 @@ class BoardReset:
 
          
         
-
-        #DEAL WITH DEAD ZONE SECOND 
-
-        # extract symbol and coodrinate of LAST white piece from dictionaory 
-        self.control_system.gantry.white_captured
-        # for i, val in enumerate(self.control_system.captured_pieces):
-
-        #     if val.is_lower():
-        
-        
-
-        
-
-        ## STEP 3: PIECES IN DEADZONE RESET AFTER PIECES ON BOARD ARE REST. 
-
-
-        start = (0, 0)
-
-        # Get the occupied squares and compute the nearest neighbor path.
-        occupied_squares = self.get_occupied_squares(board)
-        path = self.nearest_neighbor(start, occupied_squares)
-
-        # Map board coordinates to chess square labels.
-        chess_path = {coord: board_reset.coord_to_chess_square(coord) for coord in path}
-        # Map chess square labels to physical (x, y) coordinates using the static mapping.
-
-        print("Nearest Neighbor Path (board coordinates):")
-        print(path)
-        print("\nMapping to Chess Squares:")
-        print(chess_path)
-        print("\nChess Squares to Physical Coordinates:")
-        print(physical_mapping)
-
-        for square in path:
-            self.control_system.gantry.send_coordinates_command(square)
-            print(f"Read piece: {piece}")
-            time.sleep(1)
-
-
-
-    def reset_board_from_menu(self):
-        start = (0, 0)
-
-        # Get the occupied squares and compute the nearest neighbor path.
-        occupied_squares = board_reset.get_occupied_squares(board)
-        path = board_reset.nearest_neighbor(start, occupied_squares)
-
-        # Map board coordinates to chess square labels.
-        chess_path = {coord: board_reset.coord_to_chess_square(coord) for coord in path}
-        # Map chess square labels to physical (x, y) coordinates using the static mapping.
-
-        print("Nearest Neighbor Path (board coordinates):")
-        print(path)
-        print("\nMapping to Chess Squares:")
-        print(chess_path)
-        print("\nChess Squares to Physical Coordinates:")
-        print(physical_mapping)
-
-        for square in path:
-            board_reset.gantry.send_coordinates_command(square)
-            piece = board_reset.nfc.read()
-            print(f"Read piece: {piece}")
-            time.sleep(1)
-
 
 
 
