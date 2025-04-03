@@ -86,23 +86,23 @@ class MainScreen(Screen):
         set_modes_button.bind(on_release=self.open_mode_popup)
         customplay_layout.add_widget(set_modes_button)
 
-        user_btn = IconButton(source="assets/User.png", 
+        user_btn = IconButton(source="assets/Carlsen.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
         user_btn.bind(on_release=lambda instance: self.control_system.gantry.magnet_carlsen())
         
-        settings_btn = (IconButton(source="assets/settings.png", 
+        settings_btn = (IconButton(source="assets/reset.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True))
         settings_btn.bind(on_release=lambda instance: self.control_system.resetboard())
-        reset_btn = (IconButton(source="assets/reset.png", 
-                                            size_hint=(1, 0.2),
-                                            allow_stretch=True,
-                                            keep_ratio=True))
-        reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
-        gantry_btn = IconButton(source="assets/Power.png", 
+        # reset_btn = (IconButton(source="assets/reset.png", 
+        #                                     size_hint=(1, 0.2),
+        #                                     allow_stretch=True,
+        #                                     keep_ratio=True))
+        # reset_btn.bind(on_release=lambda instance: self.control_system.go_to_boardreset())
+        gantry_btn = IconButton(source="assets/Manual.png", 
                                             size_hint=(1, 0.2),
                                             allow_stretch=True,
                                             keep_ratio=True)
@@ -111,7 +111,7 @@ class MainScreen(Screen):
 
         option_layout.add_widget(user_btn)
         option_layout.add_widget(settings_btn)
-        option_layout.add_widget(reset_btn)
+        # option_layout.add_widget(reset_btn)
         option_layout.add_widget(gantry_btn)
         
 
