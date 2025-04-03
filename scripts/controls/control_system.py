@@ -464,11 +464,6 @@ class ChessControlSystem:
 
         # Send piece back to start and rock rocker, then scan for moves again
 
-        """
-        Calculate the distance between two chess squares given in text notation (e.g., 'e2e4').
-        Returns the Manhattan distance between the squares.
-        """
-
         self.ingame_message = "Illegal Move detected!"
         if len(move_str) != 4:
             raise ValueError("Move must be in the format 'e2e4'.")
@@ -477,19 +472,14 @@ class ChessControlSystem:
 
         # move = chess.Move.from_uci(move_str)
 
-
         start_square = move_str[:2]
         end_square = move_str[2:]
-
-        # Calculate Manhattan distance
 
         init_coords = self.gantry.square_to_coord(start_square)
         end_coords = self.gantry.square_to_coord(end_square)
 
         init_coords = (init_coords[0]*STEP_MM, init_coords[1]*STEP_MM)
         end_coords = (end_coords[0]*STEP_MM, end_coords[1]*STEP_MM)
-
-        path = []
         
         dx = init_coords[0] - end_coords[0]
         dy = init_coords[1] - end_coords[1]
@@ -497,14 +487,15 @@ class ChessControlSystem:
         dx_sign = self.gantry.sign(dx)
         dy_sign = self.gantry.sign(dy)
 
-
-
-
         offset = STEP_MM
 
-        # Add the final position to the path
-        path = [end_coords, (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
-
+        path = [
+            end_coords,                        # Starting absolute position (current piece location)
+            (offset*dx_sign, offset*dy_sign),  # Lift the piece with offset in both directions
+            (dx - 2*offset*dx_sign, 0),        # Move horizontally (most of X distance)
+            (0, dy - 2*offset*dy_sign),        # Move vertically (most of Y distance)
+            (offset*dx_sign, offset*dy_sign)   # Final approach to target position
+        ]
 
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
@@ -1277,7 +1268,7 @@ class ChessControlSystem:
 #         settings_btn = Button(text="Settings")
 #         start_game_btn.bind(on_press=self.start_game)
 #         manual_btn.bind(on_press=self.go_manual)
-#         settings_btn.bind(on_press=self.go_settings)
+#         settings_btn.bind(on_press(self.go_settings)
 
 #         layout.add_widget(Label(text="Main Menu"))
 #         layout.add_widget(self.param_input)
