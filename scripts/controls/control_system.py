@@ -231,7 +231,7 @@ class ChessControlSystem:
 
         # self.machine.add_transition(trigger='end_game_processes', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed'], dest='endgamescreen')
         self.machine.add_transition(trigger='go_to_endgamescreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game'], dest='endgamescreen', after=['update_ui'])
-        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after='update_ui')
+        self.machine.add_transition(trigger='resetboard', source=['endgamescreen', 'mainscreen'], dest='boardresetscreen', after=['update_ui', 'reset_board'])
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
@@ -1011,10 +1011,8 @@ class ChessControlSystem:
         # Transition back to gameplay after setup.
         self.to_gameplay()
 
-    def reset_board_fn(self):
-        print("Resetting board...")
-        # Reset board logic here.
-        self.to_gameplay()
+    def reset_board_(self):
+        self.reset_control.full_reset()
     
     def end_game(self):
 
