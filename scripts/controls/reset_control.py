@@ -206,7 +206,7 @@ class BoardReset:
         empty_targets = []
         for i in range(len(empty_squares)):
             for j in range(len(empty_squares[i])): 
-                if empty_squares[i][j] == 1:
+                if empty_squares[i][j] == 0:
                     empty_targets.append((j*50, i*50))  
         
         print(f"[Test] Empty targets: {empty_targets}")
