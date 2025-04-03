@@ -199,6 +199,11 @@ class BoardReset:
         empty_squares = [row[::-1] for row in empty_squares]
         print(f"[Test] Transformed Empty squares: {empty_squares}")
 
+        # Invert 1s and 0s in the empty_squares matrix
+        empty_squares = [[1 - cell for cell in row] for row in empty_squares]
+        print(f"[Test] Inverted Empty squares: {empty_squares}")
+
+        
         empty_targets = []
         for i in range(len(empty_squares)):
             for j in range(len(empty_squares[i])): 
@@ -206,6 +211,8 @@ class BoardReset:
                     empty_targets.append((j*50, i*50))  
         
         print(f"[Test] Empty targets: {empty_targets}")
+
+        
                 
 
         # Initialize white_restart_state with 16 slots
