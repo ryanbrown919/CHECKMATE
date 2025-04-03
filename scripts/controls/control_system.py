@@ -39,7 +39,7 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
-    from scripts.controls.reset_control import BoardReset
+    # from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
 
 
