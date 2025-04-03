@@ -8,7 +8,6 @@ def toggle_magnet(gantry):
 
 def magnet_carlsen(gantry):
     gantry.set_acceleration(1000)
-    toggle_magnet(gantry)
 
     for i in range(8):
         gantry.move(0, i*50, blocking=True)
@@ -31,5 +30,7 @@ def magnet_carlsen(gantry):
 if __name__ == "__main__":
     gantry = Gantry()
     gantry.home()
-    magnet_carlsen(gantry)
+    while True:
+        print("Press Enter to start the magnet test...")
+        magnet_carlsen(gantry)s
     
