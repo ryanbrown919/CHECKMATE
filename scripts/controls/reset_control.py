@@ -419,7 +419,7 @@ class BoardReset:
         # ''' Felipe's code '''
         # self.reset_board_from_game()
 
-        current_fen  = "rnbqkbnr/ppp2ppp/3p4/1P4p1/8/8/P1PP1PPP/RNBQKBNR"
+        current_fen  = "rnbqkbnr/ppp2ppp/8/3p4/1P4p1/8/P1PP1PPP/RNBQKBNR"
 
         self.captured_pieces=['P']
 
