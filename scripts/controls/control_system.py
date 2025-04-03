@@ -504,16 +504,16 @@ class ChessControlSystem:
         if dx == 0:  # Vertical movement
             path = [
                 end_coords,                    # Starting absolute position (current piece location)
-                (0, offset*dy_sign),           # Lift the piece vertically
+                (offset*1, offset*dy_sign),    # Lift the piece BOTH vertically AND horizontally
                 (0, dy - 2*offset*dy_sign),    # Move vertically (most of Y distance)
-                (0, offset*dy_sign)            # Final approach to target position
+                (-offset*1, offset*dy_sign)    # Final approach with horizontal return
             ]
         elif dy == 0:  # Horizontal movement
             path = [
                 end_coords,                    # Starting absolute position (current piece location)
-                (offset*dx_sign, 0),           # Lift the piece horizontally
+                (offset*dx_sign, offset*1),    # Lift the piece BOTH horizontally AND vertically
                 (dx - 2*offset*dx_sign, 0),    # Move horizontally (most of X distance)
-                (offset*dx_sign, 0)            # Final approach to target position
+                (offset*dx_sign, -offset*1)    # Final approach with vertical return
             ]
         else:  # Diagonal movement (original path)
             path = [
