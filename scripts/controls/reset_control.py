@@ -173,7 +173,7 @@ class BoardReset:
                 else:
                     square = f"{chr(ord('a') + file_idx)}{rank_idx + 1}"
                     coord = self.square_to_coord(square)
-                    self.pieces.append((char, (coord[0]*25, coord[1]*25)))
+                    pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
 
         return pieces
