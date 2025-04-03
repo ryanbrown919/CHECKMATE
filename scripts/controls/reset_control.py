@@ -300,7 +300,7 @@ class BoardReset:
 
 if __name__ == "__main__":
     gantry = GantryControl()
-    hall = HallControl()
+    hall = Hall()
     board_reset = BoardReset(gantry, hall)
 
     # Example usage
