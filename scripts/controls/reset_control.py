@@ -71,22 +71,6 @@ class BoardReset:
         rank = str(8 - y)
         return file + rank
     
-    def symbol_to_valid_coordinates(self):
-        valid_gantry_coords = {
-            'R': [self.square_to_coord(f'{file}1') for file in 'ah'],  # White Rook
-            'N': [self.square_to_coord(f'{file}1') for file in 'bg'],  # White Knight
-            'B': [self.square_to_coord(f'{file}1') for file in 'cf'],  # White Bishop
-            'Q': [self.square_to_coord('d1')],  # White Queen
-            'K': [self.square_to_coord('e1')],  # White King
-            'P': [self.square_to_coord(f'{file}2') for file in 'abcdefgh'],  # White Pawn
-            'r': [self.square_to_coord(f'{file}8') for file in 'ah'],  # Black Rook
-            'n': [self.square_to_coord(f'{file}8') for file in 'bg'],  # Black Knight
-            'b': [self.square_to_coord(f'{file}8') for file in 'cf'],  # Black Bishop
-            'q': [self.square_to_coord('d8')],  # Black Queen
-            'k': [self.square_to_coord('e8')],  # Black King
-            'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
-        }
-        return valid_gantry_coords
     
     def symbol_to_valid_coordinates(self, symbol):
         """
@@ -106,6 +90,7 @@ class BoardReset:
             'k': [self.square_to_coord('e8')],  # Black King
             'p': [self.square_to_coord(f'{file}7') for file in 'abcdefgh']  # Black Pawn
         }
+        print("Test: CALLED METHOD 'symbol_to_valid_coordinates'")
         return valid_gantry_coords.get(symbol, [])
 
     def reset_playing_area_white(self):
@@ -113,6 +98,9 @@ class BoardReset:
         Reset all WHITE pieces NOT on ranks 1, 2 or in the deadzone.
         Assumes that the starting locations are either unoccupied or filled with the correct piece.
         """
+        
+        print("Test: STARTING METHOD 'reset_playing_area_white'")
+       
         pieces = self.fen_to_coords("4r3/8/2kPnK2/8/8/2QpNq2/8/4Rb2")
 
         for piece in pieces:
@@ -152,6 +140,7 @@ class BoardReset:
                     movements = self.gantry.parse_path_to_movement(path)
                     commands = self.gantry.movement_to_gcode(movements)
                     self.gantry.send_commands(commands)
+                    
 
     def fen_to_coords(self,fen):
         """
@@ -176,6 +165,7 @@ class BoardReset:
                     pieces.append((char, (coord[0]*25, coord[1]*25)))
                     file_idx += 1  # Move to the next file
 
+        print("Test: CALLED METHOD 'fen_to_coords'")
         return pieces
 
         
