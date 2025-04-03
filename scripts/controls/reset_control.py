@@ -205,6 +205,7 @@ class BoardReset:
         print("[Test] Moving black pieces out of white endzone")
         for piece in self.gantry.black_captured:
             symbol, coords = piece
+            print(f"Black piece: {symbol} at {coords}")
             x, y = coords
             if x < 75 and y < 375:
                 # move is contains initial and final cords of black piece
