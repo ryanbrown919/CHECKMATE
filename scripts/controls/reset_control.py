@@ -359,9 +359,9 @@ class BoardReset:
             self.gantry.send_commands(cmds)
 
 
-        occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+        # occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
 
-        white_recovery, black_recovery = self.plan_captured_piece_recovery(self.captured_pieces, occupancy)
+        white_recovery, black_recovery = self.plan_captured_piece_recovery(self.captured_pieces)
 
         for idx, info in white_recovery.items():
             print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
@@ -370,7 +370,7 @@ class BoardReset:
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
 
-        for idx, info in white_recovery.items():
+        for idx, info in black_recovery.items():
             print(f"Piece {info['piece']} from stored {info['start_coord']} to {info['final_square']}:")
             print(info["path"])
 
@@ -550,13 +550,114 @@ class BoardReset:
     # for square in black_pawn_squares:
     #     piece_alternatives[square] = [s for s in black_pawn_squares if s != square]
 
+    # def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
+    #     """
+    #     Plans moves to reset the board from a current configuration to a target configuration.
+        
+    #     This version matches pieces by type and processes the moves in two passes.
+    #     In the first pass, all pieces except the king and queen are assigned target squares.
+    #     In the second pass, the king and queen are processed last to minimize conflicts.
+        
+    #     Returns a dictionary mapping the current square (for pieces that need to move)
+    #     to a move plan. Each move plan includes:
+    #     - "piece": the piece character
+    #     - "final_square": the target square
+    #     - "path": a list starting with the absolute starting coordinate followed by relative moves.
+    #     """
+    #     current_mapping = self.parse_fen(current_fen)
+    #     target_mapping = self.parse_fen(target_fen)
+        
+    #     # Build a dictionary: piece letter -> list of squares from target configuration.
+    #     target_positions = {}
+    #     for square, piece in target_mapping.items():
+    #         target_positions.setdefault(piece, []).append(square)
+        
+    #     # Occupancy for target squares (initially all free)
+    #     target_occupancy = {square: None for square in target_mapping.keys()}
+        
+    #     move_paths = {}
+
+    #     # Split pieces into two groups: non-king/queen and king/queen.
+    #     first_pass = {}
+    #     second_pass = {}
+    #     for square, piece in current_mapping.items():
+    #         if piece.upper() in ('K', 'Q'):
+    #             second_pass[square] = piece
+    #         else:
+    #             first_pass[square] = piece
+
+    #     # Helper function to process a given mapping.
+    #     def process_pieces(mapping):
+    #         for square, piece in mapping.items():
+    #             # Skip if already correctly placed.
+    #             if square in target_mapping and target_mapping[square] == piece:
+    #                 continue
+
+    #             # Get candidate target squares for this piece type.
+    #             candidates = target_positions.get(piece, [])
+    #             # Remove candidates that are the same as the current square or already occupied.
+    #             candidates = [sq for sq in candidates if sq != square and target_occupancy.get(sq) is None]
+                
+    #             # Add alternatives from the piece_alternatives dictionary if available.
+    #             if square in piece_alternatives:
+    #                 candidates.extend(piece_alternatives[square])
+                
+    #             chosen = self.select_target_square(piece, candidates, target_occupancy)
+    #             if chosen is None:
+    #                 print(f"No available target square for {piece} from {square}")
+    #                 continue
+                
+    #             target_occupancy[chosen] = piece
+                
+    #             start_coords = self.square_to_coords_ry(square)
+    #             dest_coords = self.square_to_coords_ry(chosen)
+    #             path = self.generate_path(start_coords, dest_coords, offset=25)
+                
+    #             move_paths[square] = {
+    #                 "piece": piece,
+    #                 "final_square": chosen,
+    #                 "path": path
+    #             }
+        
+    #     # Process first all non-king/queen pieces.
+    #     process_pieces(first_pass)
+    #     # Then process the king and queen.
+    #     process_pieces(second_pass)
+        
+    #     return move_paths
+
+    # def occupancy_list_to_dict(occ_list):
+    #     """
+    #     Converts an 8x8 occupancy list into a dictionary mapping board squares
+    #     (e.g., "a8", "b8", …, "h1") to occupancy values (1 for occupied, 0 for empty).
+        
+    #     Assumptions:
+    #     - occ_list is a list of 8 lists.
+    #     - The first inner list corresponds to rank 8,
+    #         the second to rank 7, …, and the last to rank 1.
+    #     - Within each inner list, the first element corresponds to file a,
+    #         the second to file b, …, and the last to file h.
+    #     """
+    #     occ_dict = {}
+    #     for i, row in enumerate(occ_list):
+    #         rank = 8 - i  # first row is rank 8, last row is rank 1.
+    #         for j, val in enumerate(row):
+    #             file_letter = chr(ord('a') + j)
+    #             square = file_letter + str(rank)
+    #             occ_dict[square] = val
+    #     return occ_dict
+
     def plan_board_reset(self, current_fen, target_fen, piece_alternatives):
         """
-        Plans moves to reset the board from a current configuration to a target configuration.
+        Plans moves to reset the board from a current configuration to a target configuration,
+        using an externally provided occupancy list for candidate selection.
         
         This version matches pieces by type and processes the moves in two passes.
         In the first pass, all pieces except the king and queen are assigned target squares.
         In the second pass, the king and queen are processed last to minimize conflicts.
+        
+        The occupancy is provided as an 8x8 list (each inner list representing a rank starting from file a),
+        which is converted to a dictionary mapping squares to 0 (empty) or 1 (occupied).
         
         Returns a dictionary mapping the current square (for pieces that need to move)
         to a move plan. Each move plan includes:
@@ -564,6 +665,7 @@ class BoardReset:
         - "final_square": the target square
         - "path": a list starting with the absolute starting coordinate followed by relative moves.
         """
+        # Parse FEN strings.
         current_mapping = self.parse_fen(current_fen)
         target_mapping = self.parse_fen(target_fen)
         
@@ -572,8 +674,9 @@ class BoardReset:
         for square, piece in target_mapping.items():
             target_positions.setdefault(piece, []).append(square)
         
-        # Occupancy for target squares (initially all free)
-        target_occupancy = {square: None for square in target_mapping.keys()}
+        # Convert the provided occupancy list into a dictionary.
+        target_occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+        # (target_occupancy now holds keys for all board squares with values 0 or 1.)
         
         move_paths = {}
 
@@ -586,7 +689,6 @@ class BoardReset:
             else:
                 first_pass[square] = piece
 
-        # Helper function to process a given mapping.
         def process_pieces(mapping):
             for square, piece in mapping.items():
                 # Skip if already correctly placed.
@@ -596,18 +698,22 @@ class BoardReset:
                 # Get candidate target squares for this piece type.
                 candidates = target_positions.get(piece, [])
                 # Remove candidates that are the same as the current square or already occupied.
-                candidates = [sq for sq in candidates if sq != square and target_occupancy.get(sq) is None]
+                # Here, a square is available only if target_occupancy[sq] == 0.
+                candidates = [sq for sq in candidates if sq != square and target_occupancy.get(sq, 0) == 0]
                 
                 # Add alternatives from the piece_alternatives dictionary if available.
                 if square in piece_alternatives:
-                    candidates.extend(piece_alternatives[square])
+                    # Also filter alternatives by occupancy.
+                    alt_candidates = [sq for sq in piece_alternatives[square] if target_occupancy.get(sq, 0) == 0]
+                    candidates.extend(alt_candidates)
                 
                 chosen = self.select_target_square(piece, candidates, target_occupancy)
                 if chosen is None:
                     print(f"No available target square for {piece} from {square}")
                     continue
                 
-                target_occupancy[chosen] = piece
+                # Mark the chosen square as occupied (set to 1).
+                target_occupancy[chosen] = 1
                 
                 start_coords = self.square_to_coords_ry(square)
                 dest_coords = self.square_to_coords_ry(chosen)
@@ -619,7 +725,7 @@ class BoardReset:
                     "path": path
                 }
         
-        # Process first all non-king/queen pieces.
+        # Process non-king/queen pieces first.
         process_pieces(first_pass)
         # Then process the king and queen.
         process_pieces(second_pass)
@@ -628,7 +734,7 @@ class BoardReset:
     
 
 
-    def coords_to_square(self, coord):
+    def coords_to_square_ry(self, coord):
         """
         Converts physical coordinates (assumed to be board-center values in multiples of 50)
         to a board square (e.g., "e4"). 
@@ -676,7 +782,7 @@ class BoardReset:
         final_square = None
         while candidate_y >= 0:
             candidate_coord = (target_x, candidate_y)
-            square_candidate = coords_to_square(candidate_coord)
+            square_candidate = self.coords_to_square(candidate_coord)
             if occupancy.get(square_candidate) is None:
                 final_coord = candidate_coord
                 final_square = square_candidate
@@ -700,7 +806,7 @@ class BoardReset:
         path = [captured_coord, delta1, delta2, delta3]
         return path, final_square
 
-    def plan_captured_piece_recovery(self, captured_pieces, occupancy):
+    def plan_captured_piece_recovery(self, captured_pieces):
         """
         Processes a list of captured pieces and generates recovery move plans for each.
         
@@ -732,6 +838,7 @@ class BoardReset:
         black_index = 0
         
         for i, piece in enumerate(captured_pieces):
+            occupancy = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
             if piece.isupper():
                 stored_coord = white_pattern[white_index % len(white_pattern)]
                 white_index += 1
