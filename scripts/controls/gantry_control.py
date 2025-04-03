@@ -1247,13 +1247,12 @@ class GantryControl:
                     response = self.ser.readline().decode().strip()
                     while response != "ok":
                         response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
 
                 while not self.finished:
                     self.ser.write(b'?')
                     status = self.ser.readline().decode().strip()
-                    #print(f"Status: {status}")
+
                     if '<Idle' in status:
                         self.finished = True
                         self.ser.flushInput()

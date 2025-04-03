@@ -30,7 +30,7 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from rocker_control import Rocker
     from hall_control import Hall
-    from reset_control import BoardReset
+    # from reset_control import BoardReset
     from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
@@ -39,7 +39,7 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
-    from scripts.controls.reset_control import BoardReset
+    # from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
 
 
@@ -270,7 +270,9 @@ class ChessControlSystem:
             print(f"Errorwith halls : {e}")
         print("Hall Initialized")
 
-        self.reset_control = BoardReset(self.board, self.gantry, self.hall, self.captured_pieces)
+
+        self.reset_control = BoardReset(self.board, self.gantry, self.hall)
+
 
         self.first_change = None
         self.second_change = None
@@ -489,10 +491,11 @@ class ChessControlSystem:
         init_coords = self.gantry.square_to_coord(start_square)
         end_coords = self.gantry.square_to_coord(end_square)
 
+        init_coords = self.gantry.square_to_coord(start_square)
+        end_coords = self.gantry.square_to_coord(end_square)
+
         init_coords = (init_coords[0]*STEP_MM, init_coords[1]*STEP_MM)
         end_coords = (end_coords[0]*STEP_MM, end_coords[1]*STEP_MM)
-
-        path = []
         
         dx = init_coords[0] - end_coords[0]
         dy = init_coords[1] - end_coords[1]
@@ -500,20 +503,40 @@ class ChessControlSystem:
         dx_sign = self.gantry.sign(dx)
         dy_sign = self.gantry.sign(dy)
 
-
-
-
         offset = STEP_MM
 
-        # Add the final position to the path
-        path = [end_coords, (dx - offset*dx_sign, dy-offset*dy_sign), (dx_sign * offset, dy_sign * offset)]
-
+        # Check if movement is horizontal, vertical or diagonal and create appropriate path
+        if dx == 0:  # Vertical movement
+            path = [
+                end_coords,                    # Starting absolute position (current piece location)
+                (offset*1, offset*dy_sign),    # Lift the piece BOTH vertically AND horizontally
+                (0, dy - 2*offset*dy_sign),    # Move vertically (most of Y distance)
+                (-offset*1, offset*dy_sign)    # Final approach with horizontal return
+            ]
+        elif dy == 0:  # Horizontal movement
+            path = [
+                end_coords,                    # Starting absolute position (current piece location)
+                (offset*dx_sign, offset*1),    # Lift the piece BOTH horizontally AND vertically
+                (dx - 2*offset*dx_sign, 0),    # Move horizontally (most of X distance)
+                (offset*dx_sign, -offset*1)    # Final approach with vertical return
+            ]
+        else:  # Diagonal movement (original path)
+            path = [
+                end_coords,                        # Starting absolute position (current piece location)
+                (offset*dx_sign, offset*dy_sign),  # Lift the piece with offset in both directions
+                (dx - 2*offset*dx_sign, 0),        # Move horizontally (most of X distance)
+                (0, dy - 2*offset*dy_sign),        # Move vertically (most of Y distance)
+                (offset*dx_sign, offset*dy_sign)   # Final approach to target position
+            ]
 
         cmds = self.gantry.movement_to_gcode(path)
         self.gantry.send_commands(cmds)
 
-        self.rocker.toggle()
-        # self.notify_observers()
+
+        if self.use_switch:
+            self.rocker.toggle()
+        self.notify_observers()
+
 
         self.on_player_turn()
 
@@ -754,78 +777,126 @@ class ChessControlSystem:
         Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.1)
 
     def first_piece_detection_poll(self):
-        self.ingame_message = "Waiting for Player..."
-        # Capture the initial board state.
+        self.ingame_message = "Waiting for piece to move..."
+        # Capture the initial board state
         self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
-        print("Initial board:", self.initial_board)
-        # Reset the selected piece.
+        print("Initial board state captured")
+        
+        # Reset detection variables
         self.selected_piece = None
-        # Start polling for the first piece.
+        self._detection_count = 0  # Track consistent readings
+        self._required_readings = 2  # Reduced from 3 to 2 for faster detection
+        
+        # Start polling for the first piece with faster interval
         self.safe_poll_first(self.on_first_piece_found)
 
     def safe_poll_first(self, callback):
-        new_board = self.hall.sense_layer.get_squares_game()
-        self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
-        if self.selected_piece is not None:
-            # Piece found; call the callback with the selected piece.
-            callback(self.selected_piece)
-        else:
-            # Poll again after 0.1 seconds.
-            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
+        try:
+            new_board = self.hall.sense_layer.get_squares_game()
+            current_change = self.hall.compare_boards(new_board, self.initial_board)
+            
+            # Implement simple debouncing logic
+            if current_change == self.selected_piece and current_change is not None:
+                self._detection_count += 1
+                if self._detection_count >= self._required_readings:
+                    # We have consistent readings, confirm the piece
+                    print(f"Piece detection confirmed after {self._detection_count} readings")
+                    callback(self.selected_piece)
+                    return
+            elif current_change is not None:
+                # New potential piece detection
+                self.selected_piece = current_change
+                self._detection_count = 1
+                self.ingame_message = f"Detecting piece at {current_change}..."
+            else:
+                # No piece detected
+                self.selected_piece = None
+                self._detection_count = 0
+                
+            # Faster polling intervals
+            interval = 0.02 if self._detection_count > 0 else 0.05  # Much faster intervals
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), interval)
+        except Exception as e:
+            print(f"Error in piece detection: {e}")
+            # Poll again after a shorter delay on error
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)  # Reduced from 0.2 to 0.1
 
     def on_first_piece_found(self, selected_piece):
-        print("Detected first piece:", selected_piece)
+        print(f"First piece confirmed: {selected_piece}")
+        self.ingame_message = f"Piece lifted from {selected_piece}"
         self.notify_observers()
-        # When the first piece is found, move on to second-piece detection.
-        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.1)
+        # Immediate transition to second piece detection
+        Clock.schedule_once(lambda dt: self.go_to_second_piece_detection(), 0.02)  # Reduced from 0.1 to 0.02
+
+    def second_piece_detection_poll(self):
+        print("Looking for destination square...")
+        self.ingame_message = "Place piece on destination square..."
+        
+        # Update reference board for second detection
+        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
+        
+        # Reset detection variables
+        self.selected_move = None
+        self._detection_count = 0
+        
+        # Start polling for the second piece
+        self.safe_poll_second(self.on_second_piece_found)
+
+    def safe_poll_second(self, callback):
+        try:
+            new_board = self.hall.sense_layer.get_squares_game()
+            current_change = self.hall.compare_boards(new_board, self.initial_board)
+            
+            # Implement simple debouncing logic
+            if current_change == self.selected_move and current_change is not None:
+                self._detection_count += 1
+                if self._detection_count >= self._required_readings:
+                    # We have consistent readings, confirm the destination
+                    print(f"Destination confirmed after {self._detection_count} readings")
+                    callback(self.selected_move)
+                    return
+            elif current_change is not None:
+                # New potential destination detection
+                self.selected_move = current_change
+                self._detection_count = 1
+                self.ingame_message = f"Detecting piece at {current_change}..."
+            else:
+                # No piece detected
+                self._detection_count = 0
+                
+            # Faster polling interval
+            interval = 0.02 if self._detection_count > 0 else 0.05  # Much faster intervals
+            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), interval)
+        except Exception as e:
+            print(f"Error in destination detection: {e}")
+            # Poll again after a shorter delay on error
+            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.1)  # Reduced from 0.2 to 0.1
+
+    def on_second_piece_found(self, selected_move):
+        print(f"Second piece confirmed: {selected_move}")
+        self.ingame_message = f"Move detected: {self.selected_piece}{selected_move}"
+        
+        # If same square selected, piece was lifted and put back
+        if self.selected_piece == selected_move:
+            print("Piece returned to original square")
+            self.ingame_message = "Piece returned to original position"
+            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.25)  # Reduced from 0.5 to 0.25
+            return
+
+        move_str = f"{self.selected_piece}{selected_move}"
+        self.selected_move = None  # Reset selected move for next turn
+
+        # Process the move with error handling
+        try:
+            self.process_move_from_str(move_str)
+        except Exception as e:
+            print(f"Error processing move: {e}")
+            self.ingame_message = f"Error: {str(e)[:30]}..."
+            Clock.schedule_once(lambda dt: self.go_to_first_piece_detection(), 0.5)  # Reduced from 1.0 to 0.5
 
     def go_to_second_piece_detection(self):
         # Call the second piece detection function.
         self.second_piece_detection_poll()
-
-    def safe_poll_second(self, callback):
-        new_board = self.hall.sense_layer.get_squares_game()
-        self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
-        if self.selected_move is not None:
-            callback(self.selected_move)
-        else:
-            Clock.schedule_once(lambda dt: self.safe_poll_second(callback), 0.1)
-
-    def second_piece_detection_poll(self):
-        print("Looking for second move")
-        # Update initial board state for the second detection.
-        self.initial_board = copy.deepcopy(self.hall.sense_layer.get_squares_game())
-        self.selected_move = None
-        # Start polling for the second move.
-        self.safe_poll_second(self.on_second_piece_found)
-
-    def on_second_piece_found(self, selected_move):
-        print("Detected second move:", selected_move)
-        # Now that we have both pieces, process the detection.
-        print(f"Done, found move: {self.selected_piece}{self.selected_move}")
-        # If the same square is selected (i.e. piece replaced), restart first detection.
-        if self.selected_piece == self.selected_move:
-            print("Piece replaced, finding new move")
-            self.go_to_first_piece_detection()
-            return
-
-        move_str = f"{self.selected_piece}{self.selected_move}"
-        self.selected_move = None  # Reset selected move for next turn
-
-        # Optionally, if you're using a hardware switch and want to wait for it:
-        if self.use_switch:
-            # Instead of blocking with time.sleep, you can poll the switch status.
-            def check_switch(dt):
-                if not self.rocker.get_switch_state():
-                    print("Switch passed")
-                    # Continue processing move.
-                    self.process_move_from_str(move_str)
-                else:
-                    Clock.schedule_once(check_switch, 0.1)
-            print("Waiting for switch")
-            Clock.schedule_once(check_switch, 0.1)
-        else:
-            self.process_move_from_str(move_str)
 
     def process_move_from_str(self, move_str):
         print('Switch passed (or not used), processing move')
@@ -1290,7 +1361,7 @@ class ChessControlSystem:
 #         settings_btn = Button(text="Settings")
 #         start_game_btn.bind(on_press=self.start_game)
 #         manual_btn.bind(on_press=self.go_manual)
-#         settings_btn.bind(on_press=self.go_settings)
+#         settings_btn.bind(on_press(self.go_settings)
 
 #         layout.add_widget(Label(text="Main Menu"))
 #         layout.add_widget(self.param_input)
