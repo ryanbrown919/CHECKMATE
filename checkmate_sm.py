@@ -80,7 +80,7 @@ class TestApp(App):
         if state == 'mainscreen':
             self.sm.current = 'mainscreen'
         elif state.startswith('gamescreen'):
-            self.trigger_game_screen_update(self.sm, self.control_system)
+            self.trigger_game_screen_update(self.control_system)
             # self.sm.current = 'gamescreen'
         elif state == 'gantryscreen':
             self.sm.current = 'gantryscreen'
@@ -94,16 +94,15 @@ class TestApp(App):
         else:
             print("[App] Unhandled state:", state)
 
-    def trigger_game_screen_update(self, screen_manager, control_system):
+    def trigger_game_screen_update(self, control_system):
         # Assume 'game' is the name of your GameScreen in the ScreenManager.
-        game_screen = screen_manager.get_screen('gamescreen')
-
-        # Update parameters in your control_system here if needed.
-        # ...
-
-        # Schedule the layout rebuild on the main thread.
-        Clock.schedule_once(lambda dt: game_screen.rebuild_layout(), 0)
-        screen_manager.current = 'gamescreen'
+        def trigger_game_screen_update(self, screen_manager, control_system):
+        # Switch to the game screen first.
+        self.sm.current = 'gamescreen'
+        # Get the game screen instance.
+        game_screen = self.sm.get_screen('gamescreen')
+        # Schedule the layout rebuild with a short delay.
+        Clock.schedule_once(lambda dt: game_screen.rebuild_layout(), 0.1)
 
 
 if __name__ == '__main__':

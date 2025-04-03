@@ -144,14 +144,8 @@ class GameScreen(Screen):
         self.white_layout.add_widget(white_clock)
 
     def on_pre_enter(self, *args):
-        """
-        This method is called every time the screen is about to be displayed.
-        It rebuilds the layout to ensure that any changes in parameter values
-        are accurately reflected.
-        """
-        print("Entering GameScreen: rebuilding layout with updated parameters.")
-        self.build_screen_layout()
-        self.refresh_board(0)
+    # Rebuild the layout using the current parameters.
+        self.rebuild_layout()
 
     def refresh_board(self, dt):
         """
