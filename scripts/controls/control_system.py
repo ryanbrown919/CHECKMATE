@@ -1098,7 +1098,7 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        # self.notify_observers()
+        self.notify_observers()
 
         if self.checkmate:
             self.end_game()
@@ -1120,7 +1120,7 @@ class ChessControlSystem:
 
         self.update_ui()
         
-        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 3)
+        Clock.schedule_once(lambda dt: self.on_predefined_turn(), 4)
 
     def on_predefined_turn(self):
 

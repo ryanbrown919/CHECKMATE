@@ -354,7 +354,12 @@ class BoardReset:
         print(occ_dict)
 
         # current_fen = "r1bqnr2/1pp2kpQ/p1np1bB1/8/8/5N2/PB1P2PP/RN2R1K1"
-        current_fen = self.board.fen().split()[0]
+        # current_fen = self.board.fen().split()[0]
+        current_fen  = "rnbqkbnr/ppp1pppp/3p4/8/8/8/PPPP1PPP/RNBQKBNR"
+
+        self.captured_pieces=['P']
+
+
         # Target configuration FEN: swap the white queen and white rook.
         target_fen  = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
