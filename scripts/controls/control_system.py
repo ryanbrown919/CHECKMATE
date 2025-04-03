@@ -606,8 +606,15 @@ class ChessControlSystem:
             #  time.sleep(0.1)
         self.safe_poll_first()
 
-        print("Detected_first_piece:")
-        # self.selected_piece
+        def on_piece_found(selected_piece):
+            print("Detected first piece:", selected_piece)
+            # # Now that a piece has been selected, get its legal moves.
+            # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
+            # self.highlight_legal_moves(legal_moves)
+            self.notify_observers()
+
+        # Start the polling process:
+        self.safe_poll_first(on_piece_found)
 
         print(self.selected_piece)
         
@@ -616,25 +623,32 @@ class ChessControlSystem:
 
         Clock.schedule_once(lambda dt: self.go_to_second_piece_detection, 0.1)
 
-    def safe_poll_first(self):
-        # Schedule the next call after 0.1 seconds.
+    def safe_poll_first(self, callback):
+        new_board = self.hall.sense_layer.get_squares_game()
+        self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
+        if self.selected_piece is not None:
+            callback(self.selected_piece)
+        else:
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
 
-            new_board = self.hall.sense_layer.get_squares_game()
-             #print(new_board)
-            self.selected_piece = self.hall.compare_boards(new_board, self.initial_board)
-            if self.selected_piece is not None:
-                return 
-            Clock.schedule_once(self.safe_poll_first, 0.1)
 
-    def safe_poll_second(self):
-        # Schedule the next call after 0.1 seconds.
+    # def safe_poll_second(self):
+    #     # Schedule the next call after 0.1 seconds.
 
-            new_board = self.hall.sense_layer.get_squares_game()
-             #print(new_board)
-            self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
-            if self.selected_move is not None:
-                return 
-            Clock.schedule_once(self.safe_poll_second, 0.1)
+    #         new_board = self.hall.sense_layer.get_squares_game()
+    #          #print(new_board)
+    #         self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
+    #         if self.selected_move is not None:
+    #             return 
+    #         Clock.schedule_once(self.safe_poll_second, 0.1)
+
+    def safe_poll_second(self, callback):
+        new_board = self.hall.sense_layer.get_squares_game()
+        self.selected_move = self.hall.compare_boards(new_board, self.initial_board)
+        if self.selected_move is not None:
+            callback(self.selected_move)
+        else:
+            Clock.schedule_once(lambda dt: self.safe_poll_first(callback), 0.1)
 
 
 
@@ -649,7 +663,19 @@ class ChessControlSystem:
         #     new_board = self.hall.sense_layer.get_squares_game()
         #     self.selected_move = self.hall.compare_boards(new_board, initial_board)
         #     time.sleep(0.1)
-        self.safe_poll_second()
+        def on_piece_found(selected_piece):
+            print("Detected piece:", selected_piece)
+            # # Now that a piece has been selected, get its legal moves.
+            # legal_moves = self.control_system.select_piece(selected_piece.chess_square)
+            # self.highlight_legal_moves(legal_moves)
+            self.notify_observers()
+
+        # Start the polling process:
+        self.safe_poll_first(on_piece_found)
+
+        # print(self.selected_piece)
+
+        # self.safe_poll_second()
 
         print(f"done, found move, {self.selected_piece}{self.selected_move}")
 
