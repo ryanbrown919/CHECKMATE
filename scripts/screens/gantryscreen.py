@@ -792,8 +792,9 @@ class ColoredBoxLayout(BoxLayout):
         self.bg_rect.size = self.size
 
 class ImageUpdater(BoxLayout):
-    # Define a StringProperty to hold the image path
-    image_path = StringProperty('image1.png')
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Define a StringProperty to hold the image path
 
     def change_image(self, new_image_path):
         self.image_path = new_image_path
