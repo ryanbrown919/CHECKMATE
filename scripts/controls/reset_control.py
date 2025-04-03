@@ -159,34 +159,46 @@ class BoardReset:
 
     def reset_playing_area_white(self):
         """
-        Reset all WHITE pieces NOT on ranks 1,2 or 7,8 OR in the deadzone 
-        Assumes that the starting locations are either a) unoccupied or b) filled with the correct piece. 
+        Reset all WHITE pieces NOT on ranks 1, 2 or in the deadzone.
+        Assumes that the starting locations are either unoccupied or filled with the correct piece.
         """
-        # Loop over captured white pieces
         for piece in self.gantry.white_captured:
-            symbol, current_coord = piece  # Extract symbol and current coordinates
+            symbol, coords = piece
+            x, y = coords
 
-            # Get valid coordinates for the symbol
-            valid_coords = self.symbol_to_valid_coodinates().get(symbol, [])
+            # Only process pieces in the playable area (not in the deadzone)
+            if x < 75 and y < 375:
+                # Get valid starting coordinates for the piece type
+                valid_coords = self.symbol_to_valid_coodinates(symbol)
 
-            # Check which of those valid coordinates are already occupied
-            # How does the diaz function work? 
+                # Check which of those valid coordinates are already occupied
+                occupied_coords = self.get_occupied_squares(self.control_system.board)
+                unoccupied_coords = []
+                for coord in valid_coords:
+                    if coord not in occupied_coords:
+                        unoccupied_coords.append(coord)
 
-            occupied_coords = self.get_occupied_squares(self.control_system.board)
-            unoccupied_coords = []
-            for coord in valid_coords:
-                if coord not in occupied_coords:
-                    unoccupied_coords.append(coord)
+                if unoccupied_coords:
+                    # Select the first unoccupied valid coordinate
+                    # make this intelligent later...
+                    target_coord = unoccupied_coords[0]
 
-            if unoccupied_coords:
-                # Generate path to the first unoccupied valid coordinate
-                target_coord = unoccupied_coords[0]
-                path = self.nearest_neighbor(current_coord, [target_coord])
+                    # Update the white_captured list with the new coordinates
+                    self.gantry.white_captured.remove(piece)
+                    self.gantry.white_captured.append((symbol, target_coord))
 
-                # Move the piece to the target coordinate
-                for step in path:
-                    self.gantry.send_coordinates_command(step)
-                    time.sleep(1)  # Simulate movement delay
+                    # Update the board state to reflect the move
+                    old_rank, old_file = coords[1] // 50, coords[0] // 50
+                    new_rank, new_file = target_coord[1] // 50, target_coord[0] // 50
+                    self.control_system.board[old_rank][old_file] = 0  # Mark old square as empty
+                    self.control_system.board[new_rank][new_file] = 1  # Mark new square as occupied
+
+                    # Execute the movement using the gantry
+                    print(f"Moving {symbol} from {coords} to {target_coord}")
+                    path = [coords, target_coord]  # Simple direct path
+                    movements = self.parse_path_to_movement(path)
+                    commands = self.movement_to_gcode(movements)
+                    self.send_commands(commands)
 
     def fen_to_coords(self,fen):
         """
