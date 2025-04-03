@@ -1236,7 +1236,7 @@ class ChessControlSystem:
             self.notify_observers()
             #self.update_ui()
             self.demo_progress += 1
-            Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1)
+            Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.5)
 
         else:
            #Don't love this...
