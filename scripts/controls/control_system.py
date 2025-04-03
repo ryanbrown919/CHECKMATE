@@ -340,7 +340,7 @@ class ChessControlSystem:
         self.update_ui()
         """Call all registered observer callbacks with the updated board."""
         for callback in self.observers:
-            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0.05)
+            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0)
             #callback(self.board)
 
     # def start_game(self):
