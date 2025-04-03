@@ -17,7 +17,7 @@ class Rocker():
         self.MAX_WAIT_TIME = 2.0
 
     def begin(self):
-        if self.get_switch_state():
+        if not self.get_switch_state():
             self.to_white()
         else:
             self.home()

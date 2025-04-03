@@ -637,7 +637,7 @@ class ChessControlSystem:
         self.selected_move = None
 
 
-        if self.use_switch:
+        if not self.use_switch:
             while self.servo.get_switch_state():
                 time.sleep(0.1)
 
