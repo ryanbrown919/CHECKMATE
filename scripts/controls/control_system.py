@@ -1133,7 +1133,8 @@ class ChessControlSystem:
             Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.2)
 
         else:
-            self.end_game()
+           #Don't love this...
+           pass
 
 
 
