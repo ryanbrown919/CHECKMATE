@@ -818,7 +818,7 @@ class BoardReset:
             #white clear
             for i, piece in enumerate(reversed(white_coords)):
                 symbol, coord = piece
-                path = [coord, (0, coord[1] - 375), (coord[0] - white_x, 0)]
+                path = [coord, (0, (375 - coord[1])), (white_x-coord[0], 0)]
                 
                 # Find the closest available square for the piece
                 closest_square = None
@@ -845,7 +845,7 @@ class BoardReset:
 
             for i, piece in enumerate(reversed(black_coords)):
                 symbol, coord = piece
-                path = [coord, (0, coord[1] - 375), (coord[0] - white_x, 0)]
+                path = [coord, (0, 375-coord[1]), (white_x - coord[0], 0)]
                 
                 # Find the closest available square for the piece
                 closest_square = None
