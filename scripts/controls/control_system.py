@@ -907,7 +907,6 @@ class ChessControlSystem:
     def init_game(self):
         print("Game has started with parameters:", self.parameters)
 
-        self.game_winner = None
         self.board.reset()
         self.ingame_message = "Starting Game"
 
@@ -917,7 +916,16 @@ class ChessControlSystem:
         self.legal_moves = None
         self.game_winner = None
 
-        self.rocker.to_white()
+
+      
+
+        self.game_winner = None
+        self.board.reset()
+
+        if not self.rocker.get_switch_state():
+            self.rocker.to_white()
+        
+        self.notify_observers()
 
         self.update_ui()
 
@@ -1077,11 +1085,16 @@ class ChessControlSystem:
 
     def on_predefined_first_turn(self):
 
+        print("setting board up")
+
         self.demo_progress = 0
         self.game_winner = None
         self.board.reset()
 
-        self.rocker.to_white()
+        if not self.rocker.get_switch_state():
+            self.rocker.to_white()
+        
+        self.notify_observers()
 
         self.update_ui()
         
