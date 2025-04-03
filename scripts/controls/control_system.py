@@ -235,7 +235,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after='update_ui', 'kill_engine'])
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game', 'first_piece_detection',
             'second_piece_detection'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
@@ -309,6 +309,12 @@ class ChessControlSystem:
         while self.running:
             time.sleep(0.1)
 
+    def kill_engine(self):
+        if self.engine:
+            self.engine.quit()
+            self.engine = None
+
+
     def update_ui(self):
         # Update the UI with the current state.
         state = self.state
@@ -343,6 +349,8 @@ class ChessControlSystem:
         self.endgame_message = "Game Abandoned"
         if self.engine:
             self.engine.quit()
+            self.engine = None
+
 
 
 
