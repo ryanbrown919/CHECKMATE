@@ -573,3 +573,11 @@ class BoardReset:
 
 
 
+if __name__ == "__main__":
+    # Example usage
+    gantry = GantryControl()
+    hall = Hall()
+    board_reset = BoardReset(gantry, hall)
+    
+    # Call the reset methods as needed
+    board_reset.reset_board_from_game()
