@@ -423,7 +423,7 @@ class BoardReset:
 
         self.captured_pieces=['P']
 
-        moves = self.reset_board_to_home(current_fen)
+        moves = self.reset_board_to_home_recursive(current_fen)
 
         for start_square, info in moves.items():
             print(f"Move {info['piece']} from {start_square} to {info['final_square']} via path:")
@@ -431,6 +431,96 @@ class BoardReset:
 
             cmds = self.gantry.path_to_gcode(info["path"])
             self.gantry.send_commands(cmds)
+
+    def reset_board_to_home_recursive(self, current_mapping, moves_so_far=None):
+        """
+        Recursively processes the dictionary of pieces that need to be moved (current_mapping)
+        and assigns each piece a home square if one of its candidate home squares is free.
+        At each step, the function polls the current board occupancy via the hall-effect sensors,
+        so that pieces already moved (and thus occupying their home squares) are taken into account.
+        
+        Parameters:
+        current_mapping: dict mapping square (string) -> piece symbol for pieces not yet moved.
+        moves_so_far: dict (accumulated move plans). Each move plan is a dictionary with:
+            - "piece": piece symbol,
+            - "final_square": chosen home square,
+            - "path": list of moves (first element is absolute start, then relative moves).
+        
+        Returns:
+        A dictionary of move plans for pieces that have been moved.
+        (If no further progress is possible, any remaining pieces are reported as delayed.)
+        """
+        if moves_so_far is None:
+            moves_so_far = {}
+
+        # Base case: if there are no pieces left to move, return the accumulated moves.
+        if not current_mapping:
+            return moves_so_far
+
+        # Define the standard home squares for each piece type.
+        starting_positions = {
+            "K": ["e1"],
+            "Q": ["d1"],
+            "R": ["a1", "h1"],
+            "B": ["c1", "f1"],
+            "N": ["b1", "g1"],
+            "P": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"],
+            "k": ["e8"],
+            "q": ["d8"],
+            "r": ["a8", "h8"],
+            "b": ["c8", "f8"],
+            "n": ["b8", "g8"],
+            "p": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]
+        }
+
+        moves_this_round = {}
+        remaining = {}
+
+        # Iterate over a copy of the current mapping.
+        for square, piece in current_mapping.items():
+            # Skip if the piece is already at one of its home squares.
+            if square in starting_positions.get(piece, []):
+                continue
+
+            # Poll the current occupancy from the hall sensors.
+            occ = self.occupancy_list_to_dict(self.hall.sense_layer.get_squares_game())
+            candidate_found = None
+            for candidate in starting_positions.get(piece, []):
+                if occ.get(candidate, 0) == 0:
+                    candidate_found = candidate
+                    break
+
+            if candidate_found is not None:
+                # Generate a natural path from the piece's current square to the chosen candidate.
+                start_coords = self.square_to_coords_ry(square)
+                dest_coords = self.square_to_coords_ry(candidate_found)
+                path = self.generate_natural_path(start_coords, dest_coords)
+                moves_this_round[square] = {
+                    "piece": piece,
+                    "final_square": candidate_found,
+                    "path": path
+                }
+            else:
+                # No candidate free; keep the piece in the remaining list.
+                remaining[square] = piece
+
+        # If no moves were made this round, then stop recursion.
+        if not moves_this_round:
+            print("No further progress can be made. The following moves remain delayed:", remaining)
+            # Optionally, record the remaining pieces as delayed.
+            moves_so_far.update({sq: {"piece": p, "final_square": None, "path": []} for sq, p in remaining.items()})
+            return moves_so_far
+        else:
+            # Update moves_so_far with moves from this round.
+            moves_so_far.update(moves_this_round)
+            # Remove the moved pieces from the current mapping.
+            for sq in moves_this_round.keys():
+                if sq in current_mapping:
+                    del current_mapping[sq]
+            # Recurse on the remaining pieces.
+            return self.reset_board_to_home_recursive(current_mapping, moves_so_far)
+
+
 
     def reset_board_to_home(self, current_fen):
         """
@@ -585,6 +675,21 @@ class BoardReset:
         sign_x = self.sign(dx)
         sign_y = self.sign(dy)
 
+        temp_x = (sign_x, sign_x)
+        temp_y = (sign_y, sign_y)
+
+        if sign_x == 0:
+            if start_x > 180:
+                temp_x = (-1, 1)
+            else: 
+                temp_x = (1, -1)
+
+
+        if sign_y == 0:
+            temp_y = (1, -1)
+        
+        
+
         # if sign_x == 0:
         #     # For lateral moves, default to moving toward board center in x.
         #     temp_x = 1 if start_x < 175 else -1
@@ -599,11 +704,11 @@ class BoardReset:
         #     sign_y = 1 if start_y < 175 else -1
 
         # Exit corner for the start square: offset by 25 in the chosen directions.
-        exit_corner = (25 * sign_x, 25 * sign_y)
+        exit_corner = (25 * temp_x[0], 25 * temp_y[0])
 
         move_to_square = [(dx -50 * sign_x, 0), (0, dy -  50 * sign_y)]
         # Entry corner for the destination square: offset from the destination center.
-        entry_corner = ( 25 * sign_x, 25 * sign_y)
+        entry_corner = ( 25 * temp_x[0], 25 * temp_y[1])
 
         # # Define waypoints:
         P0 = (start_x, start_y)        # Start center.
