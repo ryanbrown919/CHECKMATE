@@ -146,13 +146,17 @@ class GantryControl:
 
         def toggle_magnet(self):
             self.send("M8")
-            time.sleep(0.2)
+            time.sleep(0.3)
             self.send("M9")
+            time.sleep(0.1)
 
         def magnet_carlsen(self):
             self.set_acceleration(1000)
 
             for i in range(8):
+                if i == 0:
+                    self.toggle_magnet()
+                    continue
                 self.move(0, i*50)
                 self.toggle_magnet()
     
