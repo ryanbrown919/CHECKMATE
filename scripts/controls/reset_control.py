@@ -211,7 +211,7 @@ class BoardReset:
                 ''' change empty squares to remove ranks 1 and 2 '''
                 move = self.nearest_neighbor(coords, empty_squares) 
                 vector_move = (move[1][0] - move[0][0], move[1][1] - move[0][1])
-                path = [move[0], (0, 25), (vector_move-25, 0), (0, vector_move - 25), (25, 0)]
+                path = [move[0], (0, 25), (vector_move[0]-25, 0), (0, vector_move[1] - 25), (25, 0)]
 
                 # Update the black_captured list with the new coordinates
                 self.gantry.black_captured.remove(piece) # me no likey
