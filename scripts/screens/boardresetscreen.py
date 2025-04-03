@@ -20,7 +20,7 @@ class BoardResetScreen(Screen):
     def __init__(self, control_system, **kwargs):
         super().__init__(**kwargs)
 
-        self.contorl_system = control_system
+        self.control_system = control_system
         layout = BoxLayout(orientation='vertical', padding=10)
         #layout.add_widget(Image(source='assets/start_logo.png', size_hint=(1, 1), keep_ratio=True, allow_stretch=True))
 
