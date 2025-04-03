@@ -1170,7 +1170,7 @@ class GantryControl:
                     while response != "ok":
                         # You might log the response or wait until "ok" arrives.
                         response = self.ser.readline().decode().strip()
-                    print(f"Sent: {cmd}, Response: {response}")
+                    #print(f"Sent: {cmd}, Response: {response}")
                 time.sleep(0.1)
 
                 while not self.finished:
