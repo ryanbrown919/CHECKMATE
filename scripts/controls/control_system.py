@@ -162,6 +162,8 @@ class ChessControlSystem:
         
         self.engine = None
 
+        self.use_switch = True
+
         self.ingame_message = ""
 
         self.demo_game = ["e2e4", "e7e5", "g1f3", "b8c6", "f1b5", "a7a6", "b5a4", "g8f6", "e1g1", "f8e7", "f1e1", "e8g8", "d2d4", "e5d4", "c2c4", "d4c3", "e4e5", "c3b2", "c1b2", "f6e8", "a4c2", "d7d6", "d1d3", "f7f5", "e5f6", "e7f6", "d3h7", "g8f7", "c2g6"]
