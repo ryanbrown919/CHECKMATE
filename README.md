@@ -10,13 +10,6 @@
 
 Check-M.A.T.E is an automated chessboard that bridges the gap between online and physical chess. This project integrates a hardware abstraction layer and control with an intuitive UI for seamless interaction.
 
-<p align="center">
-  <img src="assets/CheckMATE-exploded-view.png" alt="Check-M.A.T.E System Overview" width="700">
-</p>
-<p align="center">
-  <em>System Overview</em>
-</p>
-
 ## How It Works
 
 1. **Piece Detection**: Hall effect sensors detect the position of chess pieces on the board.
@@ -24,6 +17,15 @@ Check-M.A.T.E is an automated chessboard that bridges the gap between online and
 3. **Piece Movement**: Stepper motors, driven by a custom build of grbl, move pieces to their new positions via the electromagnet on the end-effector.
 4. **Piece Identification**: An NFC reader identifies pieces.
 5. **Chess Engine Integration**: Stockfish provides moves for single-player games.
+
+
+<p align="center">
+  <img src="assets/CheckMATE-exploded-view.png" alt="Check-M.A.T.E System Overview" width="700">
+</p>
+<p align="center">
+  <em>System Overview</em>
+</p>
+
 
 ## Features
 - Finite State Machine Frontend
