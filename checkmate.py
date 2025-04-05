@@ -10,16 +10,16 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition, NoTransition, WipeTransition, FadeTransition
 from kivy.clock import Clock
 
-from scripts.controls.control_system import ChessControlSystem
+from checkmate.controls.control_system import ChessControlSystem
 
-from scripts.screens.gamescreen import GameScreen
-from scripts.screens.initscreen import InitScreen
-from scripts.screens.loadingscreen import LoadingScreen
-from scripts.screens.mainscreen import MainScreen
-from scripts.screens.gantryscreen import GantryControlScreen
-from scripts.screens.endgamescreen import EndGameScreen
-from scripts.screens.demoscreen import DemoScreen
-from scripts.screens.boardresetscreen import BoardResetScreen
+from checkmate.screens.gamescreen import GameScreen
+from checkmate.screens.initscreen import InitScreen
+from checkmate.screens.loadingscreen import LoadingScreen
+from checkmate.screens.mainscreen import MainScreen
+from checkmate.screens.gantryscreen import GantryControlScreen
+from checkmate.screens.endgamescreen import EndGameScreen
+from checkmate.screens.demoscreen import DemoScreen
+from checkmate.screens.boardresetscreen import BoardResetScreen
 
 
 

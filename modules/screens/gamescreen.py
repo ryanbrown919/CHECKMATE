@@ -236,7 +236,7 @@ from kivy.core.window import Window
 # --- Settings ---
 Window.fullscreen = True
 try:
-    from scripts.screens.custom_widgets import HorizontalLine, VerticalLine, IconButton, headerLayout, ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock
+    from checkmate.screens.custom_widgets import HorizontalLine, VerticalLine, IconButton, headerLayout, ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock
 
 except:
     from custom_widgets import HorizontalLine, VerticalLine, IconButton, headerLayout, ChessBoard, MaterialBar, MovesHistory, CapturedPieces, PlayerClock

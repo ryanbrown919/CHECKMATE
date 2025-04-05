@@ -33,21 +33,21 @@ try:
     from reset_control import BoardReset
     from nfc_control import NFC
 
-    from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
+    from chekmate.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
 
 except:
-    from scripts.controls.gantry_control import GantryControl, ClockLogic
-    from scripts.controls.rocker_control import Rocker
-    from scripts.controls.hall_control import Hall
-    from scripts.controls.reset_control import BoardReset
-    from scripts.controls.nfc_control import NFC
+    from chekmate.controls.gantry_control import GantryControl, ClockLogic
+    from chekmate.controls.rocker_control import Rocker
+    from chekmate.controls.hall_control import Hall
+    from chekmate.controls.reset_control import BoardReset
+    from chekmate.controls.nfc_control import NFC
 
 
-    from scripts.screens.gamescreen import GameScreen
-    from scripts.screens.initscreen import InitScreen
-    from scripts.screens.loadingscreen import LoadingScreen
-    from scripts.screens.mainscreen import MainScreen
-    from scripts.screens.gantryscreen import GantryControlScreen
+    from checkmate.screens.gamescreen import GameScreen
+    from checkmate.screens.initscreen import InitScreen
+    from checkmate.screens.loadingscreen import LoadingScreen
+    from checkmate.screens.mainscreen import MainScreen
+    from checkmate.screens.gantryscreen import GantryControlScreen
 
 
 

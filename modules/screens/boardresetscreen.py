@@ -11,7 +11,7 @@ try:
 
 
 except:
-    from scripts.screens.custom_widgets import RoundedButton
+    from checkmate.screens.custom_widgets import RoundedButton
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget

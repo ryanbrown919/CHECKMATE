@@ -45,7 +45,7 @@ CHECKMATE/
 ├── assets/         # Images/figures
 ├── bin/            # Executables
 ├── inc/            # Headers
-├── scripts/        # Application
+├── checkmate/        # Application
 ├── src/            # Source cde
 └── test/           # Unit tests
 └── main.py         # Entry Point

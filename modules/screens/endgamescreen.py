@@ -9,7 +9,7 @@ Window.fullscreen = True
 try:
     from custom_widgets import ChessBoard, headerLayout, RoundedButton
 except:
-    from scripts.screens.custom_widgets import ChessBoard, headerLayout, RoundedButton
+    from checkmate.screens.custom_widgets import ChessBoard, headerLayout, RoundedButton
 
 
 class EndGameScreen(Screen):
