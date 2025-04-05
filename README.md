@@ -3,39 +3,53 @@
   <img src="assets/logo.png" alt="Check-M.A.T.E Logo">
 </p>
 <p align="center">
-  <span style="font-size:1.2em;"><em>A mechanically articulated table-top experience</em></span>
+  <span style="font-size:1.2em;"><em>A Mechanically Articulated Tabletop Experience</em></span>
 </p>
 
 ## Overview
 
-Check-M.A.T.E is an automated chessboard that bridges the gap between online and physical chess. It is a system control and user interface solution designed to run on a Raspberry Pi 4B. This project integrates hardware monitoring and control with an intuitive UI for seamless interaction.
+Check-M.A.T.E is an automated chessboard that bridges the gap between online and physical chess. This project integrates a hardware abstraction layer and control with an intuitive UI for seamless interaction.
+
+<p align="center">
+  <img src="assets/CheckMATE-exploded-view.png" alt="Check-M.A.T.E System Overview" width="700">
+</p>
+<p align="center">
+  <em>System Overview</em>
+</p>
+
+## How It Works
+
+1. **Piece Detection**: Hall effect sensors detect the position of chess pieces on the board.
+2. **Move Validation**: The chess backend validates moves using `python-chess` and updates the game state.
+3. **Piece Movement**: Stepper motors, driven by a custom build of grbl, move pieces to their new positions via the electromagnet on the end-effector.
+4. **Piece Identification**: An NFC reader identifies pieces.
+5. **Chess Engine Integration**: Stockfish provides moves for single-player games.
 
 ## Features
-
-- Custom UI interface for system monitoring
-- Real-time control of connected systems
-- Data visualization capabilities
-- Raspberry Pi 4B integration
+- Finite State Machine Frontend
+- Chess backend
+- Custom screens and widgets
+- Hardware Abstraction Layer (HAL)
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/CHECKMATE.git
+git clone https://github.com/ryanbrown919/CHECKMATE.git
 
 # Navigate to project directory
 cd CHECKMATE
 
 # Install dependencies
-pip install -r requirements.txt
+pip install kivy chess berserk lgpio pyserial
 ```
 
 ## Usage
 
-1. Connect your Raspberry Pi 4B to required peripherals
+1. Connect your Raspberry Pi 5 to required peripherals
 2. Run the main application:
    ```bash
-   python main.py
+   python checkmate.py
    ```
 3. Access the UI through the connected display 
 
@@ -43,16 +57,11 @@ pip install -r requirements.txt
 ```
 CHECKMATE/
 ├── assets/         # Images/figures
-├── bin/            # Executables
-├── inc/            # Headers
-├── checkmate/        # Application
-├── src/            # Source cde
-└── test/           # Unit tests
-└── main.py         # Entry Point
+├── bin/            # Stockfish binary
+├── firmware        # Sense board firmware
+├── checkmate/      # Application
+├── test/           # Unit tests
+└── checkmate.py    # Entry Point
 ```
 
-### Prerequisites
-- Raspberry Pi 4B
-- Python 3.7+
-- Check-M.A.T.E Sense PCB
 
