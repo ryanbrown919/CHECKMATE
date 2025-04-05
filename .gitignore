@@ -4,6 +4,7 @@
 /checkmate/.vscode
 /test/__pycache__
 /test/.vscode
+/firmware/build
 /build
 /venv   
 /archive
