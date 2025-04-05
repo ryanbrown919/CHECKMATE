@@ -30,7 +30,7 @@ try:
     from gantry_control import GantryControl, ClockLogic
     from rocker_control import Rocker
     from hall_control import Hall
-    # from reset_control import BoardReset
+    from reset_control import BoardReset
     from nfc_control import NFC
 
     from scripts.screens import GameScreen, MainScreen, InitScreen, GantryControlScreen
@@ -39,7 +39,7 @@ except:
     from scripts.controls.gantry_control import GantryControl, ClockLogic
     from scripts.controls.rocker_control import Rocker
     from scripts.controls.hall_control import Hall
-    # from scripts.controls.reset_control import BoardReset
+    from scripts.controls.reset_control import BoardReset
     from scripts.controls.nfc_control import NFC
 
 
@@ -114,7 +114,7 @@ class ChessControlSystem:
         "rocker": True,
         "gantry": True,
         "hall": False,
-        "rfid": False
+        "rfid": True
     }
 
 
@@ -140,6 +140,9 @@ class ChessControlSystem:
             'k_check': 'assets/white_king_mate.png',
 
         }
+
+        # self.piece_images['k'] = 'assets/black_king.png'
+        # self.piece_images['K'] = 'assets/white_king.png'
 
         self.ui_update_callback = ui_update_callback
         self.capture_move = False
@@ -224,8 +227,8 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='player_move_complete', source='gamescreen_player_turn', dest='gamescreen_engine_turn',
                                     unless='is_local_mode', after=['on_player_turn', 'notify_observers'])
         
-        self.machine.add_transition(trigger='process_predefined_board_move', source='gamescreen_predefined_game', dest='gamescreen_predefined_game',
-                                    after=['notify_observers'])
+        # self.machine.add_transition(trigger='process_predefined_board_move', source='gamescreen_predefined_game', dest='gamescreen_predefined_game',
+        #                             after=['notify_observers'])
         
 
 
@@ -235,7 +238,7 @@ class ChessControlSystem:
         self.machine.add_transition(trigger='go_to_mainscreen', source=['endgamescreen'], dest='mainscreen', after='update_ui')
 
 
-        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after='update_ui')
+        self.machine.add_transition(trigger='go_to_mainscreen', source=['gantryscreen', 'boardresetscreen'], dest='mainscreen', after=['update_ui', 'kill_engine'])
         self.machine.add_transition(trigger='go_to_mainscreen', source=['gamescreen_engine_turn','gamescreen_player_turn', 'game_screen_player_move_confirmed', 'game_screen_player_engine_move_confirmed', 'gamescreen_predefined_game', 'first_piece_detection',
             'second_piece_detection'], dest='endgamescreen', after=['early_exit', 'update_ui'])
 
@@ -253,6 +256,7 @@ class ChessControlSystem:
         #     print(f"Errorwith halls : {e}")
         # print("Hall Initialized")
 
+        self.nfc = NFC()
         self.rocker = Rocker()
         print("Rocker initialized")
         self.gantry = GantryControl()
@@ -309,6 +313,12 @@ class ChessControlSystem:
         while self.running:
             time.sleep(0.1)
 
+    def kill_engine(self):
+        if self.engine:
+            self.engine.quit()
+            self.engine = None
+
+
     def update_ui(self):
         # Update the UI with the current state.
         state = self.state
@@ -331,7 +341,7 @@ class ChessControlSystem:
         self.update_ui()
         """Call all registered observer callbacks with the updated board."""
         for callback in self.observers:
-            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0.05)
+            Clock.schedule_once(lambda dt, cb=callback: cb(self.board), 0)
             #callback(self.board)
 
     # def start_game(self):
@@ -343,6 +353,8 @@ class ChessControlSystem:
         self.endgame_message = "Game Abandoned"
         if self.engine:
             self.engine.quit()
+            self.engine = None
+
 
 
 
@@ -407,8 +419,14 @@ class ChessControlSystem:
         move = chess.Move.from_uci(move_str)
 
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+                
             # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 # Note: You might need special handling for en passant captures.
@@ -451,7 +469,7 @@ class ChessControlSystem:
             self.checkmate = False
 
         self.legal_moves = None
-        print("pushoing move:")
+        print("pushing move:")
 
         self.board.push(move)
         self.notify_observers()
@@ -546,8 +564,15 @@ class ChessControlSystem:
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
+            # captured_piece = self.board.piece_at(move.to_square)
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 captured_symbol = captured_piece.symbol()
@@ -1008,15 +1033,17 @@ class ChessControlSystem:
         self.captured_pieces = []
         self.move_history = []
 
+        self.piece_images['k'] = 'assets/black_king.png'
+        self.piece_images['K'] = 'assets/white_king.png'
+
       
 
         self.game_winner = None
-        self.board.reset()
 
         self.rocker.reset()
+        self.selected_piece = None
         
         self.notify_observers()
-
         self.update_ui()
 
 
@@ -1115,16 +1142,29 @@ class ChessControlSystem:
 
     def process_predefined_board_move(self, move, is_white):
 
+#         if self.board.is_en_passant(move):
+#     captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+#     captured_piece = self.board.piece_at(captured_square)
+# else:
+#     captured_piece = self.board.piece_at(move.to_square)
+
         captured_symbol = None
         # move = chess.Move.from_uci(move_str)
         if self.board.is_capture(move):
-            # For a normal capture, the captured piece is on the destination square.
-            captured_piece = self.board.piece_at(move.to_square)
+
+
+            if self.board.is_en_passant(move):
+                captured_square = chess.square(chess.square_file(move.to_square), chess.square_rank(move.from_square))
+                captured_piece = self.board.piece_at(captured_square)
+            else:
+                captured_piece = self.board.piece_at(move.to_square)
+
             if captured_piece:
                 self.captured_pieces.append(captured_piece.symbol())
                 captured_symbol = captured_piece.symbol()
 
                 # Note: You might need special handling for en passant captures.
+        # self.notify_observers()
 
         self.gantry.interpret_chess_move(f"{move}", self.board.is_capture(move), self.board.is_castling(move), self.board.is_en_passant(move), is_white, captured_symbol)
 
@@ -1172,8 +1212,6 @@ class ChessControlSystem:
 
         self.rocker.toggle()
 
-        self.notify_observers()
-
         if self.checkmate:
             self.end_game()
 
@@ -1188,6 +1226,9 @@ class ChessControlSystem:
         self.captured_pieces = []
         self.move_history = []
 
+        self.piece_images['k'] = 'assets/black_king.png'
+        self.piece_images['K'] = 'assets/white_king.png'
+
         self.rocker.reset()
         
         self.notify_observers()
@@ -1201,8 +1242,8 @@ class ChessControlSystem:
         if not self.demo_progress == len(self.demo_game):
 
             self.process_predefined_board_move(chess.Move.from_uci(self.demo_game[self.demo_progress]),  self.demo_progress % 2 == 0)
-            self.notify_observers()
-            self.update_ui()
+            # self.notify_observers()
+            # self.update_ui()
             self.demo_progress += 1
             Clock.schedule_once(lambda dt: self.on_predefined_turn(), 1.2)
 
@@ -1322,6 +1363,9 @@ class ChessControlSystem:
 
         return legal_moves
     
+    def nfc_test(self):
+        self.gantry.move(0, 43)
+        return self.nfc.read()
 
     # def on_boardresetscreen(self):
     #     while True:

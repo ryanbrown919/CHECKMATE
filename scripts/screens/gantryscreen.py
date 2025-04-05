@@ -21,7 +21,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput   
 from kivy.uix.togglebutton import ToggleButton
+from kivy.properties import StringProperty
 from kivy.uix.button import Button
+from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.app import App
 from kivy.core.window import Window
@@ -356,6 +358,33 @@ class GantryControlScreen(Screen):
         self.gantry = self.control_system.gantry
         self.font_size = self.control_system.font_size
 
+        self.piece_symbol = "P"
+
+        self.image_path = None
+
+
+
+        self.piece_images = {
+            'P': 'assets/white_pawn.png',
+            'R': 'assets/white_rook.png',
+            'N': 'assets/white_knight.png',
+            'B': 'assets/white_bishop.png',
+            'Q': 'assets/white_queen.png',
+            'K': 'assets/white_king.png',
+            'p': 'assets/black_pawn.png',
+            'r': 'assets/black_rook.png',
+            'n': 'assets/black_knight.png',
+            'b': 'assets/black_bishop.png',
+            'q': 'assets/black_queen.png',
+            'k': 'assets/black_king.png',
+            'K_mate': 'assets/black_king_mate.png',
+            'K_check': 'assets/black_king_check.png',
+            'k_mate': 'assets/white_king_mate.png',
+            'k_check': 'assets/white_king_mate.png',
+            None: ''
+
+        }
+
         self.capture_move= False
 
         self.root_layout = BoxLayout(orientation='vertical')
@@ -398,7 +427,7 @@ class GantryControlScreen(Screen):
         self.chess_move_input = ChessMoveInput(target_widget=self.target_board,
                                                path_button=self.pathButton,
                                                on_move_callback=self.on_move_entered,
-                                               size_hint=(1, 1), font_size=self.font_size)  
+                                               size_hint=(0.5, 1), font_size=self.font_size)  
         c_clear  = ClearTrailButton(target_widget=self.target_board, path_toggle_button=self.pathButton, move_input=self.chess_move_input, font_size=self.font_size)
         controls = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
         self.move_input_block = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
@@ -442,6 +471,17 @@ class GantryControlScreen(Screen):
 
         self.gantry_controls.add_widget(commandButton)
 
+        # self.nfc_layout = ColoredBoxLayout(orientation='horizontal')
+        # # nfc_icon = Image(source=self.image_path, allow_stretch=True, keep_ratio=True, size_hint = (0.5,0.5))
+        # self.nfc_icon = ImageUpdater()
+        # self.nfc_button = Button(text="Scan NFC", font_size = self.font_size)
+        # self.nfc_button.bind(on_release= lambda instance: self.read_nfc())
+
+        # self.nfc_layout.add_widget(self.nfc_icon)
+        # self.nfc_layout.add_widget(self.nfc_button)
+
+        # self.gantry_controls.add_widget(self.nfc_layout)
+
    
         
         # Bind the arrow buttons to move the dot.
@@ -460,6 +500,7 @@ class GantryControlScreen(Screen):
         # self.gantry_controls.add_widget(self.coord_label)
         # Update the label periodically.
         Clock.schedule_interval(self.update_label, 0.2)
+        
     
     def update_label(self, dt):
         mm_coord = self.target_board.get_current_mm()
@@ -479,6 +520,16 @@ class GantryControlScreen(Screen):
         if self.target_board.trail_points:
             coords = [f"({int(x)},{int(y)})" for x, y in self.target_board.trail_points]
             self.chess_move_input.text = (move)
+
+
+    def read_nfc(self):
+
+        self.passed, self.piece_symbol = self.control_system.nfc_test()
+        print(f"{self.passed, self.piece_symbol}")
+
+        self.image_path = self.piece_images[self.piece_symbol]
+
+        Clock.schedule_once(lambda dt: self.nfc_icon.change_image(self.image_path, 0.5))
 
 
     def send_command(self):
@@ -641,7 +692,7 @@ class MagnetControl(BoxLayout):
                                # Normal (unselected) background color.
                                background_color=[0.8, 0.8, 0.8, 1],
                                color=[0, 0, 0, 1],
-                               size_hint=(1, 1))
+                               size_hint=(1, 1), font_size=40)
             btn.bind(state=self.on_button_state)
             self.buttons.append(btn)
             self.add_widget(btn)
@@ -723,6 +774,34 @@ class TrailWidget(Widget):
                 Line(points=flat_points, width=2)
     def clear_trail(self):
         self.canvas.clear()
+
+
+
+class ColoredBoxLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas.before:
+            self.bg_color = Color(0.8, 0.8, 0.8, 1)  # RGBA color (e.g., blue)
+            self.bg_rect = Rectangle(size=self.size, pos=self.pos)
+
+        # Bind size and position to automatically adjust background
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.bg_rect.pos = self.pos
+        self.bg_rect.size = self.size
+
+class ImageUpdater(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Define a StringProperty to hold the image path
+
+    def change_image(self, new_image_path, *args):
+        self.image_path = new_image_path
+
+class MyApp(App):
+    def build(self):
+        return ColoredBoxLayout()
 
 
 # # --- For testing the widget in an app ---
