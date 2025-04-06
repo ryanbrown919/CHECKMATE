@@ -14,7 +14,7 @@ import random
 
 # Import your custom widgets and screens
 try:
-    from scripts.screens.custom_widgets import HorizontalLine, VerticalLine, IconButton, headerLayout, RoundedButton
+    from checkmate.screens.custom_widgets import HorizontalLine, VerticalLine, IconButton, headerLayout, RoundedButton
 
 except:
     from custom_widgets import HorizontalLine, VerticalLine, IconButton, RoundedButton, headerLayout
