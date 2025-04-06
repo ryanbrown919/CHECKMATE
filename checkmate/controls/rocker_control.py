@@ -13,7 +13,7 @@ class Rocker():
         # Servo PWM configuration
         self.PWM_FREQ = 50
         self.CENTER_DUTY = 7.5
-        self.OPEN_DUTY = 8.5
+        self.OPEN_DUTY = 8.7
         self.CLOSE_DUTY = 6.5
         self.MAX_WAIT_TIME = 2.0
         
