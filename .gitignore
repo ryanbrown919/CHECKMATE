@@ -1,10 +1,11 @@
 /__pycache__
 /.vscode
 /checkmate/__pycache__
+/checkmate/controls/__pycache__
+/checkmate/screens/__pycache__
 /checkmate/.vscode
 /test/__pycache__
 /test/.vscode
-/firmware/build
 /build
 /venv   
 /archive
