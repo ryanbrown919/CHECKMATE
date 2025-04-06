@@ -98,7 +98,7 @@ class Rocker():
 
 if __name__ == "__main__":
     rocker = Rocker()
-    rocker.begin()
+    rocker.reset()
     try:
         while True:
             input("Press Enter to toggle...")
