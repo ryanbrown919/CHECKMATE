@@ -1036,6 +1036,9 @@ class ChessControlSystem:
         self.piece_images['k'] = 'assets/black_king.png'
         self.piece_images['K'] = 'assets/white_king.png'
 
+        self.gantry.nextdead_white = (0, 435)
+        self.gantry.nextdead_black = (350, 435)
+
       
 
         self.game_winner = None
@@ -1225,6 +1228,9 @@ class ChessControlSystem:
         self.board.reset()
         self.captured_pieces = []
         self.move_history = []
+
+        self.gantry.nextdead_white = (0, 435)
+        self.gantry.nextdead_black = (350, 435)
 
         self.piece_images['k'] = 'assets/black_king.png'
         self.piece_images['K'] = 'assets/white_king.png'
