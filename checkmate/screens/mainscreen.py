@@ -356,7 +356,7 @@ class ModePopup(Popup):
         # Call a callback if defined, passing the selected values
 
         self.control_system.parameters = {'online': False, 'colour': self.selected_color, 'elo': self.selected_elo, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False}  # Default parameters to be set by the user
-
+        self.control_system.use_switch = self.selected_switch
         # if hasattr(self, "on_mode_selected"):
         #     self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
         # self.dismiss()
