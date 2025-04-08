@@ -94,7 +94,7 @@ class ChessGameStateMachine(object):
 
 class ChessBackend(threading.Thread):
     def __init__(self, lichess_token, ui_move_callback, mode="online", engine_path=None,
-                 engine_time_limit=0.1, difficulty_level=5, elo=1400, preferred_color='white',
+                 engine_time_limit=1, difficulty_level=5, elo=1400, preferred_color='white',
                  clock_logic=None, bot_mode=False, gantry_control=None):
         """
         Initialization as before. (Comments omitted for brevity.)
