@@ -359,7 +359,7 @@ class ModePopup(Popup):
         self.control_system.use_switch = self.selected_switch
         # if hasattr(self, "on_mode_selected"):
         #     self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
-        # self.dismiss()
+        self.dismiss()
 
     def on_cancel(self, instance):
         self.dismiss()
