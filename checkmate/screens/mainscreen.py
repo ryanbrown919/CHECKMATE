@@ -146,7 +146,7 @@ class MainScreen(Screen):
     #         self.manager.current = screen_name
 
     def open_mode_popup(self, instance):
-        popup = ModePopup(current_color=getattr(self, "preferred_color", "Random"),
+        popup = ModePopup(control_system=self.control_system, current_color=getattr(self, "preferred_color", "Random"),
                         current_elo=getattr(self, "chess_elo", 1500))
         # When the user confirms, update the main menu’s stored values.
         popup.on_mode_selected = self.on_mode_selected
@@ -265,11 +265,12 @@ class BaseScreen(Screen):
 
 
 class ModePopup(Popup):
-    def __init__(self, current_color="Random", current_elo=1500, **kwargs):
+    def __init__(self, control_system, current_color="Random", current_elo=1500, **kwargs):
         super(ModePopup, self).__init__(**kwargs)
         self.title = "Select Mode"
         self.size_hint = (0.8, 0.5)
         self.auto_dismiss = False
+        self.control_system = control_system
 
         layout = BoxLayout(orientation="vertical", spacing=10, padding=10)
 
@@ -353,9 +354,12 @@ class ModePopup(Popup):
 
     def on_ok(self, instance):
         # Call a callback if defined, passing the selected values
-        if hasattr(self, "on_mode_selected"):
-            self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
-        self.dismiss()
+
+        self.control_system.parameters = {'online': False, 'colour': self.selected_color, 'elo': self.selected_elo, 'timer': False, 'engine_time_limit': 0.1, 'bot_mode': False, 'local_mode': False}  # Default parameters to be set by the user
+
+        # if hasattr(self, "on_mode_selected"):
+        #     self.on_mode_selected(self.selected_color, self.selected_elo, self.selected_switch)
+        # self.dismiss()
 
     def on_cancel(self, instance):
         self.dismiss()
